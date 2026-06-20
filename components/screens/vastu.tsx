@@ -1,0 +1,164 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, Compass, Camera, X } from "lucide-react";
+import { useApp } from "../app-context";
+import { cx } from "../ui";
+
+const DIRS16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+const ZONES: Record<string, { zone: string; use: string; tip: string }> = {
+  N: { zone: "Uttara · Kuber", use: "Wealth & career", tip: "Keep open, light, water elements. Good for cash/lockers facing." },
+  NE: { zone: "Ishan", use: "Puja & meditation", tip: "Most sacred. Place your mandir here. Keep clean, never a toilet." },
+  E: { zone: "Purva", use: "Health & growth", tip: "Morning light zone. Good for windows, study, entrance." },
+  SE: { zone: "Agni", use: "Kitchen & fire", tip: "Ideal for kitchen, gas, electricals. Avoid water tanks here." },
+  S: { zone: "Dakshina", use: "Fame & relationships", tip: "Keep heavier, can host bedrooms. Avoid main entrance." },
+  SW: { zone: "Nairutya", use: "Master bedroom", tip: "Heaviest, most stable zone. Master bedroom + storage. Never a toilet/kitchen." },
+  W: { zone: "Paschima", use: "Children & gains", tip: "Good for children's room, dining. Keep moderately heavy." },
+  NW: { zone: "Vayavya", use: "Guests & support", tip: "Guest room, finished goods, helps relationships & movement." },
+};
+
+function main8(dir: string) {
+  if (["NNE", "ENE"].includes(dir)) return "NE";
+  if (["ESE", "SSE"].includes(dir)) return "SE";
+  if (["SSW", "WSW"].includes(dir)) return "SW";
+  if (["WNW", "NNW"].includes(dir)) return "NW";
+  return dir;
+}
+
+export function VastuScreen() {
+  const { back } = useApp();
+  const [heading, setHeading] = useState(0);
+  const [live, setLive] = useState(false);
+  const [ar, setAr] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const facing = DIRS16[Math.round(heading / 22.5) % 16];
+  const z = ZONES[main8(facing)] || ZONES.N;
+
+  function onOrient(e: DeviceOrientationEvent) {
+    const ev = e as DeviceOrientationEvent & { webkitCompassHeading?: number };
+    const h = ev.webkitCompassHeading != null ? ev.webkitCompassHeading : e.alpha != null ? 360 - e.alpha : null;
+    if (h != null) setHeading(h);
+  }
+
+  async function enableCompass() {
+    const D = window.DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> };
+    try {
+      if (D && typeof D.requestPermission === "function") {
+        const p = await D.requestPermission();
+        if (p !== "granted") return;
+      }
+      window.addEventListener("deviceorientationabsolute", onOrient, true);
+      window.addEventListener("deviceorientation", onOrient, true);
+      setLive(true);
+    } catch { setLive(true); }
+  }
+
+  async function toggleAR() {
+    if (ar) { streamRef.current?.getTracks().forEach((t) => t.stop()); setAr(false); return; }
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
+      streamRef.current = s;
+      if (videoRef.current) { videoRef.current.srcObject = s; await videoRef.current.play(); }
+      setAr(true);
+      if (!live) enableCompass();
+    } catch { /* camera denied */ }
+  }
+
+  useEffect(() => () => {
+    window.removeEventListener("deviceorientationabsolute", onOrient, true);
+    window.removeEventListener("deviceorientation", onOrient, true);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+  }, []);
+
+  return (
+    <div className="flex h-full flex-col pt-12">
+      <div className="flex items-center gap-3 px-5 py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+        <div>
+          <div className="font-display text-lg leading-tight text-ink">Vastu Compass</div>
+          <div className="text-[11px] text-muted">Align your home with the directions</div>
+        </div>
+        <button onClick={toggleAR} className={cx("ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px]", ar ? "btn-saffron" : "surface text-ink")}>
+          {ar ? <X size={13} /> : <Camera size={13} />} {ar ? "Close" : "AR"}
+        </button>
+      </div>
+
+      {/* AR camera */}
+      {ar && (
+        <div className="relative mx-5 mb-3 overflow-hidden rounded-2xl" style={{ aspectRatio: "3/4", background: "#000" }}>
+          <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[12px] text-white">Facing {facing}</div>
+            <div className="absolute inset-x-3 bottom-3 rounded-xl bg-black/55 px-3 py-2">
+              <div className="text-[12px] font-medium text-white">{z.zone} · {z.use}</div>
+              <div className="text-[11px] text-white/80">{z.tip}</div>
+            </div>
+            <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/40" />
+          </div>
+        </div>
+      )}
+
+      {/* compass dial */}
+      {!ar && (
+        <div className="flex flex-col items-center px-5">
+          <div className="relative mt-3" style={{ width: 270, height: 270 }}>
+            {/* fixed top pointer */}
+            <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "12px solid var(--saffron)" }} />
+            <div className="absolute inset-0 rounded-full surface" style={{ transform: `rotate(${-heading}deg)`, transition: live ? "transform 0.12s linear" : undefined }}>
+              {DIRS16.map((d, i) => {
+                const a = (i / 16) * 360;
+                const main = ["N", "E", "S", "W"].includes(d);
+                const cardinal = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"].includes(d);
+                return (
+                  <div key={d} className="absolute left-1/2 top-1/2" style={{ transform: `rotate(${a}deg) translateY(-118px) rotate(${-a}deg)` }}>
+                    <span className={cx("text-[12px]", d === "N" ? "text-[var(--avoid)] font-semibold" : main ? "text-ink font-medium" : cardinal ? "text-gold" : "text-muted")}
+                      style={{ transform: `rotate(${heading}deg)`, display: "inline-block" }}>{d}</span>
+                  </div>
+                );
+              })}
+              {/* ring + ticks */}
+              <div className="absolute inset-6 rounded-full" style={{ border: "1px solid var(--line)" }} />
+            </div>
+            {/* center */}
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="text-center">
+                <div className="font-display text-4xl text-ink">{Math.round(heading)}°</div>
+                <div className="text-[12px] text-gold">{facing}</div>
+              </div>
+            </div>
+          </div>
+
+          {!live && (
+            <button onClick={enableCompass} className="mt-5 flex items-center gap-2 rounded-2xl px-5 py-3 text-[13px] btn-saffron">
+              <Compass size={16} /> Enable live compass
+            </button>
+          )}
+
+          <div className="mt-5 w-full rounded-2xl card-temple p-4">
+            <div className="text-[12px] uppercase tracking-wider text-gold">Facing {z.zone}</div>
+            <div className="mt-1 text-[15px] text-ink">{z.use}</div>
+            <div className="mt-1 text-[12.5px] leading-relaxed text-muted">{z.tip}</div>
+          </div>
+        </div>
+      )}
+
+      {/* zone guide */}
+      <div className="mt-4 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
+        <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Direction Guide</h3>
+        <div className="overflow-hidden rounded-2xl surface">
+          {(["NE", "E", "SE", "S", "SW", "W", "NW", "N"] as const).map((d, i) => (
+            <div key={d} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
+              <span className="mt-0.5 w-8 text-[13px] font-medium text-gold">{d}</span>
+              <div>
+                <div className="text-[13px] text-ink">{ZONES[d].zone} · {ZONES[d].use}</div>
+                <div className="text-[11.5px] leading-snug text-muted">{ZONES[d].tip}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
