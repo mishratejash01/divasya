@@ -13,6 +13,19 @@ export function LoginScreen({ onGuest }: { onGuest: () => void }) {
     setBusy(true);
     setNote(null);
     try {
+      // Pre-check that the Google provider is actually enabled on this Supabase
+      // project, so we never bounce the user to a raw "provider not enabled" page.
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
+        headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string },
+      });
+      const settings = await res.json().catch(() => ({}));
+      if (!settings?.external?.google) {
+        setBusy(false);
+        setNote("Google sign-in is being set up — continuing as guest for now.");
+        logEvent("login_google_unavailable");
+        setTimeout(onGuest, 900);
+        return;
+      }
       const sb = supabaseBrowser();
       const { error } = await sb.auth.signInWithOAuth({
         provider: "google",
