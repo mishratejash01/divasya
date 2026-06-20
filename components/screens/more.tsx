@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useApp, ScreenName } from "../app-context";
 import { Avatar } from "../ui";
-import { DEMO_USER } from "@/lib/demo";
+import { rashiLabel } from "@/lib/astro";
 
 type Item = { label: string; icon: typeof Sparkles; to?: ScreenName; params?: Record<string, unknown>; live?: boolean };
 
@@ -50,7 +50,9 @@ const UTILITY: Item[] = [
 ];
 
 export function MoreScreen() {
-  const { back, go, haptic } = useApp();
+  const { back, go, haptic, profile, logout } = useApp();
+  const name = profile?.name || "Devotee";
+  const rashi = rashiLabel(profile || { rashi: null, dob: null });
   return (
     <div className="h-full overflow-y-auto no-scrollbar pb-10 pt-12">
       <div className="flex items-center gap-3 px-5 py-3">
@@ -60,10 +62,10 @@ export function MoreScreen() {
 
       {/* profile */}
       <button className="mx-5 flex w-[calc(100%-2.5rem)] items-center gap-3 rounded-2xl card-temple p-4 text-left">
-        <Avatar name={DEMO_USER.name} size={52} tint="#c8772e" />
+        <Avatar name={name} size={52} tint="#c8772e" />
         <div className="flex-1">
-          <div className="font-display text-[17px] text-ink">{DEMO_USER.name}</div>
-          <div className="text-[12px] text-muted">{DEMO_USER.phone}</div>
+          <div className="font-display text-[17px] text-ink">{name}</div>
+          <div className="text-[12px] text-muted">{rashi}</div>
         </div>
         <ChevronRight size={18} className="text-muted" />
       </button>
@@ -99,7 +101,7 @@ export function MoreScreen() {
             const Icon = it.icon;
             const danger = it.label === "Logout";
             return (
-              <button key={it.label} onClick={() => haptic(8)}
+              <button key={it.label} onClick={() => { haptic(8); if (danger) logout(); }}
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                 style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
                 <Icon size={18} className={danger ? "text-[var(--avoid)]" : "text-muted"} strokeWidth={1.8} />

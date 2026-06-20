@@ -7,9 +7,8 @@ import {
 } from "lucide-react";
 import { useApp } from "../app-context";
 import { Avatar, SectionLabel, cx } from "../ui";
-import {
-  DEMO_USER, PANCHANG, currentChoghadiya, HOROSCOPE_TODAY, SHLOKA, LIBRARY, deityById,
-} from "@/lib/demo";
+import { PANCHANG, currentChoghadiya, HOROSCOPE_TODAY, SHLOKA, LIBRARY, deityById } from "@/lib/demo";
+import { rashiLabel, zodiacSymbol } from "@/lib/astro";
 
 let firedOnce = false;
 
@@ -25,10 +24,13 @@ const GRID = [
 ] as const;
 
 export function HomeScreen() {
-  const { go, sendPush, streak, japaToday, deityId } = useApp();
+  const { go, sendPush, streak, japaToday, deityId, profile } = useApp();
   const chog = currentChoghadiya();
   const deity = deityById(deityId);
   const bellRef = useRef<HTMLButtonElement>(null);
+  const name = profile?.name || "Devotee";
+  const rashi = rashiLabel(profile || { rashi: null, dob: null });
+  const sym = zodiacSymbol(profile || { rashi: null, dob: null });
 
   useEffect(() => {
     if (firedOnce) return;
@@ -68,13 +70,13 @@ export function HomeScreen() {
 
       {/* greeting */}
       <div className="flex items-center gap-3 px-5 pt-6">
-        <Avatar name={DEMO_USER.name} size={46} tint="#c8772e" />
+        <Avatar name={name} size={46} tint="#c8772e" />
         <div>
           <div className="text-[13px] text-muted">Namaste,</div>
-          <div className="font-display text-xl text-ink">{DEMO_USER.name}</div>
+          <div className="font-display text-xl text-ink">{name}</div>
         </div>
         <div className="ml-auto text-right">
-          <div className="text-[12px] text-muted">{DEMO_USER.rashi.split(" ")[0]} · {DEMO_USER.nakshatra}</div>
+          <div className="text-[12px] text-muted">{rashi}</div>
           <div className="text-[12px] text-gold">{PANCHANG.tithi}</div>
         </div>
       </div>
@@ -174,8 +176,8 @@ export function HomeScreen() {
       <div className="px-5 pt-4">
         <div className="rounded-2xl surface p-4">
           <div className="flex items-center justify-between">
-            <span className="font-display text-[16px] text-ink">Today · {DEMO_USER.rashi.split(" ")[1]?.replace(/[()]/g, "") || "Leo"}</span>
-            <span className="text-2xl">♌</span>
+            <span className="font-display text-[16px] text-ink">Today · {rashi.split(" ")[0]}</span>
+            <span className="text-2xl">{sym}</span>
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">{HOROSCOPE_TODAY}</p>
           <button onClick={() => go("ai", { mode: "jyotishi" })} className="mt-3 text-[12.5px] text-[var(--saffron-soft)]">

@@ -5,20 +5,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Flower2, Check, ShieldCheck, Video, Radio, Play, MapPin } from "lucide-react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
-import { PUJAS, CHADHAVA, TEMPLES, templeById, DEMO_USER } from "@/lib/demo";
+import { PUJAS, CHADHAVA, TEMPLES, templeById } from "@/lib/demo";
 import { logEvent } from "@/lib/chat";
+import * as db from "@/lib/db";
 import { bell, conch } from "@/lib/sound";
 
 type Item = { kind: "puja" | "chadhava"; name: string; price: number; benefit?: string; emoji?: string };
 
 /* ---------------- Puja + Chadhava ---------------- */
 export function PujaScreen() {
-  const { back, haptic } = useApp();
+  const { back, haptic, profile, user } = useApp();
   const [tab, setTab] = useState<"puja" | "chadhava">("puja");
   const [sel, setSel] = useState<Item | null>(null);
   const [step, setStep] = useState<"form" | "paying" | "done">("form");
   const [templeId, setTempleId] = useState(TEMPLES[0].id);
-  const [name, setName] = useState(DEMO_USER.name);
+  const [name, setName] = useState(profile?.name || "");
   const [gotra, setGotra] = useState("Kashyap");
   const [wish, setWish] = useState("");
   const [bookingId, setBookingId] = useState("");
@@ -33,6 +34,7 @@ export function PujaScreen() {
       bell(540, 1.8, 0.2);
       haptic([15, 40, 15]);
       logEvent("puja_booking", { item: sel?.name, price: sel?.price, temple: templeId });
+      if (user && sel) db.saveBooking(user.id, { kind: sel.kind, item: sel.name, price: sel.price, temple: templeById(templeId).name, sankalp_name: name, gotra, wish, booking_ref: id });
     }, 1600);
   }
 

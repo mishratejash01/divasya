@@ -1,3 +1,5 @@
+import { Profile } from "./types";
+
 export type ChatMsg = { role: "user" | "assistant"; content: string };
 
 export async function streamChat(
@@ -6,6 +8,7 @@ export async function streamChat(
     deityId?: string;
     astrologerId?: string;
     messages: ChatMsg[];
+    profile?: Partial<Profile> | null;
   },
   onDelta: (chunk: string, full: string) => void
 ): Promise<string> {

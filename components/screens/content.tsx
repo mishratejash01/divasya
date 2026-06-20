@@ -6,8 +6,9 @@ import { ChevronLeft, Download, Share2, Sun, Moon, Check, Play, Clock } from "lu
 import { useApp } from "../app-context";
 import { cx } from "../ui";
 import {
-  PANCHANG, CHOGHADIYA, currentChoghadiya, DEMO_USER, SHLOKA, HOROSCOPE_TODAY, LIBRARY, deityById,
+  PANCHANG, CHOGHADIYA, currentChoghadiya, SHLOKA, HOROSCOPE_TODAY, LIBRARY, deityById,
 } from "@/lib/demo";
+import { rashiLabel } from "@/lib/astro";
 
 function Header({ title, sub }: { title: string; sub?: string }) {
   const { back } = useApp();
@@ -206,10 +207,12 @@ export function LibraryScreen() {
 
 /* ---------------- Sandesh share card ---------------- */
 export function SandeshScreen() {
-  const { deityId, haptic } = useApp();
+  const { deityId, haptic, profile } = useApp();
   const deity = deityById(deityId);
   const card = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
+  const name = profile?.name || "Devotee";
+  const rashi = rashiLabel(profile || { rashi: null, dob: null });
 
   async function download() {
     if (!card.current) return;
@@ -222,7 +225,7 @@ export function SandeshScreen() {
     } catch {} finally { setBusy(false); }
   }
   function whatsapp() {
-    const text = `🪔 Aaj ka Sandesh — ${DEMO_USER.name}\n\n${SHLOKA.deva}\n${SHLOKA.translit}\n"${SHLOKA.meaning}"\n\nShared via Divasya 🕉`;
+    const text = `🪔 Aaj ka Sandesh — ${name}\n\n${SHLOKA.deva}\n${SHLOKA.translit}\n"${SHLOKA.meaning}"\n\nShared via Divasya 🕉`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -243,7 +246,7 @@ export function SandeshScreen() {
           <div className="text-center text-[13px] leading-relaxed text-ink/90">{HOROSCOPE_TODAY}</div>
           <div className="mt-5 text-center">
             <div className="text-[12px] text-muted">A blessing for</div>
-            <div className="font-display text-lg text-gold">{DEMO_USER.name} · {DEMO_USER.rashi.split(" ")[0]}</div>
+            <div className="font-display text-lg text-gold">{name} · {rashi.split(" ")[0]}</div>
           </div>
         </div>
 

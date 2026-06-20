@@ -4,48 +4,47 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { supabaseBrowser } from "@/lib/supabase";
 import { logEvent } from "@/lib/chat";
+import { useApp } from "../app-context";
 
-export function LoginScreen({ onGuest }: { onGuest: () => void }) {
-  const [busy, setBusy] = useState(false);
+export function LoginScreen() {
+  const { signIn } = useApp();
+  const [busy, setBusy] = useState<"google" | "anon" | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
+  async function anon() {
+    setBusy("anon");
+    try { await signIn(); } catch { setBusy(null); setNote("Couldn't start session, please retry."); }
+  }
+
   async function google() {
-    setBusy(true);
+    setBusy("google");
     setNote(null);
     try {
-      // Pre-check that the Google provider is actually enabled on this Supabase
-      // project, so we never bounce the user to a raw "provider not enabled" page.
       const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
         headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string },
       });
       const settings = await res.json().catch(() => ({}));
       if (!settings?.external?.google) {
-        setBusy(false);
-        setNote("Google sign-in is being set up — continuing as guest for now.");
         logEvent("login_google_unavailable");
-        setTimeout(onGuest, 900);
+        setNote("Google sign-in is being set up — starting your session…");
+        setTimeout(anon, 800);
         return;
       }
-      const sb = supabaseBrowser();
-      const { error } = await sb.auth.signInWithOAuth({
+      const { error } = await supabaseBrowser().auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: window.location.origin, queryParams: { prompt: "select_account" } },
       });
       if (error) throw error;
       logEvent("login_google_start");
-      // browser will redirect to Google…
     } catch {
-      setBusy(false);
-      setNote("Google sign-in is being finalised — continuing for now.");
-      setTimeout(onGuest, 900);
+      setNote("Google sign-in unavailable — starting your session…");
+      setTimeout(anon, 800);
     }
   }
 
   return (
     <div className="relative flex h-full flex-col items-center justify-between overflow-hidden px-7 pb-10 pt-24"
       style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(200,119,46,0.12), transparent 60%), linear-gradient(180deg, #160f0a, #0b0807)" }}>
-
-      {/* faint mandala */}
       <div className="animate-spinSlow pointer-events-none absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full opacity-[0.06]"
         style={{ background: "conic-gradient(from 0deg, var(--gold), transparent, var(--saffron), transparent, var(--gold))" }} />
 
@@ -59,11 +58,13 @@ export function LoginScreen({ onGuest }: { onGuest: () => void }) {
       </div>
 
       <div className="w-full">
-        <button onClick={google} disabled={busy}
+        <button onClick={google} disabled={!!busy}
           className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white py-3.5 text-[15px] font-medium text-[#1f1f1f] disabled:opacity-60">
-          <GoogleMark /> {busy ? "Connecting…" : "Continue with Google"}
+          <GoogleMark /> {busy === "google" ? "Connecting…" : "Continue with Google"}
         </button>
-        <button onClick={onGuest} className="mt-3 w-full rounded-2xl py-3 text-[13px] btn-ghost">Explore as guest</button>
+        <button onClick={anon} disabled={!!busy} className="mt-3 w-full rounded-2xl py-3 text-[14px] btn-ghost disabled:opacity-60">
+          {busy === "anon" ? "Starting…" : "Continue without sign-in"}
+        </button>
         {note && <p className="mt-3 text-center text-[12px] text-muted">{note}</p>}
         <p className="mt-5 text-center text-[11px] leading-relaxed text-muted">
           By continuing you agree to our Terms & Privacy.<br />Your birth details stay private and secure.

@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Send, Star, Wallet, Clock, Gift, ShieldCheck } from "lucide-react";
 import { useApp } from "../app-context";
 import { Avatar, cx, Typing } from "../ui";
-import { ASTROLOGERS, astrologerById, DEMO_USER } from "@/lib/demo";
+import { ASTROLOGERS, astrologerById } from "@/lib/demo";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
+import * as db from "@/lib/db";
 
 /* ---------------- Directory ---------------- */
 export function ConsultScreen() {
@@ -71,8 +72,10 @@ function fmt(s: number) {
 }
 
 export function ConsultChatScreen() {
-  const { back, screen, wallet, addWallet, haptic } = useApp();
+  const { back, screen, wallet, addWallet, haptic, profile, user } = useApp();
   const astro = astrologerById((screen.params?.astrologerId as string) || "a1");
+  const first = profile?.name?.split(" ")[0] || "ji";
+  const thread = `consult:${astro.id}`;
 
   const [phase, setPhase] = useState<"free" | "ended" | "paid">("free");
   const [freeLeft, setFreeLeft] = useState(FREE_SECONDS);
@@ -83,7 +86,7 @@ export function ConsultChatScreen() {
   const [streaming, setStreaming] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
 
-  const greet = `Namaste ${DEMO_USER.name} ji 🙏 Main ${astro.name.replace(/^(Acharya|Pandit|Jyotishi|Dr\.?|Guru Maa) /, "")}. Maine aapki kundli khol li hai — Simha lagna, Rohini nakshatra. Aap nishank hokar apna prashn poochhiye.`;
+  const greet = `Namaste ${first} 🙏 Main ${astro.name.replace(/^(Acharya|Pandit|Jyotishi|Dr\.?|Guru Maa) /, "")}. Maine aapki kundli khol li hai. Aap nishank hokar apna prashn poochhiye.`;
 
   // free countdown
   useEffect(() => {
@@ -107,6 +110,14 @@ export function ConsultChatScreen() {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
 
+  // load persisted consult history with this astrologer
+  useEffect(() => {
+    if (!user) return;
+    let on = true;
+    db.getMessages(user.id, thread).then((m) => { if (on && m.length) setMessages(m); });
+    return () => { on = false; };
+  }, [thread, user]);
+
   function recharge(amt: number) {
     addWallet(amt);
     setRecharged((r) => r - paidSpent + amt); // reset meter baseline
@@ -122,11 +133,15 @@ export function ConsultChatScreen() {
     const convo: ChatMsg[] = [...messages, { role: "user", content: text }];
     setMessages([...convo, { role: "assistant", content: "" }]);
     setStreaming(true);
+    let full = "";
     try {
-      await streamChat({ mode: "consult", astrologerId: astro.id, messages: convo }, (_c, full) =>
-        setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: full }; return c; })
+      full = await streamChat({ mode: "consult", astrologerId: astro.id, messages: convo, profile }, (_c, f) =>
+        setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: f }; return c; })
       );
-    } finally { setStreaming(false); logEvent("consult_chat", { astrologer: astro.id }); }
+    } finally {
+      setStreaming(false); logEvent("consult_chat", { astrologer: astro.id });
+      if (user && full) db.addMessages(user.id, thread, [{ role: "user", content: text }, { role: "assistant", content: full }]);
+    }
   }
 
   return (

@@ -6,7 +6,6 @@ import { AppProvider, useApp, ScreenName } from "./app-context";
 import { PhoneFrame, StatusBar } from "./phone";
 import { BottomNav } from "./bottom-nav";
 import { PushToast } from "./push-toast";
-import { supabaseBrowser } from "@/lib/supabase";
 
 import { HomeScreen } from "./screens/home";
 import { MalaScreen } from "./screens/mala";
@@ -19,6 +18,7 @@ import { VastuScreen } from "./screens/vastu";
 import { NaamkaranScreen } from "./screens/naamkaran";
 import { PujaScreen, TempleScreen } from "./screens/devotion";
 import { LoginScreen } from "./screens/login";
+import { OnboardingScreen } from "./screens/onboarding";
 
 const SHOW_NAV: ScreenName[] = ["home", "consult", "menu", "panchang", "festivals", "library", "temple", "naamkaran"];
 
@@ -67,22 +67,35 @@ function RoutedApp() {
   );
 }
 
-function Inner({ authed, onGuest }: { authed: boolean; onGuest: () => void }) {
+function Splash() {
+  return (
+    <div className="grid h-full place-items-center" style={{ background: "linear-gradient(180deg,#140e0a,#0b0807)" }}>
+      <div className="animate-pulse text-4xl">🕉</div>
+    </div>
+  );
+}
+
+function Gate() {
+  const { loading, user, profileLoaded, needsOnboarding } = useApp();
+  if (loading) return <Splash />;
+  if (!user) return <LoginScreen />;
+  if (!profileLoaded) return <Splash />;
+  if (needsOnboarding) return <OnboardingScreen />;
+  return <RoutedApp />;
+}
+
+function Inner() {
   return (
     <>
       <StatusBar />
-      {authed ? <RoutedApp /> : <LoginScreen onGuest={onGuest} />}
+      <Gate />
       <PushToast />
     </>
   );
 }
 
 export function AppShell() {
-  const [ready, setReady] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
-  const [guest, setGuest] = useState(false);
   const [scale, setScale] = useState(1);
-
   useEffect(() => {
     const fit = () => {
       const m = 24;
@@ -93,41 +106,15 @@ export function AppShell() {
     return () => window.removeEventListener("resize", fit);
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    try {
-      const sb = supabaseBrowser();
-      sb.auth.getSession().then(({ data }) => {
-        if (!active) return;
-        setSignedIn(!!data.session);
-        setReady(true);
-      });
-      const { data: sub } = sb.auth.onAuthStateChange((_e, session) => {
-        setSignedIn(!!session);
-      });
-      return () => { active = false; sub.subscription.unsubscribe(); };
-    } catch {
-      setReady(true);
-    }
-  }, []);
-
-  const authed = signedIn || guest;
-
   return (
     <AppProvider>
       <div className="flex min-h-screen w-full flex-col items-center justify-center gap-4 py-4">
         <div style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}>
           <PhoneFrame>
-            {!ready ? (
-              <div className="grid h-full place-items-center">
-                <div className="animate-pulse text-4xl">🕉</div>
-              </div>
-            ) : (
-              <Inner authed={authed} onGuest={() => setGuest(true)} />
-            )}
+            <Inner />
           </PhoneFrame>
         </div>
-        <div className="text-[11px] tracking-widest text-muted">DIVASYA · Live Proof of Concept</div>
+        <div className="text-[11px] tracking-widest text-muted">DIVASYA · Live</div>
       </div>
     </AppProvider>
   );
