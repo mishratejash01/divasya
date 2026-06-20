@@ -77,34 +77,57 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const loadUserData = useCallback(async (u: User) => {
     setProfileLoaded(false);
-    let p = await db.getProfile(u.id);
-    if (!p) p = await db.saveProfile(u.id, {});
-    let st = await db.getState(u.id);
-    if (st.last_japa !== todayStr()) st = { ...st, japa_today: 0 };
-    statsRef.current = st;
-    setProfile(p);
-    setStats(st);
-    setProfileLoaded(true);
+    try {
+      let p = await db.getProfile(u.id);
+      if (!p) p = await db.saveProfile(u.id, {});
+      let st = await db.getState(u.id);
+      if (st.last_japa !== todayStr()) st = { ...st, japa_today: 0 };
+      statsRef.current = st;
+      setProfile(p);
+      setStats(st);
+    } catch (e) {
+      // Never strand the user on the splash: fall through to onboarding/app
+      // with whatever we have. A failed load shouldn't be a dead end.
+      console.error("loadUserData failed", e);
+    } finally {
+      setProfileLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
-    const sb = supabaseBrowser();
     let active = true;
-    sb.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
-      const u = data.session?.user ?? null;
-      userRef.current = u;
-      setUser(u);
-      if (u) await loadUserData(u);
+    let sb: ReturnType<typeof supabaseBrowser> | null = null;
+    try {
+      sb = supabaseBrowser();
+    } catch (e) {
+      // Misconfigured client (e.g. missing public env at build time):
+      // don't hang on the splash — show the login screen.
+      console.error("supabase init failed", e);
       setLoading(false);
-    });
+      return;
+    }
+
+    // Hard safety net: the splash must never live longer than this.
+    const failsafe = setTimeout(() => { if (active) setLoading(false); }, 8000);
+
+    sb.auth.getSession()
+      .then(async ({ data }) => {
+        if (!active) return;
+        const u = data.session?.user ?? null;
+        userRef.current = u;
+        setUser(u);
+        if (u) await loadUserData(u);
+      })
+      .catch((e) => { console.error("getSession failed", e); })
+      .finally(() => { if (active) { clearTimeout(failsafe); setLoading(false); } });
+
     const { data: sub } = sb.auth.onAuthStateChange(async (_e, session) => {
       const u = session?.user ?? null;
       userRef.current = u;
       setUser(u);
       if (u) { await loadUserData(u); } else { setProfile(null); setProfileLoaded(false); }
     });
-    return () => { active = false; sub.subscription.unsubscribe(); };
+    return () => { active = false; clearTimeout(failsafe); sub.subscription.unsubscribe(); };
   }, [loadUserData]);
 
   const scheduleFlush = useCallback(() => {
@@ -181,8 +204,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const completeOnboarding = useCallback(async (fields: Partial<Profile>) => {
     if (!userRef.current) return;
     const rashi = rashiLabel({ rashi: fields.rashi ?? null, dob: fields.dob ?? null });
-    const saved = await db.saveProfile(userRef.current.id, { ...fields, rashi, onboarded: true });
-    setProfile(saved);
+    const merged = { ...fields, rashi, onboarded: true };
+    // Optimistic: enter the app immediately so a slow/failed write can never
+    // pin the user on the "Building your chart" spinner.
+    setProfile((p) => ({ ...(p ?? ({} as Profile)), ...merged }));
+    try {
+      const saved = await db.saveProfile(userRef.current.id, merged);
+      if (saved) setProfile(saved);
+    } catch (e) {
+      console.error("saveProfile failed", e);
+    }
     logEvent("onboarded");
   }, []);
 
