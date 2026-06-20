@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppProvider, useApp, ScreenName } from "./app-context";
-import { PhoneFrame, StatusBar } from "./phone";
 import { BottomNav } from "./bottom-nav";
 import { PushToast } from "./push-toast";
 
@@ -87,7 +85,6 @@ function Gate() {
 function Inner() {
   return (
     <>
-      <StatusBar />
       <Gate />
       <PushToast />
     </>
@@ -95,26 +92,13 @@ function Inner() {
 }
 
 export function AppShell() {
-  const [scale, setScale] = useState(1);
-  useEffect(() => {
-    const fit = () => {
-      const m = 24;
-      setScale(Math.min(1, (window.innerWidth - m) / 392, (window.innerHeight - m) / 852));
-    };
-    fit();
-    window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
-  }, []);
-
   return (
     <AppProvider>
-      <div className="flex min-h-screen w-full flex-col items-center justify-center gap-4 py-4">
-        <div style={{ transform: `scale(${scale})`, transformOrigin: "center center" }}>
-          <PhoneFrame>
-            <Inner />
-          </PhoneFrame>
+      <div className="flex w-full justify-center sm:min-h-[100dvh] sm:items-center">
+        {/* full-screen on mobile · centered app surface on desktop — responsive, no device chrome */}
+        <div className="relative h-[100dvh] w-full max-w-[620px] overflow-hidden bg-[var(--bg-0)] sm:h-[94dvh] sm:max-h-[920px] sm:rounded-[28px] sm:border sm:border-[var(--line-strong)] sm:shadow-2xl">
+          <Inner />
         </div>
-        <div className="text-[11px] tracking-widest text-muted">DIVASYA · Live</div>
       </div>
     </AppProvider>
   );
