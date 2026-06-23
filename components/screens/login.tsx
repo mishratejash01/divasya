@@ -2,49 +2,28 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { supabaseBrowser } from "@/lib/supabase";
-import { logEvent } from "@/lib/chat";
+import { ShieldAlert } from "lucide-react";
 import { useApp } from "../app-context";
 
 export function LoginScreen() {
-  const { signIn } = useApp();
-  const [busy, setBusy] = useState<"google" | "anon" | null>(null);
+  const { signInGoogle, denied } = useApp();
+  const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
-  async function anon() {
-    setBusy("anon");
-    try { await signIn(); } catch { setBusy(null); setNote("Couldn't start session, please retry."); }
-  }
-
   async function google() {
-    setBusy("google");
+    setBusy(true);
     setNote(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
-        headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string },
-      });
-      const settings = await res.json().catch(() => ({}));
-      if (!settings?.external?.google) {
-        logEvent("login_google_unavailable");
-        setNote("Google sign-in is being set up — starting your session…");
-        setTimeout(anon, 800);
-        return;
-      }
-      const { error } = await supabaseBrowser().auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: window.location.origin, queryParams: { prompt: "select_account" } },
-      });
-      if (error) throw error;
-      logEvent("login_google_start");
+      await signInGoogle();   // redirects to Google
     } catch {
-      setNote("Google sign-in unavailable — starting your session…");
-      setTimeout(anon, 800);
+      setBusy(false);
+      setNote("Couldn't start Google sign-in. Please try again.");
     }
   }
 
   return (
     <div className="relative flex h-full flex-col items-center justify-between overflow-hidden px-7 pb-10 pt-24"
-      style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(200,119,46,0.12), transparent 60%), linear-gradient(180deg, #160f0a, #0b0807)" }}>
+      style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(189,122,55,0.12), transparent 60%), linear-gradient(180deg, #140e0a, #0b0807)" }}>
       <div className="animate-spinSlow pointer-events-none absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full opacity-[0.06]"
         style={{ background: "conic-gradient(from 0deg, var(--gold), transparent, var(--saffron), transparent, var(--gold))" }} />
 
@@ -58,16 +37,25 @@ export function LoginScreen() {
       </div>
 
       <div className="w-full">
-        <button onClick={google} disabled={!!busy}
+        {denied && (
+          <div className="mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-left"
+            style={{ background: "rgba(177,106,92,0.10)", border: "1px solid rgba(177,106,92,0.3)" }}>
+            <ShieldAlert size={18} className="mt-0.5 shrink-0 text-[var(--avoid)]" />
+            <div>
+              <div className="text-[13px] font-medium text-ink">Access is invite-only</div>
+              <div className="text-[12px] leading-snug text-muted">This Google account isn’t on the approved list. Please sign in with an authorised email, or contact the admin for access.</div>
+            </div>
+          </div>
+        )}
+
+        <button onClick={google} disabled={busy}
           className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white py-3.5 text-[15px] font-medium text-[#1f1f1f] disabled:opacity-60">
-          <GoogleMark /> {busy === "google" ? "Connecting…" : "Continue with Google"}
+          <GoogleMark /> {busy ? "Connecting…" : "Continue with Google"}
         </button>
-        <button onClick={anon} disabled={!!busy} className="mt-3 w-full rounded-2xl py-3 text-[14px] btn-ghost disabled:opacity-60">
-          {busy === "anon" ? "Starting…" : "Continue without sign-in"}
-        </button>
-        {note && <p className="mt-3 text-center text-[12px] text-muted">{note}</p>}
+
+        {note && <p className="mt-3 text-center text-[12px] text-[var(--avoid)]">{note}</p>}
         <p className="mt-5 text-center text-[11px] leading-relaxed text-muted">
-          By continuing you agree to our Terms & Privacy.<br />Your birth details stay private and secure.
+          Sign-in is by Google only, for approved members.<br />Your birth details stay private and secure.
         </p>
       </div>
     </div>

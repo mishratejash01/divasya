@@ -7,10 +7,12 @@ export async function getUser() {
   return data.user;
 }
 
-export async function signInAnon() {
-  const { data, error } = await supabaseBrowser().auth.signInAnonymously();
+export async function signInGoogle() {
+  const { error } = await supabaseBrowser().auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin, queryParams: { prompt: "select_account" } },
+  });
   if (error) throw error;
-  return data.user;
 }
 
 export async function signOut() {

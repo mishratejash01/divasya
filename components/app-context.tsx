@@ -23,7 +23,8 @@ type Ctx = {
   profileLoaded: boolean;
   profile: Profile | null;
   needsOnboarding: boolean;
-  signIn: () => Promise<void>;
+  denied: boolean;
+  signInGoogle: () => Promise<void>;
   completeOnboarding: (fields: Partial<Profile>) => Promise<void>;
   logout: () => Promise<void>;
   // nav
@@ -60,12 +61,21 @@ export const useApp = () => {
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const yesterdayStr = () => new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
+// Resolve to a fallback if a promise hangs — nothing may block the boot forever.
+function withTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<UserState>(EMPTY_STATE);
+  const [denied, setDenied] = useState(false);
 
   const [screen, setScreen] = useState<ScreenState>({ name: "home" });
   const [history, setHistory] = useState<ScreenState[]>([]);
@@ -73,24 +83,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const statsRef = useRef<UserState>(EMPTY_STATE);
   const userRef = useRef<User | null>(null);
+  const profileLoadedRef = useRef(false);
   const flushT = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const markProfileLoaded = useCallback((v: boolean) => {
+    profileLoadedRef.current = v;
+    setProfileLoaded(v);
+  }, []);
+
   const loadUserData = useCallback(async (u: User) => {
-    setProfileLoaded(false);
+    markProfileLoaded(false);
     try {
-      let p = await db.getProfile(u.id);
-      if (!p) p = await db.saveProfile(u.id, {});
-      let st = await db.getState(u.id);
+      let p = await withTimeout(db.getProfile(u.id), 6000, null);
+      if (!p) p = await withTimeout(db.saveProfile(u.id, {}), 6000, null);
+      let st = await withTimeout(db.getState(u.id), 6000, { ...EMPTY_STATE });
       if (st.last_japa !== todayStr()) st = { ...st, japa_today: 0 };
       statsRef.current = st;
       setProfile(p);
       setStats(st);
     } catch (e) {
-      // Never strand the user on the splash: fall through to onboarding/app
-      // with whatever we have. A failed load shouldn't be a dead end.
+      // Never strand the user on the splash — fall through with what we have.
       console.error("loadUserData failed", e);
     } finally {
-      setProfileLoaded(true);
+      markProfileLoaded(true);
+    }
+  }, [markProfileLoaded]);
+
+  // Is the signed-in user's email on the backend allow-list? Fail CLOSED.
+  const checkAllowed = useCallback(async (): Promise<boolean> => {
+    try {
+      const result = await withTimeout<boolean | null>(
+        supabaseBrowser()
+          .rpc("is_email_allowed")
+          .then((r) => (r.error ? (console.error("allow-check error", r.error), null) : (r.data as boolean))),
+        6000,
+        null
+      );
+      return result === true;
+    } catch (e) {
+      console.error("allow-check failed", e);
+      return false;
     }
   }, []);
 
@@ -100,35 +132,64 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       sb = supabaseBrowser();
     } catch (e) {
-      // Misconfigured client (e.g. missing public env at build time):
-      // don't hang on the splash — show the login screen.
       console.error("supabase init failed", e);
       setLoading(false);
       return;
     }
 
-    // Hard safety net: the splash must never live longer than this.
-    const failsafe = setTimeout(() => { if (active) setLoading(false); }, 8000);
+    // The splash must NEVER outlive this, no matter what hangs.
+    const watchdog = setTimeout(() => {
+      if (active) { setLoading(false); markProfileLoaded(true); }
+    }, 9000);
 
-    sb.auth.getSession()
-      .then(async ({ data }) => {
-        if (!active) return;
-        const u = data.session?.user ?? null;
-        userRef.current = u;
-        setUser(u);
-        if (u) await loadUserData(u);
-      })
-      .catch((e) => { console.error("getSession failed", e); })
-      .finally(() => { if (active) { clearTimeout(failsafe); setLoading(false); } });
+    const enter = async (u: User | null) => {
+      if (!active) return;
+      if (!u) {
+        userRef.current = null; setUser(null);
+        setProfile(null); markProfileLoaded(false);
+        setLoading(false);
+        return;
+      }
+      // already fully in for this user — don't reload on token refresh etc.
+      if (userRef.current?.id === u.id && profileLoadedRef.current) { setLoading(false); return; }
 
-    const { data: sub } = sb.auth.onAuthStateChange(async (_e, session) => {
-      const u = session?.user ?? null;
-      userRef.current = u;
-      setUser(u);
-      if (u) { await loadUserData(u); } else { setProfile(null); setProfileLoaded(false); }
+      // Hard gate: only allow-listed Google emails get in.
+      const allowed = await checkAllowed();
+      if (!active) return;
+      if (!allowed) {
+        setDenied(true);
+        userRef.current = null; setUser(null);
+        setProfile(null); markProfileLoaded(false);
+        setLoading(false);
+        db.signOut().catch(() => {});
+        logEvent("login_denied");
+        return;
+      }
+
+      setDenied(false);
+      userRef.current = u; setUser(u);
+      await loadUserData(u);
+      if (active) setLoading(false);
+    };
+
+    withTimeout(
+      sb.auth.getSession(),
+      6000,
+      { data: { session: null }, error: null } as Awaited<ReturnType<typeof sb.auth.getSession>>
+    )
+      .then(({ data }) => enter(data.session?.user ?? null))
+      .catch((e) => { console.error("getSession failed", e); if (active) setLoading(false); })
+      .finally(() => { if (active) clearTimeout(watchdog); });
+
+    const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return;            // handled by getSession above
+      if (event === "SIGNED_IN") { setLoading(true); enter(session?.user ?? null); }
+      else if (event === "SIGNED_OUT") { enter(null); }
+      // TOKEN_REFRESHED / USER_UPDATED: ignore — don't re-check or reload.
     });
-    return () => { active = false; clearTimeout(failsafe); sub.subscription.unsubscribe(); };
-  }, [loadUserData]);
+
+    return () => { active = false; clearTimeout(watchdog); sub.subscription.unsubscribe(); };
+  }, [loadUserData, checkAllowed, markProfileLoaded]);
 
   const scheduleFlush = useCallback(() => {
     if (!userRef.current) return;
@@ -195,11 +256,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (userRef.current) db.saveProfile(userRef.current.id, { deity_id: id });
   }, []);
 
-  const signIn = useCallback(async () => {
-    const u = await db.signInAnon();
-    if (u) { userRef.current = u; setUser(u); await loadUserData(u); }
-    logEvent("login_anon");
-  }, [loadUserData]);
+  const signInGoogle = useCallback(async () => {
+    setDenied(false);
+    await db.signInGoogle();   // full-page redirect to Google; SIGNED_IN handled on return
+    logEvent("login_google_start");
+  }, []);
 
   const completeOnboarding = useCallback(async (fields: Partial<Profile>) => {
     if (!userRef.current) return;
@@ -219,8 +280,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await db.signOut();
-    setUser(null); userRef.current = null; setProfile(null); setProfileLoaded(false);
-  }, []);
+    setUser(null); userRef.current = null; setProfile(null); markProfileLoaded(false); setDenied(false);
+  }, [markProfileLoaded]);
 
   const sendPush = useCallback((p: PushPayload) => {
     setPush(p);
@@ -233,8 +294,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppCtx.Provider
       value={{
-        user, loading, profileLoaded, profile, needsOnboarding,
-        signIn, completeOnboarding, logout,
+        user, loading, profileLoaded, profile, needsOnboarding, denied,
+        signInGoogle, completeOnboarding, logout,
         screen, go, back,
         deityId, setDeity,
         japaToday: stats.japa_today, japaLifetime: stats.japa_lifetime, streak: stats.streak,
