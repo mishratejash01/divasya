@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
+import { SideNav } from "./side-nav";
 import { PushToast } from "./push-toast";
 
 import { HomeScreen } from "./screens/home";
@@ -45,30 +46,49 @@ function Screen() {
 function RoutedApp() {
   const { screen } = useApp();
   return (
-    <>
-      <div className="absolute inset-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={screen.name + JSON.stringify(screen.params || {})}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute inset-0"
-          >
-            <Screen />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      {SHOW_NAV.includes(screen.name) && <BottomNav />}
-    </>
+    <div className="flex h-full w-full">
+      <SideNav />
+      <main className="relative h-full min-w-0 flex-1 overflow-hidden">
+        <div className="relative mx-auto h-full w-full max-w-[680px] overflow-hidden border-[var(--line)] lg:border-x">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={screen.name + JSON.stringify(screen.params || {})}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0"
+            >
+              <Screen />
+            </motion.div>
+          </AnimatePresence>
+          {SHOW_NAV.includes(screen.name) && <BottomNav />}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/** Center-stage wrapper for pre-app screens (splash / login / onboarding). */
+function Stage({ children, scroll }: { children: React.ReactNode; scroll?: boolean }) {
+  return (
+    <div className={`mx-auto h-full w-full max-w-[460px] ${scroll ? "overflow-y-auto no-scrollbar" : "overflow-hidden"}`}>
+      {children}
+    </div>
   );
 }
 
 function Splash() {
   return (
-    <div className="grid h-full place-items-center" style={{ background: "linear-gradient(180deg,#140e0a,#0b0807)" }}>
-      <div className="animate-pulse text-4xl">🕉</div>
+    <div className="grid h-full place-items-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: [0.5, 1, 0.5], scale: 1 }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+        className="font-display text-5xl text-[var(--gold-soft)]"
+      >
+        ॐ
+      </motion.div>
     </div>
   );
 }
@@ -76,9 +96,9 @@ function Splash() {
 function Gate() {
   const { loading, user, profileLoaded, needsOnboarding } = useApp();
   if (loading) return <Splash />;
-  if (!user) return <LoginScreen />;
+  if (!user) return <Stage><LoginScreen /></Stage>;
   if (!profileLoaded) return <Splash />;
-  if (needsOnboarding) return <OnboardingScreen />;
+  if (needsOnboarding) return <Stage scroll><OnboardingScreen /></Stage>;
   return <RoutedApp />;
 }
 
@@ -94,11 +114,8 @@ function Inner() {
 export function AppShell() {
   return (
     <AppProvider>
-      <div className="flex w-full justify-center sm:min-h-[100dvh] sm:items-center">
-        {/* full-screen on mobile · centered app surface on desktop — responsive, no device chrome */}
-        <div className="relative h-[100dvh] w-full max-w-[620px] overflow-hidden bg-[var(--bg-0)] sm:h-[94dvh] sm:max-h-[920px] sm:rounded-[28px] sm:border sm:border-[var(--line-strong)] sm:shadow-2xl">
-          <Inner />
-        </div>
+      <div className="relative h-[100dvh] w-full overflow-hidden">
+        <Inner />
       </div>
     </AppProvider>
   );

@@ -1,0 +1,112 @@
+"use client";
+
+import {
+  Home, Sparkles, Flame, MessagesSquare, Landmark, CircleDot,
+  CalendarDays, Flower2, Tv, Compass, LayoutGrid,
+} from "lucide-react";
+import { useApp, ScreenName } from "./app-context";
+import { Avatar, cx } from "./ui";
+import { rashiLabel } from "@/lib/astro";
+
+type NavItem = {
+  id: string;
+  label: string;
+  icon: typeof Home;
+  to: ScreenName;
+  params?: Record<string, unknown>;
+  match: ScreenName[];
+};
+
+const GROUPS: { title: string; items: NavItem[] }[] = [
+  {
+    title: "Daily",
+    items: [
+      { id: "home", label: "Home", icon: Home, to: "home", match: ["home"] },
+      { id: "panchang", label: "Panchang", icon: CalendarDays, to: "panchang", match: ["panchang", "festivals"] },
+      { id: "mala", label: "Mala Jaap", icon: CircleDot, to: "mala", match: ["mala"] },
+    ],
+  },
+  {
+    title: "Guidance",
+    items: [
+      { id: "ai", label: "AI Jyotishi", icon: Sparkles, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
+      { id: "deity", label: "Talk to Devta", icon: Flame, to: "ai", params: { mode: "deity" }, match: [] },
+      { id: "consult", label: "Consult", icon: MessagesSquare, to: "consult", match: ["consult", "consultChat"] },
+    ],
+  },
+  {
+    title: "Devotion",
+    items: [
+      { id: "mandir", label: "My Mandir", icon: Landmark, to: "mandir", match: ["mandir"] },
+      { id: "puja", label: "Online Puja", icon: Flower2, to: "puja", match: ["puja"] },
+      { id: "temple", label: "Live Darshan", icon: Tv, to: "temple", match: ["temple"] },
+      { id: "vastu", label: "Vastu Compass", icon: Compass, to: "vastu", match: ["vastu", "naamkaran", "library", "sandesh"] },
+    ],
+  },
+];
+
+export function SideNav() {
+  const { screen, go, haptic, profile, logout } = useApp();
+  const name = profile?.name || "Devotee";
+  const rashi = rashiLabel(profile || { rashi: null, dob: null });
+
+  return (
+    <aside className="hidden h-full w-[256px] shrink-0 flex-col border-r border-[var(--line)] px-4 py-6 lg:flex"
+      style={{ background: "linear-gradient(180deg, rgba(237,229,215,0.018), transparent 30%)" }}>
+      {/* brand */}
+      <button onClick={() => go("home")} className="mb-7 flex items-center gap-3 px-2 text-left">
+        <span className="grid h-10 w-10 place-items-center rounded-2xl font-display text-[20px] text-[var(--gold-soft)]"
+          style={{ background: "rgba(196,168,104,0.08)", border: "1px solid var(--line-gold)" }}>ॐ</span>
+        <span>
+          <span className="block font-display text-[18px] tracking-[0.22em] text-ink">DIVASYA</span>
+          <span className="block font-deva text-[10.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
+        </span>
+      </button>
+
+      {/* groups */}
+      <nav className="flex-1 space-y-5 overflow-y-auto no-scrollbar">
+        {GROUPS.map((grp) => (
+          <div key={grp.title}>
+            <div className="mb-1.5 px-3 text-[10px] uppercase tracking-[0.2em] text-[var(--muted-2)]">{grp.title}</div>
+            <div className="space-y-0.5">
+              {grp.items.map((it) => {
+                const Icon = it.icon;
+                const active = it.match.includes(screen.name);
+                return (
+                  <button
+                    key={it.id}
+                    onClick={() => { haptic(6); go(it.to, it.params); }}
+                    className={cx(
+                      "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                      active ? "text-ink" : "text-muted hover:text-ink"
+                    )}
+                    style={active ? { background: "rgba(196,168,104,0.08)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
+                  >
+                    <Icon size={18} strokeWidth={active ? 2.1 : 1.7}
+                      className={cx("shrink-0 transition-colors", active ? "text-[var(--saffron-soft)]" : "text-[var(--muted)] group-hover:text-[var(--saffron-soft)]")} />
+                    <span className="text-[13.5px]">{it.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* profile */}
+      <button onClick={() => go("menu")}
+        className="mt-4 flex items-center gap-3 rounded-2xl p-2.5 text-left transition-colors hover:bg-[rgba(237,229,215,0.03)]"
+        style={{ border: "1px solid var(--line)" }}>
+        <Avatar name={name} size={38} tint="#bd7a37" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-display text-[14px] text-ink">{name}</div>
+          <div className="truncate text-[11px] text-muted">{rashi}</div>
+        </div>
+        <LayoutGrid size={15} className="shrink-0 text-muted" />
+      </button>
+      <button onClick={logout} className="mt-1 px-3 py-1 text-left text-[11px] text-[var(--muted-2)] transition-colors hover:text-[var(--avoid)]">
+        Sign out
+      </button>
+    </aside>
+  );
+}

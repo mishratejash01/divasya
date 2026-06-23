@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Flower2, Check, ShieldCheck, Video, Radio, Play, MapPin } from "lucide-react";
+import {
+  ChevronLeft, Flower2, Check, ShieldCheck, Video, Radio, Play, MapPin,
+  Leaf, Flame, Citrus, Droplets, Utensils, Landmark, Eye, Shell,
+} from "lucide-react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
 import { PUJAS, CHADHAVA, TEMPLES, templeById } from "@/lib/demo";
@@ -10,7 +13,21 @@ import { logEvent } from "@/lib/chat";
 import * as db from "@/lib/db";
 import { bell, conch } from "@/lib/sound";
 
-type Item = { kind: "puja" | "chadhava"; name: string; price: number; benefit?: string; emoji?: string };
+type Item = { kind: "puja" | "chadhava"; id?: string; name: string; price: number; benefit?: string };
+
+const CHADHAVA_ICON: Record<string, typeof Leaf> = {
+  c1: Leaf, c2: Flame, c3: Citrus, c4: Flower2, c5: Droplets, c6: Utensils,
+};
+
+function ItemMark({ item, size = 48 }: { item: Item; size?: number }) {
+  const Icon = item.id ? CHADHAVA_ICON[item.id] : undefined;
+  return (
+    <div className="grid shrink-0 place-items-center rounded-xl font-display text-[var(--gold-soft)]"
+      style={{ width: size, height: size, background: "rgba(196,168,104,0.07)", border: "1px solid var(--line-gold)", fontSize: Math.round(size * 0.44) }}>
+      {Icon ? <Icon size={Math.round(size * 0.42)} className="text-[var(--saffron-soft)]" strokeWidth={1.6} /> : "ॐ"}
+    </div>
+  );
+}
 
 /* ---------------- Puja + Chadhava ---------------- */
 export function PujaScreen() {
@@ -58,12 +75,12 @@ export function PujaScreen() {
           <div className="space-y-2.5">
             {PUJAS.map((p) => (
               <div key={p.id} className="flex items-center gap-3 rounded-2xl surface p-3.5">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-2xl" style={{ background: "rgba(200,119,46,0.12)" }}>🕉</div>
+                <ItemMark item={{ kind: "puja", name: p.name, price: p.price }} />
                 <div className="flex-1">
                   <div className="text-[14px] font-medium text-ink">{p.name}</div>
                   <div className="text-[11.5px] text-muted">{p.benefit}</div>
                 </div>
-                <button onClick={() => open({ kind: "puja", name: p.name, price: p.price, benefit: p.benefit })}
+                <button onClick={() => open({ kind: "puja", id: p.id, name: p.name, price: p.price, benefit: p.benefit })}
                   className="rounded-full px-3.5 py-2 text-[12px] btn-saffron">₹{p.price}</button>
               </div>
             ))}
@@ -71,9 +88,9 @@ export function PujaScreen() {
         ) : (
           <div className="grid grid-cols-3 gap-2.5">
             {CHADHAVA.map((c) => (
-              <button key={c.id} onClick={() => open({ kind: "chadhava", name: c.name, price: c.price, emoji: c.emoji })}
-                className="flex flex-col items-center gap-1.5 rounded-2xl surface px-1 py-4">
-                <span className="text-3xl">{c.emoji}</span>
+              <button key={c.id} onClick={() => open({ kind: "chadhava", id: c.id, name: c.name, price: c.price })}
+                className="flex flex-col items-center gap-2 rounded-2xl surface px-1 py-4">
+                <ItemMark item={{ kind: "chadhava", id: c.id, name: c.name, price: c.price }} size={42} />
                 <span className="text-center text-[11px] leading-tight text-ink">{c.name}</span>
                 <span className="text-[12px] text-gold">₹{c.price}</span>
               </button>
@@ -96,7 +113,7 @@ export function PujaScreen() {
               {step === "form" && (
                 <>
                   <div className="flex items-center gap-3">
-                    <div className="grid h-12 w-12 place-items-center rounded-xl text-2xl" style={{ background: "rgba(200,119,46,0.12)" }}>{sel.emoji || "🕉"}</div>
+                    <ItemMark item={sel} />
                     <div className="flex-1"><div className="text-[15px] font-medium text-ink">{sel.name}</div>{sel.benefit && <div className="text-[11.5px] text-muted">{sel.benefit}</div>}</div>
                     <div className="font-display text-xl text-gold">₹{sel.price}</div>
                   </div>
@@ -131,7 +148,7 @@ export function PujaScreen() {
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="grid h-16 w-16 place-items-center rounded-full" style={{ background: "rgba(110,158,118,0.16)" }}>
                     <Check size={34} className="text-[var(--good)]" />
                   </motion.div>
-                  <div className="mt-3 font-display text-xl text-ink">Booking Confirmed 🙏</div>
+                  <div className="mt-3 font-display text-xl text-ink">Booking Confirmed</div>
                   <div className="mt-1 text-[13px] leading-relaxed text-muted">
                     {sel.name} will be performed in the name of <span className="text-ink">{name}</span> ({gotra} gotra) at {templeById(templeId).name}.
                   </div>
@@ -178,14 +195,14 @@ export function TempleScreen() {
             <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${t.youtubeId}?autoplay=1&mute=1`} allow="autoplay; encrypted-media" />
           ) : (
             <div className="relative grid h-full w-full place-items-center">
-              <div className="animate-pulseGlow text-7xl">🛕</div>
+              <Landmark size={62} strokeWidth={1.1} className="animate-pulseGlow text-[var(--gold-soft)]" />
               <div className="absolute inset-0 shimmer opacity-30" />
             </div>
           )}
           <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white">
-            <Radio size={12} className="animate-pulse text-[#ff5a5a]" /> LIVE
+            <Radio size={12} className="animate-pulse text-[#c2706a]" /> LIVE
           </div>
-          <div className="absolute right-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] text-white">👁 {(12480).toLocaleString("en-IN")} watching</div>
+          <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] text-white"><Eye size={12} /> {(12480).toLocaleString("en-IN")} watching</div>
           <button onClick={() => { setAarti((v) => !v); if (!aarti) { bell(540, 1.6, 0.18); } }}
             className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5 text-[12px] text-white">
             <Play size={13} /> {aarti ? "Aarti playing" : "Play Aarti"}
@@ -199,7 +216,7 @@ export function TempleScreen() {
           <button onClick={() => go("puja")} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] btn-saffron">
             <Flower2 size={16} /> Book Puja / Chadhava here
           </button>
-          <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 w-full rounded-2xl py-3 text-[13px] btn-ghost">🐚 Offer a virtual Shankhnaad</button>
+          <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[13px] btn-ghost"><Shell size={15} /> Offer a virtual Shankhnaad</button>
         </div>
       </div>
     );
@@ -214,9 +231,9 @@ export function TempleScreen() {
       <div className="space-y-2.5 px-5">
         {TEMPLES.map((t) => (
           <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
-            <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-xl text-3xl" style={{ background: `linear-gradient(160deg, ${t.grad[0]}, ${t.grad[1]})` }}>
-              🛕
-              <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full bg-black/55 px-1.5 py-0.5 text-[8px] font-bold text-white"><Radio size={8} className="text-[#ff5a5a]" />LIVE</span>
+            <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: `linear-gradient(160deg, ${t.grad[0]}, ${t.grad[1]})`, border: "1px solid var(--line)" }}>
+              <Landmark size={26} strokeWidth={1.4} className="text-[var(--gold-soft)]" />
+              <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full bg-black/55 px-1.5 py-0.5 text-[8px] font-bold text-white"><Radio size={8} className="text-[#c2706a]" />LIVE</span>
             </div>
             <div className="flex-1">
               <div className="text-[14px] font-medium text-ink">{t.name}</div>

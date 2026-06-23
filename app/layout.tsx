@@ -28,7 +28,9 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${marcellus.variable} ${tiro.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <div id="app-root">{children}</div>
+      </body>
     </html>
   );
 }

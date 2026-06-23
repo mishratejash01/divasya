@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { cx, DeityGlyph } from "../ui";
 import { DEITIES } from "@/lib/demo";
 import { sunSign } from "@/lib/astro";
 
@@ -41,7 +41,7 @@ export function OnboardingScreen() {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-5"
         style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(200,119,46,0.12), transparent 60%), linear-gradient(180deg,#160f0a,#0b0807)" }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }} className="text-5xl">🕉</motion.div>
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="font-display text-5xl text-[var(--gold-soft)]">ॐ</motion.div>
         <div className="text-center">
           <div className="font-display text-lg text-ink">Building your cosmic chart…</div>
           <div className="mt-1 text-[12.5px] text-muted">Aligning the planets for {name.split(" ")[0]}</div>
@@ -54,8 +54,9 @@ export function OnboardingScreen() {
     <div className="h-full overflow-y-auto no-scrollbar px-6 pb-8 pt-16"
       style={{ background: "radial-gradient(120% 70% at 50% 0%, rgba(200,119,46,0.10), transparent 55%), linear-gradient(180deg,#140e0a,#0b0807)" }}>
       <div className="text-center">
-        <div className="text-3xl">🪔</div>
-        <h1 className="mt-2 font-display text-2xl text-ink">Create your spiritual profile</h1>
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl font-display text-[26px] text-[var(--gold-soft)]"
+          style={{ background: "radial-gradient(circle at 38% 30%, rgba(196,168,104,0.14), var(--surface-2) 72%)", border: "1px solid var(--line-gold)" }}>ॐ</div>
+        <h1 className="mt-3 font-display text-2xl text-ink">Create your spiritual profile</h1>
         <p className="mt-1 text-[12.5px] leading-relaxed text-muted">Your birth details personalise your Panchang, Kundli, horoscope & the AI Jyotishi. They stay private.</p>
       </div>
 
@@ -99,9 +100,10 @@ export function OnboardingScreen() {
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 no-scrollbar">
             {DEITIES.map((d) => (
               <button key={d.id} onClick={() => setDeity(d.id)}
-                className={cx("flex shrink-0 flex-col items-center gap-1 rounded-2xl px-3 py-2.5", d.id === deity ? "btn-saffron" : "surface")}>
-                <span className="text-xl">{d.symbol}</span>
-                <span className={cx("text-[10.5px]", d.id === deity ? "" : "text-muted")}>{d.name.split(" ")[0]}</span>
+                className={cx("flex shrink-0 flex-col items-center gap-1.5 rounded-2xl px-3 py-2.5 transition-colors", d.id === deity ? "ring-gold" : "surface")}
+                style={d.id === deity ? { background: "rgba(196,168,104,0.08)" } : undefined}>
+                <DeityGlyph deity={d} size={30} />
+                <span className={cx("text-[10.5px]", d.id === deity ? "text-ink" : "text-muted")}>{d.name.split(" ")[0]}</span>
               </button>
             ))}
           </div>

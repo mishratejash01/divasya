@@ -1,31 +1,51 @@
 @import "tailwindcss";
 
 :root {
-  /* Restrained, earthy Sanatani palette — muted, studio-designed, not "AI neon" */
-  --saffron: #c8772e;       /* burnt saffron — primary accent, used sparingly */
-  --saffron-deep: #a85f22;
-  --saffron-soft: #d98a3d;
-  --gold: #b89150;          /* antique/temple gold — detail accent only */
-  --gold-soft: #cda86a;
-  --maroon: #5c1f1f;        /* deep temple maroon */
-  --bg-0: #0c0b09;          /* near-black, warm */
-  --bg-1: #131210;          /* warm charcoal */
-  --surface: #1a1714;       /* card */
-  --surface-2: #211d18;     /* raised card */
-  --ink: #ece6db;           /* warm off-white text */
-  --muted: #9a938a;         /* warm grey text */
-  --line: rgba(236, 230, 219, 0.08);
-  --line-strong: rgba(236, 230, 219, 0.14);
-  --good: #6e9e76;          /* muted sage — shubh */
-  --avoid: #b4564b;         /* muted clay — avoid */
+  /* ───────────────────────────────────────────────────────────────
+     DIVASYA — obsidian + antique-gold. Studio-muted, never neon.
+     A single warm accent (saffron) + a metallic detail accent (gold).
+     ─────────────────────────────────────────────────────────────── */
+  --saffron: #bd7a37;        /* burnt saffron — primary accent, used sparingly */
+  --saffron-deep: #9c5f26;
+  --saffron-soft: #cf924a;
+  --gold: #c4a868;           /* antique temple gold — fine details / metal */
+  --gold-soft: #ddc28c;
+  --gold-deep: #8f7740;
+  --maroon: #4f1d1d;         /* deep temple maroon */
+
+  --bg-0: #0a0908;           /* obsidian, warm */
+  --bg-1: #100e0b;           /* warm charcoal */
+  --surface: #161310;        /* card */
+  --surface-2: #1d1915;      /* raised card */
+  --surface-3: #241f19;      /* hover / active */
+
+  --ink: #ede5d7;            /* warm ivory text */
+  --ink-dim: #c4baa9;
+  --muted: #938a7d;          /* warm grey text */
+  --muted-2: #6f675c;
+
+  --line: rgba(237, 229, 215, 0.07);
+  --line-strong: rgba(237, 229, 215, 0.13);
+  --line-gold: rgba(196, 168, 104, 0.22);
+
+  --good: #7a9e7e;           /* muted sage — shubh */
+  --avoid: #b16a5c;          /* muted clay — avoid */
+
+  --radius: 18px;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 0 rgba(237, 229, 215, 0.03) inset, 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 24px 60px -24px rgba(0, 0, 0, 0.75);
 }
 
 @theme inline {
   --color-saffron: var(--saffron);
   --color-saffron-deep: var(--saffron-deep);
+  --color-saffron-soft: var(--saffron-soft);
   --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
   --color-maroon: var(--maroon);
   --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
   --color-muted: var(--muted);
   --color-good: var(--good);
   --color-avoid: var(--avoid);
@@ -34,56 +54,74 @@
   --font-deva: var(--font-tiro);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { height: 100%; }
 
 body {
-  /* one faint warm vignette — no rainbow, no neon */
+  /* one faint warm vignette over a deep obsidian gradient — no rainbow */
   background:
-    radial-gradient(1100px 600px at 50% -20%, rgba(200, 119, 46, 0.06), transparent 60%),
+    radial-gradient(1200px 700px at 50% -25%, rgba(189, 122, 55, 0.07), transparent 62%),
+    radial-gradient(900px 600px at 92% 8%, rgba(196, 168, 104, 0.045), transparent 60%),
     linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body), system-ui, sans-serif;
+  letter-spacing: 0.005em;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-.font-display { font-family: var(--font-display), serif; }
+/* subtle film grain for premium depth — fixed, non-interactive */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection { background: rgba(196, 168, 104, 0.28); color: var(--ink); }
+
+.font-display { font-family: var(--font-display), serif; letter-spacing: 0.01em; }
 .font-deva { font-family: var(--font-deva), serif; }
 
-/* ---------- surfaces (solid, hairline-bordered, minimal) ---------- */
+/* ---------- surfaces (solid, hairline, faint top highlight) ---------- */
 .surface {
-  background: var(--surface);
+  background:
+    linear-gradient(180deg, rgba(237, 229, 215, 0.022), transparent 40%),
+    var(--surface);
   border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
 }
 .surface-2 {
-  background: var(--surface-2);
+  background:
+    linear-gradient(180deg, rgba(237, 229, 215, 0.03), transparent 42%),
+    var(--surface-2);
   border: 1px solid var(--line);
 }
 .hairline { border: 1px solid var(--line); }
 .divider { border-top: 1px solid var(--line); }
+.ring-gold { border: 1px solid var(--line-gold); }
 
 /* a single tasteful accent surface for hero cards — subtle, not glowing */
 .card-temple {
   background:
-    linear-gradient(165deg, rgba(200, 119, 46, 0.10), rgba(26, 23, 20, 0) 55%),
+    linear-gradient(165deg, rgba(189, 122, 55, 0.09), rgba(22, 19, 16, 0) 55%),
+    linear-gradient(180deg, rgba(237, 229, 215, 0.025), transparent 36%),
     var(--surface);
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--line-gold);
+  box-shadow: var(--shadow-card);
 }
 
-/* ---------- text / accents (use VERY sparingly — wordmark only) ---------- */
-.text-gold {
-  color: var(--gold);
-}
+/* ---------- text / accents (use sparingly — wordmark only) ---------- */
+.text-gold { color: var(--gold); }
 .wordmark {
-  background: linear-gradient(100deg, var(--gold-soft), var(--saffron));
+  background: linear-gradient(100deg, var(--gold-soft), var(--saffron-soft));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -91,20 +129,30 @@ body {
 
 /* ---------- buttons (solid, confident, low-key) ---------- */
 .btn-saffron {
-  background: var(--saffron);
-  color: #160d04;
+  background: linear-gradient(180deg, var(--saffron-soft), var(--saffron));
+  color: #1a0f04;
   font-weight: 600;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 6px 18px -10px rgba(189, 122, 55, 0.7);
   transition: filter 0.15s ease, transform 0.1s ease;
 }
-.btn-saffron:hover { filter: brightness(1.06); }
+.btn-saffron:hover { filter: brightness(1.05); }
 .btn-saffron:active { transform: scale(0.98); }
-.btn-ghost {
+
+.btn-gold {
   background: transparent;
+  border: 1px solid var(--line-gold);
+  color: var(--gold-soft);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-gold:hover { background: rgba(196, 168, 104, 0.07); border-color: rgba(196, 168, 104, 0.4); }
+
+.btn-ghost {
+  background: rgba(237, 229, 215, 0.015);
   border: 1px solid var(--line-strong);
   color: var(--ink);
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
-.btn-ghost:hover { background: rgba(236, 230, 219, 0.05); }
+.btn-ghost:hover { background: rgba(237, 229, 215, 0.05); border-color: var(--line-gold); }
 
 /* ---------- glow: reserved ONLY for a real flame (diya) ---------- */
 .flame-glow { box-shadow: 0 0 26px 2px rgba(255, 176, 92, 0.55); }
@@ -112,6 +160,9 @@ body {
 /* ---------- utilities ---------- */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* keep app chrome above the grain layer */
+#app-root { position: relative; z-index: 2; }
 
 @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .animate-floatY { animation: floatY 4s ease-in-out infinite; }
@@ -130,7 +181,7 @@ body {
   100% { background-position: 200% 0; }
 }
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
@@ -139,3 +190,6 @@ body {
 .dot { animation: blink 1.2s infinite both; }
 .dot:nth-child(2) { animation-delay: 0.2s; }
 .dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeUp { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }

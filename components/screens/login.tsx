@@ -50,9 +50,9 @@ export function LoginScreen() {
 
       <div className="flex flex-col items-center text-center">
         <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.7 }}
-          className="grid h-20 w-20 place-items-center rounded-3xl text-4xl"
-          style={{ background: "rgba(200,119,46,0.12)", border: "1px solid rgba(184,145,80,0.3)" }}>🕉</motion.div>
-        <h1 className="mt-6 font-display text-4xl tracking-[0.22em] text-ink">DIVASYA</h1>
+          className="grid h-20 w-20 place-items-center rounded-[26px] font-display text-[40px] text-[var(--gold-soft)]"
+          style={{ background: "radial-gradient(circle at 38% 30%, rgba(196,168,104,0.16), var(--surface-2) 72%)", border: "1px solid var(--line-gold)" }}>ॐ</motion.div>
+        <h1 className="mt-6 font-display text-4xl tracking-[0.24em] text-ink">DIVASYA</h1>
         <p className="mt-2 font-deva text-[15px] text-gold">आपकी आध्यात्मिक यात्रा</p>
         <p className="mt-1 text-[13px] text-muted">Panchang · Kundli · Japa · Darshan — in one place</p>
       </div>

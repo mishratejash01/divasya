@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Play, Pause, RotateCcw, Check } from "lucide-react";
+import { ChevronLeft, Play, Pause, RotateCcw, Check, Flame } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
@@ -77,7 +77,7 @@ export function MalaScreen() {
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
         <span className="font-display text-lg text-ink">Mala Jaap</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <span className="text-[12px]">🔥</span>
+          <Flame size={13} className="text-[var(--saffron-soft)]" />
           <span className="text-[12px] text-ink">{streak}</span>
         </div>
       </div>

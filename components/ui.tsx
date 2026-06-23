@@ -54,6 +54,33 @@ export function Avatar({
   );
 }
 
+// Deity medallion — an antique-gold ॐ on a faintly deity-tinted disc.
+// Replaces emoji deity symbols everywhere for a refined, consistent look.
+export function DeityGlyph({
+  deity,
+  size = 44,
+}: {
+  deity: { color?: string };
+  size?: number;
+}) {
+  const tint = deity.color || "#c4a868";
+  return (
+    <span
+      className="grid shrink-0 place-items-center rounded-full font-display text-[var(--gold-soft)]"
+      style={{
+        width: size,
+        height: size,
+        background: `radial-gradient(circle at 38% 30%, ${tint}26, var(--surface-2) 72%)`,
+        border: "1px solid var(--line-gold)",
+        fontSize: Math.round(size * 0.46),
+        lineHeight: 1,
+      }}
+    >
+      ॐ
+    </span>
+  );
+}
+
 export function SectionLabel({
   children,
   action,

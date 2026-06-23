@@ -161,8 +161,8 @@ export const DEITIES: Deity[] = [
     name: "Shri Krishna",
     deva: "श्री कृष्ण",
     symbol: "🪈",
-    color: "#4a9be8",
-    glow: "rgba(74,155,232,0.5)",
+    color: "#5e7c93",
+    glow: "rgba(94,124,147,0.30)",
     tagline: "The playful guide of the Gita",
     suggestedMantraId: "harekrishna",
     aarti: "Aarti Kunj Bihari Ki",
@@ -174,8 +174,8 @@ export const DEITIES: Deity[] = [
     name: "Mahadev",
     deva: "महादेव",
     symbol: "🔱",
-    color: "#7c5cff",
-    glow: "rgba(124,92,255,0.5)",
+    color: "#7d728f",
+    glow: "rgba(125,114,143,0.30)",
     tagline: "The calm of the eternal",
     suggestedMantraId: "shiva",
     aarti: "Om Jai Shiv Omkara",
@@ -187,8 +187,8 @@ export const DEITIES: Deity[] = [
     name: "Hanuman Ji",
     deva: "हनुमान",
     symbol: "🪯",
-    color: "#ff7a3c",
-    glow: "rgba(255,122,60,0.55)",
+    color: "#b07a4e",
+    glow: "rgba(176,122,78,0.30)",
     tagline: "Courage, strength, devotion",
     suggestedMantraId: "hanuman",
     aarti: "Aarti Kije Hanuman Lala Ki",
@@ -200,8 +200,8 @@ export const DEITIES: Deity[] = [
     name: "Maa Durga",
     deva: "माँ दुर्गा",
     symbol: "🔆",
-    color: "#e8487a",
-    glow: "rgba(232,72,122,0.5)",
+    color: "#a45e6b",
+    glow: "rgba(164,94,107,0.30)",
     tagline: "The fierce protective mother",
     suggestedMantraId: "durga",
     aarti: "Jai Ambe Gauri",
@@ -213,8 +213,8 @@ export const DEITIES: Deity[] = [
     name: "Ganpati Bappa",
     deva: "गणपति",
     symbol: "🐘",
-    color: "#f6a623",
-    glow: "rgba(246,166,35,0.5)",
+    color: "#b8954f",
+    glow: "rgba(184,149,79,0.30)",
     tagline: "Remover of obstacles",
     suggestedMantraId: "ganesha",
     aarti: "Sukhkarta Dukhharta",
@@ -226,8 +226,8 @@ export const DEITIES: Deity[] = [
     name: "Maa Lakshmi",
     deva: "माँ लक्ष्मी",
     symbol: "🪷",
-    color: "#f6c652",
-    glow: "rgba(246,198,82,0.55)",
+    color: "#c2a868",
+    glow: "rgba(194,168,104,0.32)",
     tagline: "Abundance & grace",
     suggestedMantraId: "lakshmi",
     aarti: "Om Jai Lakshmi Mata",
@@ -318,15 +318,15 @@ export const TARGETS = [10, 27, 54, 100, 108];
 //  ASTROLOGERS (Consult directory)
 // ----------------------------------------------------------------------------
 export const ASTROLOGERS: Astrologer[] = [
-  { id: "a1", name: "Acharya Vinod Shastri", specialty: "Vedic • Marriage • Career", tags: ["Vedic", "Marriage"], exp: 18, rating: 4.9, orders: "94k", langs: "Hindi, English", rate: 22, status: "online", wait: "Free", grad: ["#ff9a3c", "#f2660a"] },
-  { id: "a2", name: "Jyotishi Meera Joshi", specialty: "Love • Relationship • Tarot", tags: ["Tarot", "Love"], exp: 12, rating: 4.8, orders: "61k", langs: "Hindi, Marathi", rate: 18, status: "online", wait: "Free", grad: ["#e8487a", "#9b2d6b"] },
-  { id: "a3", name: "Pandit Rajesh Tripathi", specialty: "Kundli • Remedies • Vastu", tags: ["Vastu", "Kundli"], exp: 25, rating: 4.9, orders: "1.2L", langs: "Hindi, English", rate: 35, status: "busy", wait: "~6 min", grad: ["#7c5cff", "#4a2bb5"] },
-  { id: "a4", name: "Dr. Ananya Iyer", specialty: "Numerology • Career", tags: ["Numerology"], exp: 9, rating: 4.7, orders: "33k", langs: "English, Tamil", rate: 15, status: "online", wait: "Free", grad: ["#46c28e", "#1f7a59"] },
-  { id: "a5", name: "Acharya Suresh Nath", specialty: "Prashna • Muhurat • Vedic", tags: ["Prashna", "Vedic"], exp: 30, rating: 5.0, orders: "1.5L", langs: "Hindi, Sanskrit", rate: 45, status: "online", wait: "Free", grad: ["#f6c652", "#d99a1a"] },
-  { id: "a6", name: "Jyotishi Kavita Rao", specialty: "Love • Family • Tarot", tags: ["Tarot", "Family"], exp: 7, rating: 4.6, orders: "21k", langs: "Hindi, Kannada", rate: 12, status: "online", wait: "Free", grad: ["#4a9be8", "#2563a8"] },
-  { id: "a7", name: "Pandit Devdutt Mishra", specialty: "KP System • Finance", tags: ["KP", "Finance"], exp: 16, rating: 4.8, orders: "72k", langs: "Hindi, English", rate: 28, status: "busy", wait: "~10 min", grad: ["#ff7a3c", "#b54218"] },
-  { id: "a8", name: "Guru Maa Saraswati", specialty: "Spiritual • Remedies", tags: ["Spiritual"], exp: 22, rating: 4.9, orders: "88k", langs: "Hindi, Bengali", rate: 30, status: "online", wait: "Free", grad: ["#c084fc", "#7c2db5"] },
-  { id: "a9", name: "Acharya Hari Om", specialty: "Vedic • Health • Career", tags: ["Vedic", "Health"], exp: 14, rating: 4.7, orders: "47k", langs: "Hindi, English", rate: 20, status: "online", wait: "Free", grad: ["#fb923c", "#ea580c"] },
+  { id: "a1", name: "Acharya Vinod Shastri", specialty: "Vedic • Marriage • Career", tags: ["Vedic", "Marriage"], exp: 18, rating: 4.9, orders: "94k", langs: "Hindi, English", rate: 22, status: "online", wait: "Free", grad: ["#bd7a37", "#8f5a26"] },
+  { id: "a2", name: "Jyotishi Meera Joshi", specialty: "Love • Relationship • Tarot", tags: ["Tarot", "Love"], exp: 12, rating: 4.8, orders: "61k", langs: "Hindi, Marathi", rate: 18, status: "online", wait: "Free", grad: ["#a45e6b", "#6e3a48"] },
+  { id: "a3", name: "Pandit Rajesh Tripathi", specialty: "Kundli • Remedies • Vastu", tags: ["Vastu", "Kundli"], exp: 25, rating: 4.9, orders: "1.2L", langs: "Hindi, English", rate: 35, status: "busy", wait: "~6 min", grad: ["#7d728f", "#4f4760"] },
+  { id: "a4", name: "Dr. Ananya Iyer", specialty: "Numerology • Career", tags: ["Numerology"], exp: 9, rating: 4.7, orders: "33k", langs: "English, Tamil", rate: 15, status: "online", wait: "Free", grad: ["#7a9e7e", "#4a6b50"] },
+  { id: "a5", name: "Acharya Suresh Nath", specialty: "Prashna • Muhurat • Vedic", tags: ["Prashna", "Vedic"], exp: 30, rating: 5.0, orders: "1.5L", langs: "Hindi, Sanskrit", rate: 45, status: "online", wait: "Free", grad: ["#c2a868", "#8f7740"] },
+  { id: "a6", name: "Jyotishi Kavita Rao", specialty: "Love • Family • Tarot", tags: ["Tarot", "Family"], exp: 7, rating: 4.6, orders: "21k", langs: "Hindi, Kannada", rate: 12, status: "online", wait: "Free", grad: ["#5e7c93", "#3c5263"] },
+  { id: "a7", name: "Pandit Devdutt Mishra", specialty: "KP System • Finance", tags: ["KP", "Finance"], exp: 16, rating: 4.8, orders: "72k", langs: "Hindi, English", rate: 28, status: "busy", wait: "~10 min", grad: ["#b07a4e", "#7a4a2c"] },
+  { id: "a8", name: "Guru Maa Saraswati", specialty: "Spiritual • Remedies", tags: ["Spiritual"], exp: 22, rating: 4.9, orders: "88k", langs: "Hindi, Bengali", rate: 30, status: "online", wait: "Free", grad: ["#8f7e9e", "#5a4a68"] },
+  { id: "a9", name: "Acharya Hari Om", specialty: "Vedic • Health • Career", tags: ["Vedic", "Health"], exp: 14, rating: 4.7, orders: "47k", langs: "Hindi, English", rate: 20, status: "online", wait: "Free", grad: ["#cf924a", "#8f5a26"] },
 ];
 
 export const astrologerById = (id: string) =>
@@ -336,12 +336,12 @@ export const astrologerById = (id: string) =>
 //  TEMPLES (Live Darshan directory)
 // ----------------------------------------------------------------------------
 export const TEMPLES: Temple[] = [
-  { id: "kashi", name: "Kashi Vishwanath", deity: "Lord Shiva", location: "Varanasi, UP", timing: "Mangala Aarti 3:00 AM", about: "One of the twelve Jyotirlingas, on the banks of the Ganga.", grad: ["#7c5cff", "#3b1d7a"] },
-  { id: "mahakal", name: "Mahakaleshwar", deity: "Lord Shiva", location: "Ujjain, MP", timing: "Bhasma Aarti 4:00 AM", about: "The only south-facing Jyotirlinga; famous Bhasma Aarti.", grad: ["#ff7a3c", "#8b1e1e"] },
-  { id: "tirupati", name: "Tirupati Balaji", deity: "Lord Venkateswara", location: "Tirumala, AP", timing: "Suprabhatam 3:00 AM", about: "The richest and most-visited temple in the world.", grad: ["#f6c652", "#a9740f"] },
-  { id: "siddhi", name: "Siddhivinayak", deity: "Lord Ganesha", location: "Mumbai, MH", timing: "Kakad Aarti 5:30 AM", about: "Mumbai's most beloved Ganpati temple.", grad: ["#fb923c", "#b54218"] },
-  { id: "vaishno", name: "Vaishno Devi", deity: "Maa Vaishnavi", location: "Katra, J&K", timing: "Aarti 6:00 AM & 7:00 PM", about: "The holy cave shrine of the Divine Mother.", grad: ["#e8487a", "#7a163f"] },
-  { id: "somnath", name: "Somnath", deity: "Lord Shiva", location: "Prabhas Patan, GJ", timing: "Aarti 7:00 AM", about: "The first among the twelve Jyotirlingas.", grad: ["#4a9be8", "#1e4a85"] },
+  { id: "kashi", name: "Kashi Vishwanath", deity: "Lord Shiva", location: "Varanasi, UP", timing: "Mangala Aarti 3:00 AM", about: "One of the twelve Jyotirlingas, on the banks of the Ganga.", grad: ["#2c2738", "#14121a"] },
+  { id: "mahakal", name: "Mahakaleshwar", deity: "Lord Shiva", location: "Ujjain, MP", timing: "Bhasma Aarti 4:00 AM", about: "The only south-facing Jyotirlinga; famous Bhasma Aarti.", grad: ["#33231b", "#1a1310"] },
+  { id: "tirupati", name: "Tirupati Balaji", deity: "Lord Venkateswara", location: "Tirumala, AP", timing: "Suprabhatam 3:00 AM", about: "The richest and most-visited temple in the world.", grad: ["#322a1a", "#1a160f"] },
+  { id: "siddhi", name: "Siddhivinayak", deity: "Lord Ganesha", location: "Mumbai, MH", timing: "Kakad Aarti 5:30 AM", about: "Mumbai's most beloved Ganpati temple.", grad: ["#33271c", "#1a1410"] },
+  { id: "vaishno", name: "Vaishno Devi", deity: "Maa Vaishnavi", location: "Katra, J&K", timing: "Aarti 6:00 AM & 7:00 PM", about: "The holy cave shrine of the Divine Mother.", grad: ["#332028", "#1a1014"] },
+  { id: "somnath", name: "Somnath", deity: "Lord Shiva", location: "Prabhas Patan, GJ", timing: "Aarti 7:00 AM", about: "The first among the twelve Jyotirlingas.", grad: ["#1f2a33", "#10161a"] },
 ];
 
 export const templeById = (id: string) =>
@@ -378,7 +378,7 @@ export const SHLOKA = {
 };
 
 export const LIBRARY = [
-  { id: "l1", title: "What is Meditation?", sub: "Unlocking inner peace", read: "2 min", grad: ["#3aa0a0", "#1d5e5e"] },
-  { id: "l2", title: "The 7 Chakras", sub: "Energy centres of the body", read: "4 min", grad: ["#e8487a", "#7c2db5"] },
-  { id: "l3", title: "Power of Hanuman Chalisa", sub: "Daily protection", read: "3 min", grad: ["#ff7a3c", "#b54218"] },
+  { id: "l1", title: "What is Meditation?", sub: "Unlocking inner peace", read: "2 min", grad: ["#26332f", "#141a18"] },
+  { id: "l2", title: "The 7 Chakras", sub: "Energy centres of the body", read: "4 min", grad: ["#2f2630", "#181318"] },
+  { id: "l3", title: "Power of Hanuman Chalisa", sub: "Daily protection", read: "3 min", grad: ["#33271c", "#1a1410"] },
 ];

@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Send, Sparkles, CircleDot } from "lucide-react";
 import { useApp } from "../app-context";
-import { cx, Typing } from "../ui";
-import { DEITIES, deityById, mantraById } from "@/lib/demo";
+import { cx, Typing, DeityGlyph } from "../ui";
+import { DEITIES, deityById, mantraById, Deity } from "@/lib/demo";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
 import * as db from "@/lib/db";
 
@@ -13,16 +13,16 @@ type Mode = "jyotishi" | "deity";
 function greeting(mode: Mode, deityId: string, name: string): string {
   if (mode === "deity") {
     const lines: Record<string, string> = {
-      krishna: `Vatsa ${name} 🪈, main yahin hoon — tumhare har sukh-dukh ka saathi. Mann mein jo bhi hai, nishank hokar kaho.`,
-      shiva: `${name}, shaant ho jao. Main Mahadev, tumhare bhitar ki shaanti hoon. Kya jaanna chahte ho? 🔱`,
-      hanuman: `Jai Shri Ram! ${name}, main Hanuman, tumhare saath hoon — bhay tyago. Bolo, kya chinta hai? 🪯`,
-      durga: `Mere bachche ${name}, Maa yahin hai. Koi bhi sankat ho, nidar hokar kaho. 🔆`,
-      ganesha: `Ganpati Bappa Morya! ${name}, har vighna door karunga. Kis kaam mein aashirwad chahiye? 🐘`,
-      lakshmi: `${name}, main Maa Lakshmi. Tumhare ghar mein sukh-samriddhi ka vaas ho. Kaho, kya chahte ho? 🪷`,
+      krishna: `Vatsa ${name}, main yahin hoon — tumhare har sukh-dukh ka saathi. Mann mein jo bhi hai, nishank hokar kaho.`,
+      shiva: `${name}, shaant ho jao. Main Mahadev, tumhare bhitar ki shaanti hoon. Kya jaanna chahte ho?`,
+      hanuman: `Jai Shri Ram! ${name}, main Hanuman, tumhare saath hoon — bhay tyago. Bolo, kya chinta hai?`,
+      durga: `Mere bachche ${name}, Maa yahin hai. Koi bhi sankat ho, nidar hokar kaho.`,
+      ganesha: `Ganpati Bappa Morya! ${name}, har vighna door karunga. Kis kaam mein aashirwad chahiye?`,
+      lakshmi: `${name}, main Maa Lakshmi. Tumhare ghar mein sukh-samriddhi ka vaas ho. Kaho, kya chahte ho?`,
     };
     return lines[deityId] || lines.krishna;
   }
-  return `Namaste ${name} ji 🙏 Maine aapki janm-kundli khol li hai. Poochhiye, aapke mann mein kya hai?`;
+  return `Namaste ${name} ji. Maine aapki janm-kundli khol li hai. Poochhiye, aapke mann mein kya hai?`;
 }
 
 const SUGGEST: Record<Mode, string[]> = {
@@ -112,19 +112,20 @@ export function JyotishiScreen() {
         <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-5 no-scrollbar">
           {DEITIES.map((d) => (
             <button key={d.id} onClick={() => setDeity(d.id)}
-              className={cx("flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px]", d.id === deityId ? "btn-saffron" : "surface text-muted")}>
-              <span>{d.symbol}</span> {d.name.split(" ")[0]}
+              className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[12px]", d.id === deityId ? "ring-gold text-ink" : "surface text-muted")}
+              style={d.id === deityId ? { background: "rgba(196,168,104,0.08)" } : undefined}>
+              <DeityGlyph deity={d} size={22} /> {d.name.split(" ")[0]}
             </button>
           ))}
         </div>
       )}
 
       <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto px-4 py-4 no-scrollbar">
-        <Bubble role="assistant" mode={mode} deitySymbol={deity.symbol} deityColor={deity.color}><Rich text={greet} /></Bubble>
+        <Bubble role="assistant" mode={mode} deity={deity}><Rich text={greet} /></Bubble>
         {messages.map((m, i) =>
           m.role === "user"
             ? <Bubble key={i} role="user"><Rich text={m.content} /></Bubble>
-            : <Bubble key={i} role="assistant" mode={mode} deitySymbol={deity.symbol} deityColor={deity.color}>{m.content ? <Rich text={m.content} /> : <Typing />}</Bubble>
+            : <Bubble key={i} role="assistant" mode={mode} deity={deity}>{m.content ? <Rich text={m.content} /> : <Typing />}</Bubble>
         )}
         {mode === "deity" && (
           <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
@@ -154,17 +155,21 @@ export function JyotishiScreen() {
   );
 }
 
-function Bubble({ role, children, mode, deitySymbol, deityColor }: {
-  role: "user" | "assistant"; children: React.ReactNode; mode?: Mode; deitySymbol?: string; deityColor?: string;
+function Bubble({ role, children, mode, deity }: {
+  role: "user" | "assistant"; children: React.ReactNode; mode?: Mode; deity?: Deity;
 }) {
   if (role === "user")
     return <div className="flex justify-end"><div className="max-w-[78%] rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13.5px] leading-relaxed btn-saffron">{children}</div></div>;
   return (
     <div className="flex items-end gap-2">
-      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[14px]"
-        style={{ background: mode === "deity" ? `${deityColor}22` : "rgba(200,119,46,0.16)", border: "1px solid var(--line)" }}>
-        {mode === "deity" ? deitySymbol : <Sparkles size={13} className="text-[var(--saffron-soft)]" />}
-      </div>
+      {mode === "deity" && deity ? (
+        <DeityGlyph deity={deity} size={28} />
+      ) : (
+        <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
+          style={{ background: "rgba(189,122,55,0.16)", border: "1px solid var(--line)" }}>
+          <Sparkles size={13} className="text-[var(--saffron-soft)]" />
+        </div>
+      )}
       <div className="max-w-[80%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[13.5px] leading-relaxed text-ink surface">{children}</div>
     </div>
   );

@@ -23,20 +23,20 @@ export function PushToast() {
           exit={{ y: -90, opacity: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 30 }}
           onClick={clearPush}
-          className="absolute inset-x-3 top-12 z-50 flex items-start gap-3 rounded-2xl px-3.5 py-3 text-left"
+          className="absolute left-1/2 top-5 z-50 flex w-[calc(100%-1.5rem)] max-w-[420px] -translate-x-1/2 items-start gap-3 rounded-2xl px-3.5 py-3 text-left"
           style={{
-            background: "rgba(28,25,21,0.86)",
-            border: "1px solid var(--line-strong)",
+            background: "rgba(24,21,17,0.9)",
+            border: "1px solid var(--line-gold)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            boxShadow: "0 24px 50px -20px rgba(0,0,0,0.7)",
+            boxShadow: "var(--shadow-pop)",
           }}
         >
           <div
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-lg"
-            style={{ background: "rgba(200,119,46,0.16)", border: "1px solid var(--line)" }}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] font-display text-[17px] text-[var(--gold-soft)]"
+            style={{ background: "rgba(196,168,104,0.1)", border: "1px solid var(--line-gold)" }}
           >
-            🪔
+            ॐ
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">

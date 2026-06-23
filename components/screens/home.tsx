@@ -38,7 +38,7 @@ export function HomeScreen() {
     const id = setTimeout(() => {
       sendPush({
         title: `${chog.name} Choghadiya is now`,
-        body: `An auspicious window to begin anything new. Aaj ${PANCHANG.vrat} hai 🪔`,
+        body: `An auspicious window to begin anything new. Aaj ${PANCHANG.vrat} hai.`,
         tone: "auspicious",
       });
     }, 4200);
@@ -58,7 +58,7 @@ export function HomeScreen() {
           onClick={() =>
             sendPush({
               title: `${chog.name} Choghadiya is now`,
-              body: `Auspicious to begin. Aaj ${PANCHANG.vrat} — view the pooja vidhi 🪔`,
+              body: `Auspicious to begin. Aaj ${PANCHANG.vrat} — view the pooja vidhi.`,
               tone: "auspicious",
             })
           }
@@ -162,7 +162,7 @@ export function HomeScreen() {
       {/* festival / pooja */}
       <div className="px-5 pt-7">
         <button onClick={() => go("festivals")} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl text-3xl" style={{ background: "rgba(124,92,255,0.10)", border: "1px solid var(--line)" }}>🧘</div>
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: "rgba(196,168,104,0.07)", border: "1px solid var(--line-gold)" }}><Flower2 size={26} className="text-[var(--saffron-soft)]" strokeWidth={1.6} /></div>
           <div className="flex-1">
             <div className="text-[11px] uppercase tracking-wider text-muted">Today</div>
             <div className="font-display text-[17px] text-ink">{PANCHANG.vrat}</div>
@@ -205,7 +205,7 @@ export function HomeScreen() {
       </div>
 
       <div className="px-5 pb-2 pt-8 text-center">
-        <div className="text-[11px] tracking-widest text-muted">🕉 Divasya · Spiritual Journey</div>
+        <div className="text-[11px] tracking-[0.3em] text-muted"><span className="font-display text-gold">ॐ</span>&nbsp;&nbsp;DIVASYA · Spiritual Journey</div>
       </div>
     </div>
   );

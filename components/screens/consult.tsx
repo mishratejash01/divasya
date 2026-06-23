@@ -86,7 +86,7 @@ export function ConsultChatScreen() {
   const [streaming, setStreaming] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
 
-  const greet = `Namaste ${first} 🙏 Main ${astro.name.replace(/^(Acharya|Pandit|Jyotishi|Dr\.?|Guru Maa) /, "")}. Maine aapki kundli khol li hai. Aap nishank hokar apna prashn poochhiye.`;
+  const greet = `Namaste ${first}. Main ${astro.name.replace(/^(Acharya|Pandit|Jyotishi|Dr\.?|Guru Maa) /, "")}. Maine aapki kundli khol li hai. Aap nishank hokar apna prashn poochhiye.`;
 
   // free countdown
   useEffect(() => {

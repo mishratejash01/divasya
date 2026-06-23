@@ -2,9 +2,9 @@
 
 import { useRef, useState } from "react";
 import { toPng } from "html-to-image";
-import { ChevronLeft, Download, Share2, Sun, Moon, Check, Play, Clock } from "lucide-react";
+import { ChevronLeft, Download, Share2, Sun, Moon, Check, Play, Clock, Flame, Palette, Flower2 } from "lucide-react";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { cx, DeityGlyph } from "../ui";
 import {
   PANCHANG, CHOGHADIYA, currentChoghadiya, SHLOKA, HOROSCOPE_TODAY, LIBRARY, deityById,
 } from "@/lib/demo";
@@ -91,10 +91,10 @@ const VIDHI = [
   "Conclude with aarti and distribute prasad.",
 ];
 const UPCOMING = [
-  { name: "Maha Shivratri", date: "8 Mar 2026", e: "🔱" },
-  { name: "Holika Dahan", date: "13 Mar 2026", e: "🔥" },
-  { name: "Holi", date: "14 Mar 2026", e: "🎨" },
-  { name: "Chaitra Navratri", date: "29 Mar 2026", e: "🔆" },
+  { name: "Maha Shivratri", date: "8 Mar 2026", icon: Moon },
+  { name: "Holika Dahan", date: "13 Mar 2026", icon: Flame },
+  { name: "Holi", date: "14 Mar 2026", icon: Palette },
+  { name: "Chaitra Navratri", date: "29 Mar 2026", icon: Flower2 },
 ];
 
 export function FestivalsScreen() {
@@ -104,7 +104,7 @@ export function FestivalsScreen() {
     <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
       <Header title="Festivals & Pooja" />
       <div className="mx-5 overflow-hidden rounded-2xl surface">
-        <div className="grid h-36 w-full place-items-center text-6xl" style={{ background: "linear-gradient(160deg, #2a2140, #14101f)" }}>🧘</div>
+        <div className="grid h-36 w-full place-items-center font-display text-[64px] text-[var(--gold-soft)]" style={{ background: "linear-gradient(160deg, #241f19, #14110d)" }}>ॐ</div>
         <div className="p-4">
           <div className="text-[11px] uppercase tracking-wider text-muted">Today · 25 Feb 2026</div>
           <div className="font-display text-xl text-ink">{PANCHANG.vrat}</div>
@@ -147,13 +147,18 @@ export function FestivalsScreen() {
       <div className="px-5 pt-7">
         <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Upcoming</h3>
         <div className="overflow-hidden rounded-2xl surface">
-          {UPCOMING.map((u, i) => (
-            <div key={u.name} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-              <span className="text-2xl">{u.e}</span>
-              <span className="flex-1 text-[14px] text-ink">{u.name}</span>
-              <span className="text-[12px] text-muted">{u.date}</span>
-            </div>
-          ))}
+          {UPCOMING.map((u, i) => {
+            const Icon = u.icon;
+            return (
+              <div key={u.name} className="flex items-center gap-3 px-4 py-3.5" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ background: "rgba(196,168,104,0.08)", border: "1px solid var(--line)" }}>
+                  <Icon size={17} className="text-[var(--saffron-soft)]" strokeWidth={1.7} />
+                </span>
+                <span className="flex-1 text-[14px] text-ink">{u.name}</span>
+                <span className="text-[12px] text-muted">{u.date}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -225,7 +230,7 @@ export function SandeshScreen() {
     } catch {} finally { setBusy(false); }
   }
   function whatsapp() {
-    const text = `🪔 Aaj ka Sandesh — ${name}\n\n${SHLOKA.deva}\n${SHLOKA.translit}\n"${SHLOKA.meaning}"\n\nShared via Divasya 🕉`;
+    const text = `ॐ  Aaj ka Sandesh — ${name}\n\n${SHLOKA.deva}\n${SHLOKA.translit}\n"${SHLOKA.meaning}"\n\nShared via Divasya`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -239,7 +244,7 @@ export function SandeshScreen() {
             <span className="font-display tracking-[0.3em] text-gold">DIVASYA</span>
             <span className="text-[11px] text-muted">{PANCHANG.weekday} · {PANCHANG.tithi}</span>
           </div>
-          <div className="mt-5 text-center text-5xl">{deity.symbol}</div>
+          <div className="mt-5 flex justify-center"><DeityGlyph deity={deity} size={64} /></div>
           <div className="mt-3 text-center font-deva text-[20px] leading-relaxed text-ink">{SHLOKA.deva}</div>
           <div className="mt-2 text-center text-[12.5px] italic text-muted">{SHLOKA.translit}</div>
           <div className="my-4 h-px w-full" style={{ background: "var(--line)" }} />
