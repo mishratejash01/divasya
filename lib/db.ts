@@ -54,7 +54,7 @@ export async function getMessages(uid: string, thread: string): Promise<ChatMsg[
     .select("role, content")
     .eq("user_id", uid)
     .eq("thread", thread)
-    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
     .limit(100);
   return (data as ChatMsg[]) ?? [];
 }

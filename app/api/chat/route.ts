@@ -5,10 +5,13 @@ import { Profile } from "@/lib/types";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// Efficient, free-tier-friendly model — thinking off by default = minimal token burn.
-const MODEL = "gemini-2.5-flash-lite";
+// Free-tier models, in order of preference. The lite models 503 under load,
+// so we retry and then fall through to the next model before ever going canned.
+const MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
 
 type Msg = { role: "user" | "assistant"; content: string };
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function asProfile(p?: Partial<Profile> | null): Profile {
   return {
@@ -40,64 +43,77 @@ function cannedStream(text: string) {
     async start(c) {
       for (let i = 0; i < words.length; i++) {
         c.enqueue(enc.encode(words[i] + (i < words.length - 1 ? " " : "")));
-        await new Promise((r) => setTimeout(r, 26));
+        await sleep(22);
       }
       c.close();
     },
   });
 }
 
-function cannedFor(mode: string, p: Profile, deityId?: string): string {
+function cannedFor(mode: string, p: Profile): string {
   const fn = (p.name || "devotee").split(" ")[0];
   if (mode === "deity") {
-    const d = deityById(deityId || p.deity_id);
-    return `Vatsa ${fn} ${d.symbol}, main tumhare saath hoon. Jo bhi mann mein bhaar hai, use mujhe arpan kar do — phal ki chinta chhodo, karm karte raho.\n\nAaj ${d.name} ka smaran karo aur shaanti se jaap karo — Mala Counter mein. Tathastu. 🙏`;
+    return `${fn}, abhi divya sambandh mein thodi der ho rahi hai. Kuch pal mein phir se prashn poochhiye — main yahin hoon.`;
   }
-  if (mode === "consult") {
-    return `Namaste ${fn} ji 🙏 Maine aapki kundli khol li hai. Aap nishchint hokar apna prashn poochhiye.`;
+  return `${fn} ji, abhi jyotish sewa par bahut bhaar hai. Kripya kuch second baad apna prashn dobara poochhiye — main turant margdarshan dunga.`;
+}
+
+// Find the first model that streams successfully (retrying transient 429/5xx).
+async function openUpstream(payload: object, key: string): Promise<Response | null> {
+  for (const model of MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const r = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+          body: JSON.stringify(payload),
+        });
+        if (r.ok && r.body) return r;
+        // transient → retry same model, else move to next model
+        if (r.status === 429 || r.status >= 500) { await sleep(350 * (attempt + 1)); continue; }
+        break;
+      } catch { await sleep(300); }
+    }
   }
-  return `Namaste ${fn} ji 🙏 Aapki janm-kundli ke anusaar margdarshan deta hoon.\n\nUpaay 🪔: har Guruvaar ko peela daan karein aur apne isht mantra ki 108 mala karein. Kya aap career ke baare mein poochh rahe the, ya vivah ke?`;
+  return null;
 }
 
 export async function POST(req: Request) {
   let body: { mode?: string; deityId?: string; astrologerId?: string; messages?: Msg[]; profile?: Partial<Profile> } = {};
   try { body = await req.json(); } catch {}
   const mode = body.mode || "jyotishi";
-  const messages = (body.messages || []).filter((m) => m.content?.trim());
+  // keep the last 16 turns — enough context, avoids drift/echo on long threads
+  const messages = (body.messages || []).filter((m) => m.content?.trim()).slice(-16);
   const profile = asProfile(body.profile);
   const system = pick(mode, profile, body.deityId, body.astrologerId);
 
   const key = process.env.GEMINI_API_KEY;
+  const fallbackHeaders = { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "fallback" };
+
   if (!key) {
-    return new Response(cannedStream(cannedFor(mode, profile, body.deityId)), {
-      headers: { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "demo-fallback" },
-    });
+    return new Response(cannedStream(cannedFor(mode, profile)), { headers: fallbackHeaders });
   }
 
   const payload = {
     systemInstruction: { parts: [{ text: system }] },
     contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
-    generationConfig: { maxOutputTokens: 520, temperature: 0.85, topP: 0.95 },
+    generationConfig: { maxOutputTokens: 600, temperature: 0.7, topP: 0.95 },
   };
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?alt=sse`;
+  const upstream = await openUpstream(payload, key);
+  if (!upstream || !upstream.body) {
+    // every model was unreachable — graceful, NON-persisted message
+    return new Response(cannedStream(cannedFor(mode, profile)), { headers: fallbackHeaders });
+  }
 
   const stream = new ReadableStream({
     async start(controller) {
+      const reader = upstream.body!.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      let emitted = false;
       try {
-        const upstream = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-          body: JSON.stringify(payload),
-        });
-        if (!upstream.ok || !upstream.body) {
-          controller.enqueue(enc.encode(cannedFor(mode, profile, body.deityId)));
-          controller.close();
-          return;
-        }
-        const reader = upstream.body.getReader();
-        const dec = new TextDecoder();
-        let buf = "";
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -112,12 +128,13 @@ export async function POST(req: Request) {
             try {
               const obj = JSON.parse(json);
               const parts = obj?.candidates?.[0]?.content?.parts;
-              if (Array.isArray(parts)) for (const pt of parts) if (pt?.text) controller.enqueue(enc.encode(pt.text));
+              if (Array.isArray(parts)) for (const pt of parts) if (pt?.text) { controller.enqueue(enc.encode(pt.text)); emitted = true; }
             } catch {}
           }
         }
       } catch {
-        controller.enqueue(enc.encode("\n\n🙏 Kshama karein, abhi connection mein vighna aaya. Kripya phir se poochhein."));
+        // mid-stream drop — if nothing came through, give a graceful nudge
+        if (!emitted) controller.enqueue(enc.encode(cannedFor(mode, profile)));
       }
       controller.close();
     },

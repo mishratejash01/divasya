@@ -2,6 +2,8 @@ import { Profile } from "./types";
 
 export type ChatMsg = { role: "user" | "assistant"; content: string };
 
+export type ChatResult = { text: string; fallback: boolean };
+
 export async function streamChat(
   body: {
     mode: "jyotishi" | "deity" | "consult";
@@ -11,13 +13,14 @@ export async function streamChat(
     profile?: Partial<Profile> | null;
   },
   onDelta: (chunk: string, full: string) => void
-): Promise<string> {
+): Promise<ChatResult> {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.body) return "";
+  const fallback = res.headers.get("X-Divasya-Mode") === "fallback";
+  if (!res.body) return { text: "", fallback: true };
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let full = "";
@@ -28,7 +31,7 @@ export async function streamChat(
     full += chunk;
     onDelta(chunk, full);
   }
-  return full;
+  return { text: full, fallback };
 }
 
 // fire-and-forget analytics → Supabase

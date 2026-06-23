@@ -76,16 +76,17 @@ export function JyotishiScreen() {
     const convo: ChatMsg[] = [...messages, { role: "user", content: text }];
     setMessages([...convo, { role: "assistant", content: "" }]);
     setStreaming(true);
-    let full = "";
+    let result = { text: "", fallback: false };
     try {
-      full = await streamChat(
+      result = await streamChat(
         { mode, deityId: mode === "deity" ? deityId : undefined, messages: convo, profile },
         (_c, f) => setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: f }; return c; })
       );
     } finally {
       setStreaming(false);
       logEvent("ai_chat", { mode });
-      if (user && full) db.addMessages(user.id, thread, [{ role: "user", content: text }, { role: "assistant", content: full }]);
+      // never persist a graceful fallback — it would poison later turns
+      if (user && result.text && !result.fallback) db.addMessages(user.id, thread, [{ role: "user", content: text }, { role: "assistant", content: result.text }]);
     }
   }
 

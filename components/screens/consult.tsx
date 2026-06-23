@@ -133,14 +133,14 @@ export function ConsultChatScreen() {
     const convo: ChatMsg[] = [...messages, { role: "user", content: text }];
     setMessages([...convo, { role: "assistant", content: "" }]);
     setStreaming(true);
-    let full = "";
+    let result = { text: "", fallback: false };
     try {
-      full = await streamChat({ mode: "consult", astrologerId: astro.id, messages: convo, profile }, (_c, f) =>
+      result = await streamChat({ mode: "consult", astrologerId: astro.id, messages: convo, profile }, (_c, f) =>
         setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: f }; return c; })
       );
     } finally {
       setStreaming(false); logEvent("consult_chat", { astrologer: astro.id });
-      if (user && full) db.addMessages(user.id, thread, [{ role: "user", content: text }, { role: "assistant", content: full }]);
+      if (user && result.text && !result.fallback) db.addMessages(user.id, thread, [{ role: "user", content: text }, { role: "assistant", content: result.text }]);
     }
   }
 
