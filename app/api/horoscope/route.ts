@@ -13,6 +13,12 @@ const SIGNS = [
   "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
   "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
 ];
+// Vedic rashi names map to their western labels for lookups
+const SANSKRIT: Record<string, string> = {
+  Mesha: "Aries", Vrishabha: "Taurus", Mithuna: "Gemini", Karka: "Cancer",
+  Simha: "Leo", Kanya: "Virgo", Tula: "Libra", Vrishchika: "Scorpio",
+  Dhanu: "Sagittarius", Makara: "Capricorn", Kumbha: "Aquarius", Meena: "Pisces",
+};
 
 async function generate(sign: string): Promise<string | null> {
   const key = process.env.GEMINI_API_KEY;
@@ -45,7 +51,12 @@ Voice: grounded, luminous, reassuring — orientation, not fear. 55–75 words o
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const raw = (url.searchParams.get("rashi") || "").trim();
-  const sign = SIGNS.find((s) => raw.toLowerCase().startsWith(s.toLowerCase())) ?? null;
+  const first = raw.split(/[\s(]/)[0];
+  const sign =
+    SANSKRIT[first] ??
+    SIGNS.find((s) => raw.toLowerCase().startsWith(s.toLowerCase())) ??
+    SIGNS.find((s) => raw.toLowerCase().includes(s.toLowerCase())) ??
+    null;
   if (!sign) return Response.json({ error: "unknown rashi" }, { status: 400 });
 
   const dateKey = new Date().toISOString().slice(0, 10);
