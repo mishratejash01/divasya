@@ -13,7 +13,7 @@
   --saffron-deep: var(--amber-deep);
   --saffron-soft: var(--amber-soft);
   --ochre: #CEB976;          /* Soft Ochre — decorative */
-  --ochre-deep: #9C8544;     /* legible ochre text */
+  --ochre-deep: #8A7434;     /* legible ochre text */
   --gold: var(--ochre-deep); /* legacy alias */
   --gold-soft: var(--ochre);
   --blush: #FFD9CC;          /* Blush Sand — soft tint */
@@ -25,13 +25,13 @@
   --surface-2: #FBF5E2;
   --surface-3: #F5EED6;
 
-  --ink: #33291A;
-  --ink-dim: #5C5140;
-  --muted: #8A7D64;
-  --muted-2: #A99C82;
+  --ink: #2A2113;
+  --ink-dim: #473D2C;
+  --muted: #6E6350;
+  --muted-2: #8B7F6A;
 
-  --line: rgba(51, 41, 26, 0.10);
-  --line-strong: rgba(51, 41, 26, 0.16);
+  --line: rgba(42, 33, 19, 0.12);
+  --line-strong: rgba(42, 33, 19, 0.20);
   --line-gold: rgba(156, 133, 68, 0.38);
 
   --good: #5F8657;
