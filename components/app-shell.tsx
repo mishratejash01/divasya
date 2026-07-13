@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { PanelLeftOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
@@ -46,11 +48,23 @@ function Screen() {
 
 function RoutedApp() {
   const { screen } = useApp();
+  // desktop sidebar visibility — remembered across sessions
+  const [navOpen, setNavOpen] = useState(true);
+  useEffect(() => {
+    try { setNavOpen(localStorage.getItem("divasya-nav") !== "closed"); } catch { /* ssr */ }
+  }, []);
+  const toggleNav = () => {
+    setNavOpen((v) => {
+      try { localStorage.setItem("divasya-nav", v ? "closed" : "open"); } catch { /* private mode */ }
+      return !v;
+    });
+  };
   return (
     <div className="flex h-full w-full">
-      <SideNav />
+      <SideNav open={navOpen} onToggle={toggleNav} />
       <main className="relative h-full min-w-0 flex-1 overflow-hidden">
-        <div className="relative mx-auto h-full w-full max-w-[680px] overflow-hidden border-[var(--line)] lg:border-x">
+        {/* content fills the viewport beside the sidebar */}
+        <div className="relative mx-auto h-full w-full overflow-hidden lg:px-6 xl:px-12">
           <AnimatePresence mode="wait">
             <motion.div
               key={screen.name + JSON.stringify(screen.params || {})}
@@ -58,13 +72,23 @@ function RoutedApp() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0"
+              className="absolute inset-0 lg:px-6 xl:px-12"
             >
               <Screen />
             </motion.div>
           </AnimatePresence>
           {SHOW_NAV.includes(screen.name) && <BottomNav />}
         </div>
+        {/* reopen handle when the sidebar is hidden */}
+        {!navOpen && (
+          <button
+            onClick={toggleNav}
+            aria-label="Show sidebar"
+            className="absolute left-4 top-4 z-40 hidden h-9 w-9 place-items-center rounded-full surface lg:grid"
+          >
+            <PanelLeftOpen size={17} className="text-[var(--amber)]" />
+          </button>
+        )}
       </main>
     </div>
   );

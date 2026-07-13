@@ -87,10 +87,11 @@ export function HomeScreen() {
         <button onClick={() => go("menu")} className="grid h-9 w-9 place-items-center rounded-full surface lg:invisible">
           <Menu size={18} className="text-ink" />
         </button>
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 lg:hidden">
           <Logomark size={22} className="text-[var(--amber)]" />
           <Wordmark size={21} />
         </span>
+        <span className="hidden lg:block" />
         <button
           ref={bellRef}
           onClick={() =>
@@ -195,7 +196,7 @@ export function HomeScreen() {
       {/* quick grid */}
       <div className="px-5 pt-7">
         <SectionLabel>Explore</SectionLabel>
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-4 gap-2.5 lg:grid-cols-8 lg:gap-3">
           {GRID.map((g) => {
             const Icon = g.icon;
             return (
