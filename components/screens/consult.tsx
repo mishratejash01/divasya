@@ -5,26 +5,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Send, Star, Wallet, Clock, Gift, ShieldCheck } from "lucide-react";
 import { useApp } from "../app-context";
 import { Avatar, cx, Typing } from "../ui";
-import { ASTROLOGERS, astrologerById } from "@/lib/demo";
+import { ASTROLOGERS } from "@/lib/demo";
+import { useCatalog, getAstrologers } from "@/lib/catalog";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
 import * as db from "@/lib/db";
 
 /* ---------------- Directory ---------------- */
 export function ConsultScreen() {
   const { back, go, wallet } = useApp();
+  const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
   return (
     <div className="flex h-full flex-col pt-12">
       <div className="flex items-center gap-3 px-5 py-3">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
         <span className="font-display text-lg text-ink">Consult Astrologers</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Wallet size={13} className="text-[var(--saffron-soft)]" />
+          <Wallet size={13} className="text-[var(--amber)]" />
           <span className="text-[12px] text-ink">₹{wallet}</span>
         </div>
       </div>
 
       <div className="mx-5 mb-3 flex items-center gap-3 rounded-2xl card-temple px-4 py-3">
-        <Gift size={20} className="text-[var(--saffron)]" />
+        <Gift size={20} className="text-[var(--amber)]" />
         <div>
           <div className="text-[13px] font-medium text-ink">Your first chat is FREE</div>
           <div className="text-[11.5px] text-muted">Talk to any verified astrologer · no queue</div>
@@ -32,7 +34,7 @@ export function ConsultScreen() {
       </div>
 
       <div className="flex-1 space-y-2.5 overflow-y-auto px-4 pb-6 no-scrollbar">
-        {ASTROLOGERS.map((a) => (
+        {astrologers.map((a) => (
           <button key={a.id} onClick={() => go("consultChat", { astrologerId: a.id })}
             className="flex w-full items-center gap-3 rounded-2xl surface p-3 text-left">
             <Avatar name={a.name} size={50} tint={a.grad[0]} status={a.status} />
@@ -73,7 +75,9 @@ function fmt(s: number) {
 
 export function ConsultChatScreen() {
   const { back, screen, wallet, addWallet, haptic, profile, user } = useApp();
-  const astro = astrologerById((screen.params?.astrologerId as string) || "a1");
+  const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
+  const astroId = (screen.params?.astrologerId as string) || "a1";
+  const astro = astrologers.find((a) => a.id === astroId) ?? astrologers[0];
   const first = profile?.name?.split(" ")[0] || "ji";
   const thread = `consult:${astro.id}`;
 
@@ -156,18 +160,18 @@ export function ConsultChatScreen() {
         </div>
         <button
           onClick={() => phase === "free" && setFreeLeft(8)}
-          className={cx("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px]",
-            phase === "paid" ? "surface text-ink" : "surface text-[var(--good)]")}
+          className={cx("flex items-center gap-1.5 rounded-full surface px-3 py-1.5 text-[12px]",
+            phase === "paid" ? "text-ink" : phase === "free" ? "text-[var(--good)]" : "text-[var(--avoid)]")}
         >
           <Clock size={12} />
           {phase === "free" && <span>Free {fmt(freeLeft)}</span>}
           {phase === "paid" && <span>₹{astro.rate}/min · ₹{Math.max(balanceLeft, 0)}</span>}
-          {phase === "ended" && <span className="text-[var(--avoid)]">Ended</span>}
+          {phase === "ended" && <span>Ended</span>}
         </button>
       </div>
 
       {phase === "free" && (
-        <div className="px-4 py-1.5 text-center text-[11px] text-muted">🎁 First consultation free · tap the timer to skip ahead</div>
+        <div className="px-4 py-1.5 text-center text-[11px] text-muted">First consultation free · tap the timer to skip ahead</div>
       )}
       {phase === "paid" && (
         <div className="px-4 py-1.5 text-center text-[11px] text-muted">Session {fmt(paidElapsed)} · ₹{paidSpent} spent · Balance ₹{Math.max(balanceLeft, 0)}</div>
@@ -187,9 +191,9 @@ export function ConsultChatScreen() {
       <AnimatePresence>
         {phase === "ended" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(8,6,4,0.6)", backdropFilter: "blur(3px)" }}>
+            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(51,41,26,0.28)", backdropFilter: "blur(3px)" }}>
             <motion.div initial={{ y: 60 }} animate={{ y: 0 }}
-              className="w-full rounded-t-3xl p-5 pb-7" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-strong)" }}>
+              className="w-full rounded-t-3xl p-5 pb-7" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
               <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />
               <div className="font-display text-lg text-ink">Continue with {astro.name.split(" ").slice(-1)[0]}</div>
               <div className="mt-1 text-[12.5px] text-muted">Your free session ended. Recharge your wallet to keep chatting at ₹{astro.rate}/min.</div>
@@ -213,8 +217,8 @@ export function ConsultChatScreen() {
           onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder={phase === "ended" ? "Recharge to continue…" : "Type your question…"}
           disabled={phase === "ended"}
-          className="flex-1 rounded-full bg-transparent px-4 py-3 text-[14px] text-ink outline-none placeholder:text-muted disabled:opacity-50"
-          style={{ border: "1px solid var(--line-strong)" }} />
+          className="flex-1 rounded-full px-4 py-3 text-[14px] text-ink outline-none placeholder:text-muted disabled:opacity-50"
+          style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }} />
         <button onClick={() => send(input)} disabled={streaming || phase === "ended"}
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full btn-saffron disabled:opacity-50">
           <Send size={17} />
