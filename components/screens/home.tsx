@@ -69,7 +69,7 @@ export function HomeScreen() {
     firedOnce = true;
     const id = setTimeout(() => {
       sendPush({
-        title: chog.good ? `${chog.name} Choghadiya is on` : `${chog.name} Choghadiya — pause new beginnings`,
+        title: chog.good ? `${chog.name} Choghadiya is on` : `${chog.name} Choghadiya · pause new beginnings`,
         body: chog.good
           ? `An auspicious window until ${fmtTime(chog.to)}.${p.vrat ? ` Aaj ${p.vrat} hai.` : ""}`
           : `A better window opens at ${fmtTime(chog.to)}.${p.vrat ? ` Aaj ${p.vrat} hai.` : ""}`,
@@ -96,7 +96,7 @@ export function HomeScreen() {
           onClick={() =>
             chog &&
             sendPush({
-              title: `${chog.name} Choghadiya ${chog.good ? "— shubh samay" : "chal raha hai"}`,
+              title: `${chog.name} Choghadiya ${chog.good ? "· shubh samay" : "chal raha hai"}`,
               body: `${fmtTime(chog.from)} – ${fmtTime(chog.to)}.${p.vrat ? ` Aaj ${p.vrat}.` : ""}`,
               tone: "auspicious",
             })
@@ -163,7 +163,7 @@ export function HomeScreen() {
             {shloka?.deva ?? "…"}
           </p>
           <p className="mt-1 text-[12.5px] text-muted">
-            {shloka ? `${shloka.meaning} — ${shloka.source}` : ""}
+            {shloka ? `${shloka.meaning} · ${shloka.source}` : ""}
           </p>
           <div className="mt-4 flex items-center justify-between">
             <span className="text-[12.5px] text-muted">{p.vrat ? `Aaj: ${p.vrat}` : `${p.masa} maas · ${p.nakshatra.name}`}</span>
