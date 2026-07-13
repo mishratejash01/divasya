@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ShieldAlert } from "lucide-react";
 import { useApp } from "../app-context";
+import { Logomark } from "../ui";
 
 export function LoginScreen() {
   const { signInGoogle, denied } = useApp();
@@ -14,7 +15,7 @@ export function LoginScreen() {
     setBusy(true);
     setNote(null);
     try {
-      await signInGoogle();   // redirects to Google
+      await signInGoogle(); // redirects to Google
     } catch {
       setBusy(false);
       setNote("Couldn't start Google sign-in. Please try again.");
@@ -22,40 +23,61 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="relative flex h-full flex-col items-center justify-between overflow-hidden px-7 pb-10 pt-24"
-      style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(189,122,55,0.12), transparent 60%), linear-gradient(180deg, #140e0a, #0b0807)" }}>
-      <div className="animate-spinSlow pointer-events-none absolute -top-24 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full opacity-[0.06]"
-        style={{ background: "conic-gradient(from 0deg, var(--gold), transparent, var(--saffron), transparent, var(--gold))" }} />
-
-      <div className="flex flex-col items-center text-center">
-        <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.7 }}
-          className="grid h-20 w-20 place-items-center rounded-[26px] font-display text-[40px] text-[var(--gold-soft)]"
-          style={{ background: "radial-gradient(circle at 38% 30%, rgba(196,168,104,0.16), var(--surface-2) 72%)", border: "1px solid var(--line-gold)" }}>ॐ</motion.div>
-        <h1 className="mt-6 font-display text-4xl tracking-[0.24em] text-ink">DIVASYA</h1>
-        <p className="mt-2 font-deva text-[15px] text-gold">आपकी आध्यात्मिक यात्रा</p>
-        <p className="mt-1 text-[13px] text-muted">Panchang · Kundli · Japa · Darshan — in one place</p>
+    <div
+      className="relative flex h-full flex-col items-center justify-between overflow-hidden px-7 pb-10 pt-24"
+      style={{
+        background:
+          "radial-gradient(120% 70% at 50% 0%, rgba(255,217,204,0.55), transparent 55%), radial-gradient(90% 60% at 50% 100%, rgba(206,185,118,0.28), transparent 60%)",
+      }}
+    >
+      {/* slow celestial ring */}
+      <div className="animate-spinSlow pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 text-[var(--ochre)] opacity-25">
+        <Logomark size={340} />
       </div>
 
-      <div className="w-full">
+      <div className="flex flex-col items-center text-center">
+        <motion.div
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-[var(--amber)]"
+        >
+          <Logomark size={92} />
+        </motion.div>
+        <h1 className="mt-6 font-display text-[44px] leading-none tracking-[0.06em] text-[var(--amber)]">Divasya</h1>
+        <p className="mt-3 font-deva text-[15px] text-gold">आपकी आध्यात्मिक यात्रा</p>
+        <p className="mt-1.5 text-[13px] text-muted">Understand your time. Move with it.</p>
+      </div>
+
+      <div className="w-full max-w-[360px]">
         {denied && (
-          <div className="mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-left"
-            style={{ background: "rgba(177,106,92,0.10)", border: "1px solid rgba(177,106,92,0.3)" }}>
+          <div
+            className="mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-left"
+            style={{ background: "rgba(180,86,75,0.08)", border: "1px solid rgba(180,86,75,0.28)" }}
+          >
             <ShieldAlert size={18} className="mt-0.5 shrink-0 text-[var(--avoid)]" />
             <div>
               <div className="text-[13px] font-medium text-ink">Access is invite-only</div>
-              <div className="text-[12px] leading-snug text-muted">This Google account isn’t on the approved list. Please sign in with an authorised email, or contact the admin for access.</div>
+              <div className="text-[12px] leading-snug text-muted">
+                This Google account isn't on the approved list. Please sign in with an authorised email, or contact the admin.
+              </div>
             </div>
           </div>
         )}
 
-        <button onClick={google} disabled={busy}
-          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white py-3.5 text-[15px] font-medium text-[#1f1f1f] disabled:opacity-60">
+        <button
+          onClick={google}
+          disabled={busy}
+          className="flex w-full items-center justify-center gap-3 rounded-2xl py-3.5 text-[15px] font-medium text-ink surface disabled:opacity-60"
+          style={{ borderColor: "var(--line-strong)" }}
+        >
           <GoogleMark /> {busy ? "Connecting…" : "Continue with Google"}
         </button>
 
         {note && <p className="mt-3 text-center text-[12px] text-[var(--avoid)]">{note}</p>}
         <p className="mt-5 text-center text-[11px] leading-relaxed text-muted">
-          Sign-in is by Google only, for approved members.<br />Your birth details stay private and secure.
+          Sign-in is by Google only, for approved members.<br />
+          Your birth details stay private and secure.
         </p>
       </div>
     </div>
