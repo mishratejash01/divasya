@@ -6,7 +6,8 @@ import { ChevronLeft, Play, Pause, RotateCcw, Check, Flame } from "lucide-react"
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
-import { MANTRAS, mantraById, TARGETS } from "@/lib/demo";
+import { MANTRAS, TARGETS } from "@/lib/demo";
+import { useCatalog, getMantras } from "@/lib/catalog";
 import { bell, ting } from "@/lib/sound";
 
 const SIZE = 280;
@@ -17,9 +18,10 @@ const BEADS = 27;
 export function MalaScreen() {
   const { back, addJapa, japaLifetime, streak, addPunya, haptic } = useApp();
   const params = useApp().screen.params as { mantraId?: string } | undefined;
+  const mantras = useCatalog(getMantras, MANTRAS);
 
-  const [mantraId, setMantraId] = useState(params?.mantraId || MANTRAS[0].id);
-  const mantra = mantraById(mantraId);
+  const [mantraId, setMantraId] = useState(params?.mantraId || mantras[0].id);
+  const mantra = mantras.find((m) => m.id === mantraId) ?? mantras[0];
   const [target, setTarget] = useState(108);
   const [count, setCount] = useState(0);
   const [malas, setMalas] = useState(0);
@@ -50,7 +52,7 @@ export function MalaScreen() {
           gravity: 0.9,
           ticks: 160,
           origin: { y: 0.42 },
-          colors: ["#c8772e", "#d98a3d", "#b89150", "#cda86a", "#ece6db"],
+          colors: ["#C88131", "#D9954C", "#CEB976", "#9C8544", "#FFD9CC"],
           scalar: 0.9,
         });
         return 0;
@@ -77,14 +79,14 @@ export function MalaScreen() {
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
         <span className="font-display text-lg text-ink">Mala Jaap</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Flame size={13} className="text-[var(--saffron-soft)]" />
+          <Flame size={13} className="text-[var(--amber)]" />
           <span className="text-[12px] text-ink">{streak}</span>
         </div>
       </div>
 
       {/* mantra selector */}
       <div className="-mx-1 flex gap-2 overflow-x-auto px-5 no-scrollbar">
-        {MANTRAS.slice(0, 6).map((m) => (
+        {mantras.slice(0, 6).map((m) => (
           <button
             key={m.id}
             onClick={() => { setMantraId(m.id); reset(); }}
@@ -113,7 +115,7 @@ export function MalaScreen() {
                 <span
                   key={i}
                   className="absolute h-2 w-2 rounded-full"
-                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--gold)" : "rgba(236,230,219,0.18)" }}
+                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--ochre-deep)" : "rgba(51,41,26,0.15)" }}
                 />
               );
             })}
@@ -121,10 +123,10 @@ export function MalaScreen() {
 
           {/* progress ring */}
           <svg width={SIZE} height={SIZE} className="absolute inset-0 -rotate-90">
-            <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(236,230,219,0.08)" strokeWidth={6} />
+            <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(51,41,26,0.08)" strokeWidth={6} />
             <motion.circle
               cx={CENTER} cy={CENTER} r={R} fill="none"
-              stroke="var(--saffron)" strokeWidth={6} strokeLinecap="round"
+              stroke="var(--amber)" strokeWidth={6} strokeLinecap="round"
               strokeDasharray={circ}
               animate={{ strokeDashoffset: circ * (1 - progress) }}
               transition={{ type: "spring", stiffness: 120, damping: 20 }}
@@ -136,9 +138,9 @@ export function MalaScreen() {
             className="absolute rounded-full"
             style={{
               left: CENTER - 11, top: CENTER - R - 11, width: 22, height: 22,
-              background: "radial-gradient(circle at 35% 30%, #f0d9a0, var(--gold))",
+              background: "radial-gradient(circle at 35% 30%, #F0DFB2, var(--ochre))",
             }}
-            animate={{ boxShadow: `0 0 ${10 + progress * 26}px ${2 + progress * 6}px rgba(200,119,46,${0.25 + progress * 0.5})` }}
+            animate={{ boxShadow: `0 0 ${10 + progress * 26}px ${2 + progress * 6}px rgba(200,129,49,${0.25 + progress * 0.5})` }}
           />
 
           {/* center */}
