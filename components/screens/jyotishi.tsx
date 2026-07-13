@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Send, Sparkles, CircleDot } from "lucide-react";
 import { useApp } from "../app-context";
 import { cx, Typing, DeityGlyph } from "../ui";
-import { DEITIES, deityById, mantraById, Deity } from "@/lib/demo";
+import { DEITIES, mantraById, Deity } from "@/lib/demo";
+import { useCatalog, getDeities } from "@/lib/catalog";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
 import * as db from "@/lib/db";
 
@@ -13,9 +14,9 @@ type Mode = "jyotishi" | "deity";
 function greeting(mode: Mode, deityId: string, name: string): string {
   if (mode === "deity") {
     const lines: Record<string, string> = {
-      krishna: `Vatsa ${name}, main yahin hoon — tumhare har sukh-dukh ka saathi. Mann mein jo bhi hai, nishank hokar kaho.`,
+      krishna: `Vatsa ${name}, main yahin hoon, tumhare har sukh-dukh ka saathi. Mann mein jo bhi hai, nishank hokar kaho.`,
       shiva: `${name}, shaant ho jao. Main Mahadev, tumhare bhitar ki shaanti hoon. Kya jaanna chahte ho?`,
-      hanuman: `Jai Shri Ram! ${name}, main Hanuman, tumhare saath hoon — bhay tyago. Bolo, kya chinta hai?`,
+      hanuman: `Jai Shri Ram! ${name}, main Hanuman, tumhare saath hoon. Bhay tyago. Bolo, kya chinta hai?`,
       durga: `Mere bachche ${name}, Maa yahin hai. Koi bhi sankat ho, nidar hokar kaho.`,
       ganesha: `Ganpati Bappa Morya! ${name}, har vighna door karunga. Kis kaam mein aashirwad chahiye?`,
       lakshmi: `${name}, main Maa Lakshmi. Tumhare ghar mein sukh-samriddhi ka vaas ho. Kaho, kya chahte ho?`,
@@ -52,7 +53,8 @@ export function JyotishiScreen() {
   const [streaming, setStreaming] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
 
-  const deity = deityById(deityId);
+  const deities = useCatalog(getDeities, DEITIES);
+  const deity = deities.find((d) => d.id === deityId) ?? deities[0];
   const first = profile?.name?.split(" ")[0] || "Devotee";
   const greet = greeting(mode, deityId, first);
   const thread = mode === "deity" ? `deity:${deityId}` : "jyotishi";
@@ -111,10 +113,10 @@ export function JyotishiScreen() {
 
       {mode === "deity" && (
         <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto px-5 no-scrollbar">
-          {DEITIES.map((d) => (
+          {deities.map((d) => (
             <button key={d.id} onClick={() => setDeity(d.id)}
               className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[12px]", d.id === deityId ? "ring-gold text-ink" : "surface text-muted")}
-              style={d.id === deityId ? { background: "rgba(196,168,104,0.08)" } : undefined}>
+              style={d.id === deityId ? { background: "rgba(206,185,118,0.16)" } : undefined}>
               <DeityGlyph deity={d} size={22} /> {d.name.split(" ")[0]}
             </button>
           ))}
@@ -130,7 +132,7 @@ export function JyotishiScreen() {
         )}
         {mode === "deity" && (
           <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
-            className="mx-auto mt-1 flex items-center gap-2 rounded-full surface px-4 py-2 text-[12px] text-[var(--saffron-soft)]">
+            className="mx-auto mt-1 flex items-center gap-2 rounded-full surface px-4 py-2 text-[12px] text-[var(--amber-deep)]">
             <CircleDot size={14} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
           </button>
         )}
@@ -139,7 +141,7 @@ export function JyotishiScreen() {
       {messages.length === 0 && (
         <div className="-mx-1 flex gap-2 overflow-x-auto px-5 pb-2 no-scrollbar">
           {SUGGEST[mode].map((s) => (
-            <button key={s} onClick={() => send(s)} className="shrink-0 rounded-full surface px-3 py-1.5 text-[12px] text-muted">{s}</button>
+            <button key={s} onClick={() => send(s)} className="shrink-0 rounded-full surface px-3 py-1.5 text-[12px] text-ink-dim" style={{ border: "1px solid var(--line)" }}>{s}</button>
           ))}
         </div>
       )}
@@ -147,8 +149,8 @@ export function JyotishiScreen() {
       <div className="flex items-center gap-2 px-4 pb-5 pt-1">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder={mode === "jyotishi" ? "Apna prashn poochhiye…" : `${deity.name.split(" ")[0]} se baat karein…`}
-          className="flex-1 rounded-full bg-transparent px-4 py-3 text-[14px] text-ink outline-none placeholder:text-muted"
-          style={{ border: "1px solid var(--line-strong)" }} />
+          className="flex-1 rounded-full px-4 py-3 text-[14px] text-ink outline-none placeholder:text-muted"
+          style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }} />
         <button onClick={() => send(input)} disabled={streaming}
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full btn-saffron disabled:opacity-50"><Send size={17} /></button>
       </div>
@@ -167,8 +169,8 @@ function Bubble({ role, children, mode, deity }: {
         <DeityGlyph deity={deity} size={28} />
       ) : (
         <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
-          style={{ background: "rgba(189,122,55,0.16)", border: "1px solid var(--line)" }}>
-          <Sparkles size={13} className="text-[var(--saffron-soft)]" />
+          style={{ background: "rgba(200,129,49,0.12)", border: "1px solid var(--line)" }}>
+          <Sparkles size={13} className="text-[var(--amber)]" />
         </div>
       )}
       <div className="max-w-[80%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[13.5px] leading-relaxed text-ink surface">{children}</div>
