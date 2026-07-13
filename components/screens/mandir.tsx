@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Bell, Flower2, Shell, Flame, Music2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { IconDiya, IconBell, IconFlower, IconShankh, IconAarti } from "../icons";
 import { useApp } from "../app-context";
 import { cx, DeityGlyph } from "../ui";
 import { DEITIES } from "@/lib/demo";
@@ -49,11 +50,11 @@ export function MandirScreen() {
   }
 
   const actions = [
-    { label: lit ? "Diya Lit" : "Light Diya", icon: Flame, on: lit, run: lightDiya },
-    { label: "Ring Bell", icon: Bell, on: false, run: ringBell },
-    { label: "Offer Flower", icon: Flower2, on: false, run: offerFlower },
-    { label: "Blow Conch", icon: Shell, on: false, run: blowConch },
-    { label: aarti ? "Aarti Playing" : "Play Aarti", icon: Music2, on: aarti, run: toggleAarti },
+    { label: lit ? "Diya Lit" : "Light Diya", icon: IconDiya, on: lit, run: lightDiya },
+    { label: "Ring Bell", icon: IconBell, on: false, run: ringBell },
+    { label: "Offer Flower", icon: IconFlower, on: false, run: offerFlower },
+    { label: "Blow Conch", icon: IconShankh, on: false, run: blowConch },
+    { label: aarti ? "Aarti Playing" : "Play Aarti", icon: IconAarti, on: aarti, run: toggleAarti },
   ];
 
   return (
@@ -129,7 +130,7 @@ export function MandirScreen() {
         <motion.div
           key={bellKey}
           animate={{ rotate: [0, 16, -14, 10, -7, 0] }} transition={{ duration: 0.7 }}
-          className="absolute right-5 top-11"><Bell size={26} className="text-[var(--ochre-deep)]" strokeWidth={1.6} /></motion.div>
+          className="absolute right-5 top-11"><IconBell size={26} className="text-[var(--ochre-deep)]" /></motion.div>
 
         {/* falling petals */}
         <AnimatePresence>

@@ -1,43 +1,43 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Settings, HelpCircle, Share2, LogOut } from "lucide-react";
 import {
-  ChevronLeft, ChevronRight, Sparkles, Flame, MessagesSquare, Flower2, Tv,
-  CircleDot, Landmark, CalendarDays, BookOpen, Compass, Baby, Share2,
-  Settings, HelpCircle, LogOut,
-} from "lucide-react";
+  IconEye, IconDiya, IconChat, IconWheel, IconLotus, IconDarshan, IconMandir,
+  IconMala, IconStar, IconCompass, IconBaby, IconJournal, IconSandesh, IconComponent,
+} from "../icons";
 import { useApp, ScreenName } from "../app-context";
 import { Avatar, Logomark } from "../ui";
 import { rashiLabel } from "@/lib/astro";
 
-type Item = { label: string; icon: typeof Sparkles; to?: ScreenName; params?: Record<string, unknown>; live?: boolean };
+type Item = { label: string; icon: IconComponent; to?: ScreenName; params?: Record<string, unknown>; live?: boolean };
 
 const SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: "Astrology & Guidance",
     items: [
-      { label: "AI Astrology", icon: Sparkles, to: "ai", params: { mode: "jyotishi" }, live: true },
-      { label: "Talk to your Devta", icon: Flame, to: "ai", params: { mode: "deity" }, live: true },
-      { label: "Consult Astrologers", icon: MessagesSquare, to: "consult", live: true },
-      { label: "Panchang & Muhurat", icon: CalendarDays, to: "panchang" },
+      { label: "AI Astrology", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, live: true },
+      { label: "Talk to your Devta", icon: IconDiya, to: "ai", params: { mode: "deity" }, live: true },
+      { label: "Consult Astrologers", icon: IconChat, to: "consult", live: true },
+      { label: "Panchang & Muhurat", icon: IconWheel, to: "panchang" },
     ],
   },
   {
     title: "Devotion",
     items: [
-      { label: "Online Puja & Chadhava", icon: Flower2, to: "puja", live: true },
-      { label: "Live Temple Darshan", icon: Tv, to: "temple", live: true },
-      { label: "My Mandir", icon: Landmark, to: "mandir" },
-      { label: "Mala Jaap", icon: CircleDot, to: "mala" },
-      { label: "Festivals & Pooja Guide", icon: CalendarDays, to: "festivals" },
+      { label: "Online Puja & Chadhava", icon: IconLotus, to: "puja", live: true },
+      { label: "Live Temple Darshan", icon: IconDarshan, to: "temple", live: true },
+      { label: "My Mandir", icon: IconMandir, to: "mandir" },
+      { label: "Mala Jaap", icon: IconMala, to: "mala" },
+      { label: "Festivals & Pooja Guide", icon: IconStar, to: "festivals" },
     ],
   },
   {
     title: "Tools",
     items: [
-      { label: "Vastu Compass", icon: Compass, to: "vastu", live: true },
-      { label: "Naamkaran", icon: Baby, to: "naamkaran", live: true },
-      { label: "Spiritual Library", icon: BookOpen, to: "library" },
-      { label: "Daily Sandesh", icon: Share2, to: "sandesh" },
+      { label: "Vastu Compass", icon: IconCompass, to: "vastu", live: true },
+      { label: "Naamkaran", icon: IconBaby, to: "naamkaran", live: true },
+      { label: "Spiritual Library", icon: IconJournal, to: "library" },
+      { label: "Daily Sandesh", icon: IconSandesh, to: "sandesh" },
     ],
   },
 ];
