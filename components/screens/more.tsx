@@ -3,10 +3,10 @@
 import {
   ChevronLeft, ChevronRight, Sparkles, Flame, MessagesSquare, Flower2, Tv,
   CircleDot, Landmark, CalendarDays, BookOpen, Compass, Baby, Share2,
-  Settings, HelpCircle, LogOut, ChevronRightCircle,
+  Settings, HelpCircle, LogOut,
 } from "lucide-react";
 import { useApp, ScreenName } from "../app-context";
-import { Avatar } from "../ui";
+import { Avatar, Logomark } from "../ui";
 import { rashiLabel } from "@/lib/astro";
 
 type Item = { label: string; icon: typeof Sparkles; to?: ScreenName; params?: Record<string, unknown>; live?: boolean };
@@ -62,7 +62,7 @@ export function MoreScreen() {
 
       {/* profile */}
       <button className="mx-5 flex w-[calc(100%-2.5rem)] items-center gap-3 rounded-2xl card-temple p-4 text-left">
-        <Avatar name={name} size={52} tint="#c8772e" />
+        <Avatar name={name} size={52} tint="#C88131" />
         <div className="flex-1">
           <div className="font-display text-[17px] text-ink">{name}</div>
           <div className="text-[12px] text-muted">{rashi}</div>
@@ -81,11 +81,11 @@ export function MoreScreen() {
                   onClick={() => it.to && go(it.to, it.params)}
                   className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                   style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                  <Icon size={18} className="text-[var(--saffron-soft)]" strokeWidth={1.8} />
+                  <Icon size={18} className="text-[var(--amber)]" strokeWidth={1.7} />
                   <span className="flex-1 text-[14px] text-ink">{it.label}</span>
                   {it.live && (
                     <span className="rounded-full px-2 py-0.5 text-[9.5px] font-semibold tracking-wide"
-                      style={{ background: "rgba(110,158,118,0.16)", color: "var(--good)" }}>LIVE</span>
+                      style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}>LIVE</span>
                   )}
                   <ChevronRight size={16} className="text-muted" />
                 </button>
@@ -112,8 +112,8 @@ export function MoreScreen() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 px-5 pb-2 pt-7 text-[11px] text-muted">
-        <ChevronRightCircle size={12} /> Divasya · Spiritual Journey · v2.0
+      <div className="flex items-center justify-center gap-1.5 px-5 pb-2 pt-7 text-[11px] text-muted tracking-widest">
+        <Logomark size={14} className="text-[var(--amber)]" /> Divasya · Spiritual Journey
       </div>
     </div>
   );
