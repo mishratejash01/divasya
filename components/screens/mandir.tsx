@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Bell, Flower2, Shell, Flame, Music2 } from "lucide-react";
 import { useApp } from "../app-context";
 import { cx, DeityGlyph } from "../ui";
-import { DEITIES, deityById } from "@/lib/demo";
+import { DEITIES } from "@/lib/demo";
+import { useCatalog, getDeities } from "@/lib/catalog";
 import { bell, conch, ting } from "@/lib/sound";
 
 export function MandirScreen() {
   const { back, deityId, setDeity, addPunya, haptic } = useApp();
-  const deity = deityById(deityId);
+  const deities = useCatalog(getDeities, DEITIES);
+  const deity = deities.find((d) => d.id === deityId) ?? deities[0];
 
   const [lit, setLit] = useState(false);
   const [aarti, setAarti] = useState(false);
@@ -28,7 +30,7 @@ export function MandirScreen() {
     haptic([10, 30, 10]);
   }
   function offerFlower() {
-    const tints = ["#cf924a", "#c2a868", "#ddc28c", "#b07a4e"];
+    const tints = ["#C88131", "#CEB976", "#E8A87C", "#D9954C"];
     const next = Array.from({ length: 9 }).map((_, i) => ({
       id: Date.now() + i,
       x: 14 + Math.random() * 72,
@@ -66,13 +68,13 @@ export function MandirScreen() {
 
       {/* deity selector */}
       <div className="-mx-1 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar">
-        {DEITIES.map((d) => (
+        {deities.map((d) => (
           <button
             key={d.id}
             onClick={() => { setDeity(d.id); setBlessing(false); haptic(8); }}
             className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[12px]",
               d.id === deityId ? "ring-gold text-ink" : "surface text-muted")}
-            style={d.id === deityId ? { background: "rgba(196,168,104,0.08)" } : undefined}
+            style={d.id === deityId ? { background: "rgba(206,185,118,0.16)" } : undefined}
           >
             <DeityGlyph deity={d} size={22} /> {d.name.split(" ")[0]}
           </button>
@@ -81,23 +83,23 @@ export function MandirScreen() {
 
       {/* the shrine */}
       <div className="relative mx-5 mt-3 flex-1 overflow-hidden rounded-3xl"
-        style={{ background: "linear-gradient(180deg, #1c140e, #0d0a08)", border: "1px solid var(--line-strong)" }}>
+        style={{ background: "linear-gradient(180deg, #FFF8E9, #F6ECD0)", border: "1px solid var(--line-gold)" }}>
 
         {/* toran / garland — antique bead string */}
         <div className="absolute inset-x-0 top-0 flex items-start justify-around px-3 pt-2.5">
           {Array.from({ length: 17 }).map((_, i) => (
             <span key={i} className="block h-1.5 w-1.5 rounded-full"
-              style={{ background: i % 2 ? "var(--gold)" : "var(--saffron-soft)", opacity: 0.5, transform: `translateY(${i % 2 ? 5 : 0}px)` }} />
+              style={{ background: i % 2 ? "var(--amber)" : "var(--ochre)", opacity: 0.6, transform: `translateY(${i % 2 ? 5 : 0}px)` }} />
           ))}
         </div>
 
         {/* niche + deity */}
         <div className="absolute inset-x-0 top-10 flex flex-col items-center">
           <div className="relative grid h-44 w-40 place-items-center rounded-t-full"
-            style={{ background: `radial-gradient(circle at 50% 65%, ${deity.glow.replace("0.5", "0.28")}, transparent 70%)`, border: "1px solid rgba(184,145,80,0.3)", borderBottom: "none" }}>
+            style={{ background: "radial-gradient(circle at 50% 65%, rgba(200,129,49,0.16), transparent 70%)", border: "1px solid rgba(156,133,68,0.45)", borderBottom: "none" }}>
             <motion.div
               animate={{ y: [0, -5, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              style={{ filter: lit ? "drop-shadow(0 0 22px rgba(255,180,90,0.4))" : "none" }}>
+              style={{ filter: lit ? "drop-shadow(0 0 22px rgba(200,129,49,0.45))" : "none" }}>
               <DeityGlyph deity={deity} size={104} />
             </motion.div>
           </div>
@@ -113,13 +115,13 @@ export function MandirScreen() {
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
                   className="mb-0.5 h-5 w-3 rounded-full flame-glow"
-                  style={{ background: "radial-gradient(circle at 50% 70%, #fff3c0, #ff9d3c 60%, #ff5a1f)" }}>
+                  style={{ background: "radial-gradient(circle at 50% 70%, #FFF3C0, #E89B45 60%, #C86A28)" }}>
                   <motion.div animate={{ scaleY: [1, 1.25, 0.9, 1.15, 1], opacity: [1, 0.85, 1] }} transition={{ duration: 0.5, repeat: Infinity }} className="h-full w-full" />
                 </motion.div>
               )}
             </AnimatePresence>
             <span className="block h-3 w-6 rounded-b-[10px]"
-              style={{ background: "linear-gradient(180deg,#8a6736,#3a2a17)", border: "1px solid var(--line-gold)", borderTop: "none" }} />
+              style={{ background: "linear-gradient(180deg,#B08434,#7A5A22)", border: "1px solid var(--line-gold)", borderTop: "none" }} />
           </div>
         ))}
 
@@ -127,7 +129,7 @@ export function MandirScreen() {
         <motion.div
           key={bellKey}
           animate={{ rotate: [0, 16, -14, 10, -7, 0] }} transition={{ duration: 0.7 }}
-          className="absolute right-5 top-11"><Bell size={26} className="text-[var(--gold-soft)]" strokeWidth={1.6} /></motion.div>
+          className="absolute right-5 top-11"><Bell size={26} className="text-[var(--ochre-deep)]" strokeWidth={1.6} /></motion.div>
 
         {/* falling petals */}
         <AnimatePresence>
@@ -147,7 +149,7 @@ export function MandirScreen() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="absolute inset-x-0 bottom-14 flex items-end justify-center gap-1">
               {Array.from({ length: 14 }).map((_, i) => (
-                <motion.span key={i} className="w-1 rounded-full bg-[var(--saffron)]"
+                <motion.span key={i} className="w-1 rounded-full bg-[var(--amber)]"
                   animate={{ height: [6, 8 + ((i * 7) % 22), 6] }}
                   transition={{ duration: 0.6 + (i % 4) * 0.15, repeat: Infinity, ease: "easeInOut" }} />
               ))}
@@ -159,9 +161,8 @@ export function MandirScreen() {
         <AnimatePresence>
           {blessing && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-              className="absolute inset-x-4 bottom-3 rounded-2xl px-4 py-2.5 text-center"
-              style={{ background: "rgba(28,25,21,0.9)", border: "1px solid var(--line-strong)" }}>
-              <div className="font-deva text-[14px] text-gold">दर्शन सम्पूर्ण</div>
+              className="absolute inset-x-4 bottom-3 rounded-2xl px-4 py-2.5 text-center surface ring-gold">
+              <div className="font-deva text-[14px] text-ink">दर्शन सम्पूर्ण</div>
               <div className="text-[11.5px] text-muted">{deity.name} blesses you · +21 Punya</div>
             </motion.div>
           )}
@@ -175,7 +176,7 @@ export function MandirScreen() {
           return (
             <button key={a.label} onClick={a.run}
               className={cx("flex flex-col items-center gap-1.5 rounded-2xl py-3", a.on ? "btn-saffron" : "surface")}>
-              <Icon size={19} className={a.on ? "" : "text-[var(--saffron-soft)]"} strokeWidth={1.8} />
+              <Icon size={19} className={a.on ? "" : "text-[var(--amber)]"} strokeWidth={1.8} />
               <span className={cx("text-center text-[9.5px] leading-tight", a.on ? "" : "text-muted")}>{a.label}</span>
             </button>
           );
