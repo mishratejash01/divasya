@@ -1,27 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Marcellus, Tiro_Devanagari_Hindi } from "next/font/google";
+import { Marcellus, Noto_Serif, Noto_Serif_Devanagari } from "next/font/google";
 import "./globals.css";
 import { PWARegister } from "@/components/pwa-register";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const marcellus = Marcellus({
-  variable: "--font-marcellus",
+// Brand type system: lapidary serif display + serif body, Noto Serif
+// Devanagari for regional script (per brand guidelines).
+const marcellus = Marcellus({ variable: "--font-marcellus", subsets: ["latin"], weight: "400" });
+const notoSerif = Noto_Serif({
+  variable: "--font-serif-body",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600"],
 });
-const tiro = Tiro_Devanagari_Hindi({
-  variable: "--font-tiro",
+const notoDeva = Noto_Serif_Devanagari({
+  variable: "--font-deva-serif",
   subsets: ["devanagari"],
-  weight: "400",
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
   title: "Divasya — Your Spiritual Companion",
   description:
-    "AI Jyotishi, deity companion, mala counter, virtual temple and astrologer consults — a Sanatani-first experience.",
+    "Panchang, Kundli, AI Jyotishi, Japa and Darshan — daily guidance rooted in Indian wisdom for a more aware, balanced life.",
   applicationName: "Divasya",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Divasya" },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Divasya" },
   icons: {
     icon: "/icon-192.png",
     apple: "/apple-touch-icon.png",
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#c8772e",
+  themeColor: "#C88131",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -41,7 +43,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${marcellus.variable} ${tiro.variable} h-full antialiased`}
+      className={`${marcellus.variable} ${notoSerif.variable} ${notoDeva.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <div id="app-root">{children}</div>
