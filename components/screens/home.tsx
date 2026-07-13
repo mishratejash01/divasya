@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Menu, ChevronRight, Share2, Sun, Sunrise } from "lucide-react";
 import {
-  Menu, Bell, Sparkles, Flame, Landmark, CircleDot, MessagesSquare,
-  Flower2, CalendarDays, Compass, ChevronRight, Share2, Sun, Moon, Sunrise,
-} from "lucide-react";
+  IconEye, IconDiya, IconMandir, IconMala, IconChat, IconLotus,
+  IconWheel, IconCompass, IconFlame, IconBell, IconStar,
+} from "../icons";
 import { useApp } from "../app-context";
 import { Avatar, SectionLabel, Wordmark, Logomark, cx } from "../ui";
 import { computePanchang, activeChoghadiya, fmtTime } from "@/lib/panchang";
@@ -17,14 +18,14 @@ import { rashiLabel } from "@/lib/astro";
 let firedOnce = false;
 
 const GRID = [
-  { label: "AI Jyotishi", icon: Sparkles, to: "ai", params: { mode: "jyotishi" } },
-  { label: "Talk to Devta", icon: Flame, to: "ai", params: { mode: "deity" } },
-  { label: "My Mandir", icon: Landmark, to: "mandir" },
-  { label: "Mala Jaap", icon: CircleDot, to: "mala" },
-  { label: "Consult", icon: MessagesSquare, to: "consult" },
-  { label: "Online Puja", icon: Flower2, to: "puja" },
-  { label: "Panchang", icon: CalendarDays, to: "panchang" },
-  { label: "Vastu", icon: Compass, to: "vastu" },
+  { label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" } },
+  { label: "Talk to Devta", icon: IconDiya, to: "ai", params: { mode: "deity" } },
+  { label: "My Mandir", icon: IconMandir, to: "mandir" },
+  { label: "Mala Jaap", icon: IconMala, to: "mala" },
+  { label: "Consult", icon: IconChat, to: "consult" },
+  { label: "Online Puja", icon: IconLotus, to: "puja" },
+  { label: "Panchang", icon: IconWheel, to: "panchang" },
+  { label: "Vastu", icon: IconCompass, to: "vastu" },
 ] as const;
 
 function salutation(d: Date): string {
@@ -104,7 +105,7 @@ export function HomeScreen() {
           }
           className="grid h-9 w-9 place-items-center rounded-full surface"
         >
-          <Bell size={17} className="text-ink" />
+          <IconBell size={18} className="text-ink" />
         </button>
       </div>
 
@@ -184,7 +185,7 @@ export function HomeScreen() {
         className="mx-5 mt-4 flex w-[calc(100%-2.5rem)] items-center gap-4 rounded-2xl surface p-4 text-left"
       >
         <div className="grid h-12 w-12 place-items-center rounded-full" style={{ background: "rgba(200,129,49,0.12)", border: "1px solid var(--line-gold)" }}>
-          <Flame size={22} className="text-[var(--amber)]" />
+          <IconFlame size={22} className="text-[var(--amber)]" />
         </div>
         <div className="flex-1">
           <div className="text-[14px] font-medium text-ink">{streak}-day japa streak</div>
@@ -218,7 +219,7 @@ export function HomeScreen() {
         <div className="px-5 pt-7">
           <button onClick={() => go("festivals")} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: "linear-gradient(160deg, rgba(255,217,204,0.7), rgba(206,185,118,0.25))", border: "1px solid var(--line-gold)" }}>
-              <Flower2 size={26} className="text-[var(--amber-deep)]" strokeWidth={1.6} />
+              <IconLotus size={28} className="text-[var(--amber-deep)]" />
             </div>
             <div className="flex-1">
               <div className="text-[11px] uppercase tracking-wider text-muted">
@@ -239,7 +240,7 @@ export function HomeScreen() {
         <div className="rounded-2xl surface p-4">
           <div className="flex items-center justify-between">
             <span className="font-display text-[16px] text-ink">Today · {rashi.split(" ")[0]}</span>
-            <Moon size={18} className="text-[var(--ochre-deep)]" strokeWidth={1.6} />
+            <IconStar size={18} className="text-[var(--ochre-deep)]" />
           </div>
           {horoscope ? (
             <p className="mt-2 text-[13px] leading-relaxed text-muted">{horoscope}</p>

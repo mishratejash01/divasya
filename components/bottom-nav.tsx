@@ -1,14 +1,14 @@
 "use client";
 
-import { Home, Sparkles, MessagesSquare, LayoutGrid } from "lucide-react";
+import { IconHome, IconEye, IconChat, IconMore, IconComponent } from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { cx } from "./ui";
 
-const TABS: { id: ScreenName; label: string; icon: typeof Home; match: ScreenName[] }[] = [
-  { id: "home", label: "Home", icon: Home, match: ["home"] },
-  { id: "ai", label: "Jyotishi", icon: Sparkles, match: ["ai"] },
-  { id: "consult", label: "Consult", icon: MessagesSquare, match: ["consult", "consultChat"] },
-  { id: "menu", label: "More", icon: LayoutGrid, match: ["menu", "vastu", "naamkaran", "library", "festivals", "puja", "temple", "panchang", "mala", "mandir", "sandesh"] },
+const TABS: { id: ScreenName; label: string; icon: IconComponent; match: ScreenName[] }[] = [
+  { id: "home", label: "Home", icon: IconHome, match: ["home"] },
+  { id: "ai", label: "Jyotishi", icon: IconEye, match: ["ai"] },
+  { id: "consult", label: "Consult", icon: IconChat, match: ["consult", "consultChat"] },
+  { id: "menu", label: "More", icon: IconMore, match: ["menu", "vastu", "naamkaran", "library", "festivals", "puja", "temple", "panchang", "mala", "mandir", "sandesh"] },
 ];
 
 export function BottomNav() {

@@ -1,9 +1,10 @@
 "use client";
 
+import { LayoutGrid, PanelLeftClose } from "lucide-react";
 import {
-  Home, Sparkles, Flame, MessagesSquare, Landmark, CircleDot,
-  CalendarDays, Flower2, Tv, Compass, LayoutGrid, PanelLeftClose,
-} from "lucide-react";
+  IconHome, IconEye, IconDiya, IconChat, IconMandir, IconMala,
+  IconWheel, IconLotus, IconDarshan, IconCompass, IconComponent,
+} from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
 import { rashiLabel } from "@/lib/astro";
@@ -11,7 +12,7 @@ import { rashiLabel } from "@/lib/astro";
 type NavItem = {
   id: string;
   label: string;
-  icon: typeof Home;
+  icon: IconComponent;
   to: ScreenName;
   params?: Record<string, unknown>;
   match: ScreenName[];
@@ -21,26 +22,26 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Daily",
     items: [
-      { id: "home", label: "Home", icon: Home, to: "home", match: ["home"] },
-      { id: "panchang", label: "Panchang", icon: CalendarDays, to: "panchang", match: ["panchang", "festivals"] },
-      { id: "mala", label: "Mala Jaap", icon: CircleDot, to: "mala", match: ["mala"] },
+      { id: "home", label: "Home", icon: IconHome, to: "home", match: ["home"] },
+      { id: "panchang", label: "Panchang", icon: IconWheel, to: "panchang", match: ["panchang", "festivals"] },
+      { id: "mala", label: "Mala Jaap", icon: IconMala, to: "mala", match: ["mala"] },
     ],
   },
   {
     title: "Guidance",
     items: [
-      { id: "ai", label: "AI Jyotishi", icon: Sparkles, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
-      { id: "deity", label: "Talk to Devta", icon: Flame, to: "ai", params: { mode: "deity" }, match: [] },
-      { id: "consult", label: "Consult", icon: MessagesSquare, to: "consult", match: ["consult", "consultChat"] },
+      { id: "ai", label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
+      { id: "deity", label: "Talk to Devta", icon: IconDiya, to: "ai", params: { mode: "deity" }, match: [] },
+      { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
     ],
   },
   {
     title: "Devotion",
     items: [
-      { id: "mandir", label: "My Mandir", icon: Landmark, to: "mandir", match: ["mandir"] },
-      { id: "puja", label: "Online Puja", icon: Flower2, to: "puja", match: ["puja"] },
-      { id: "temple", label: "Live Darshan", icon: Tv, to: "temple", match: ["temple"] },
-      { id: "vastu", label: "Vastu Compass", icon: Compass, to: "vastu", match: ["vastu", "naamkaran", "library", "sandesh"] },
+      { id: "mandir", label: "My Mandir", icon: IconMandir, to: "mandir", match: ["mandir"] },
+      { id: "puja", label: "Online Puja", icon: IconLotus, to: "puja", match: ["puja"] },
+      { id: "temple", label: "Live Darshan", icon: IconDarshan, to: "temple", match: ["temple"] },
+      { id: "vastu", label: "Vastu Compass", icon: IconCompass, to: "vastu", match: ["vastu", "naamkaran", "library", "sandesh"] },
     ],
   },
 ];
