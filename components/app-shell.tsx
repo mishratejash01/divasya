@@ -5,6 +5,7 @@ import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
 import { PushToast } from "./push-toast";
+import { Logomark } from "./ui";
 
 import { HomeScreen } from "./screens/home";
 import { MalaScreen } from "./screens/mala";
@@ -82,12 +83,12 @@ function Splash() {
   return (
     <div className="grid h-full place-items-center">
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: [0.5, 1, 0.5], scale: 1 }}
-        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-        className="font-display text-5xl text-[var(--gold-soft)]"
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: [0.55, 1, 0.55], scale: 1 }}
+        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+        className="text-[var(--amber)]"
       >
-        ॐ
+        <Logomark size={72} />
       </motion.div>
     </div>
   );
