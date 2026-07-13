@@ -1,0 +1,14 @@
+import { computePanchang, activeChoghadiya, fmtTime } from "../lib/panchang";
+import { computeKundli, kundliSummary } from "../lib/kundli";
+const p = computePanchang(new Date());
+console.log("weekday:", p.weekday, "|", p.weekdayHi, "|", p.dateLabel);
+console.log("tithi:", p.tithi.display, "| nakshatra:", p.nakshatra.name, "pada", p.nakshatra.pada);
+console.log("yoga:", p.yoga.name, "| karana:", p.karana.name, "| masa:", p.masa, "| moon rashi:", p.moonRashi);
+console.log("sunrise:", fmtTime(p.sunrise), "| sunset:", fmtTime(p.sunset));
+console.log("rahu kaal:", fmtTime(p.rahuKaal!.from), "-", fmtTime(p.rahuKaal!.to));
+const now = activeChoghadiya(p);
+console.log("choghadiya now:", now?.name, now?.good ? "(shubh)" : "(avoid)", now?.night ? "night" : "day");
+console.log("vrat:", p.vrat);
+const k = computeKundli("1996-08-14", "07:42");
+console.log("--- kundli 1996-08-14 07:42 ---");
+console.log(kundliSummary(k!));
