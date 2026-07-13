@@ -17,7 +17,7 @@ export function BottomNav() {
     <div
       className="absolute inset-x-0 bottom-0 z-30 flex items-stretch justify-around px-2 pb-5 pt-2 lg:hidden"
       style={{
-        background: "linear-gradient(0deg, var(--bg-0) 78%, rgba(10,9,8,0.85) 92%, transparent)",
+        background: "linear-gradient(0deg, var(--bg-0) 78%, rgba(252,249,232,0.9) 92%, transparent)",
         borderTop: "1px solid var(--line)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
@@ -35,7 +35,7 @@ export function BottomNav() {
             <Icon
               size={22}
               strokeWidth={active ? 2.3 : 1.8}
-              className={cx("transition-colors", active ? "text-[var(--saffron)]" : "text-muted")}
+              className={cx("transition-colors", active ? "text-[var(--amber)]" : "text-muted")}
             />
             <span
               className={cx(

@@ -5,7 +5,7 @@ import {
   CalendarDays, Flower2, Tv, Compass, LayoutGrid,
 } from "lucide-react";
 import { useApp, ScreenName } from "./app-context";
-import { Avatar, cx } from "./ui";
+import { Avatar, Logomark, Wordmark, cx } from "./ui";
 import { rashiLabel } from "@/lib/astro";
 
 type NavItem = {
@@ -52,13 +52,12 @@ export function SideNav() {
 
   return (
     <aside className="hidden h-full w-[256px] shrink-0 flex-col border-r border-[var(--line)] px-4 py-6 lg:flex"
-      style={{ background: "linear-gradient(180deg, rgba(237,229,215,0.018), transparent 30%)" }}>
+      style={{ background: "linear-gradient(180deg, rgba(200,129,49,0.05), transparent 30%)" }}>
       {/* brand */}
       <button onClick={() => go("home")} className="mb-7 flex items-center gap-3 px-2 text-left">
-        <span className="grid h-10 w-10 place-items-center rounded-2xl font-display text-[20px] text-[var(--gold-soft)]"
-          style={{ background: "rgba(196,168,104,0.08)", border: "1px solid var(--line-gold)" }}>ॐ</span>
+        <Logomark size={36} className="text-[var(--amber)]" />
         <span>
-          <span className="block font-display text-[18px] tracking-[0.22em] text-ink">DIVASYA</span>
+          <Wordmark size={19} />
           <span className="block font-deva text-[10.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
         </span>
       </button>
@@ -80,10 +79,10 @@ export function SideNav() {
                       "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                       active ? "text-ink" : "text-muted hover:text-ink"
                     )}
-                    style={active ? { background: "rgba(196,168,104,0.08)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
+                    style={active ? { background: "rgba(200,129,49,0.10)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
                   >
                     <Icon size={18} strokeWidth={active ? 2.1 : 1.7}
-                      className={cx("shrink-0 transition-colors", active ? "text-[var(--saffron-soft)]" : "text-[var(--muted)] group-hover:text-[var(--saffron-soft)]")} />
+                      className={cx("shrink-0 transition-colors", active ? "text-[var(--amber)]" : "text-[var(--muted)] group-hover:text-[var(--amber)]")} />
                     <span className="text-[13.5px]">{it.label}</span>
                   </button>
                 );
@@ -95,9 +94,9 @@ export function SideNav() {
 
       {/* profile */}
       <button onClick={() => go("menu")}
-        className="mt-4 flex items-center gap-3 rounded-2xl p-2.5 text-left transition-colors hover:bg-[rgba(237,229,215,0.03)]"
+        className="mt-4 flex items-center gap-3 rounded-2xl p-2.5 text-left transition-colors hover:bg-[rgba(200,129,49,0.06)]"
         style={{ border: "1px solid var(--line)" }}>
-        <Avatar name={name} size={38} tint="#bd7a37" />
+        <Avatar name={name} size={38} tint="#C88131" />
         <div className="min-w-0 flex-1">
           <div className="truncate font-display text-[14px] text-ink">{name}</div>
           <div className="truncate text-[11px] text-muted">{rashi}</div>
