@@ -2,7 +2,7 @@
 
 import {
   Home, Sparkles, Flame, MessagesSquare, Landmark, CircleDot,
-  CalendarDays, Flower2, Tv, Compass, LayoutGrid,
+  CalendarDays, Flower2, Tv, Compass, LayoutGrid, PanelLeftClose,
 } from "lucide-react";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
@@ -45,22 +45,35 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
   },
 ];
 
-export function SideNav() {
+export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: () => void }) {
   const { screen, go, haptic, profile, logout } = useApp();
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
 
+  if (!open) return null;
+
   return (
     <aside className="hidden h-full w-[256px] shrink-0 flex-col border-r border-[var(--line)] px-4 py-6 lg:flex"
       style={{ background: "linear-gradient(180deg, rgba(200,129,49,0.05), transparent 30%)" }}>
-      {/* brand */}
-      <button onClick={() => go("home")} className="mb-7 flex items-center gap-3 px-2 text-left">
-        <Logomark size={36} className="text-[var(--amber)]" />
-        <span>
-          <Wordmark size={19} />
-          <span className="block font-deva text-[10.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
-        </span>
-      </button>
+      {/* brand + collapse */}
+      <div className="mb-7 flex items-center gap-3 px-2">
+        <button onClick={() => go("home")} className="flex flex-1 items-center gap-3 text-left">
+          <Logomark size={36} className="shrink-0 text-[var(--amber)]" />
+          <span>
+            <Wordmark size={19} />
+            <span className="block font-deva text-[10.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
+          </span>
+        </button>
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            aria-label="Hide sidebar"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-[rgba(200,129,49,0.08)] hover:text-[var(--amber-deep)]"
+          >
+            <PanelLeftClose size={16} />
+          </button>
+        )}
+      </div>
 
       {/* groups */}
       <nav className="flex-1 space-y-5 overflow-y-auto no-scrollbar">
