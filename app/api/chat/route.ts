@@ -1,13 +1,14 @@
 import { jyotishiSystem, deitySystem, consultSystem } from "@/lib/prompts";
 import { deityById, astrologerById } from "@/lib/demo";
+import { supabaseAdmin } from "@/lib/supabase";
 import { Profile } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// Free-tier models, in order of preference. The lite models 503 under load,
-// so we retry and then fall through to the next model before ever going canned.
-const MODELS = ["gemini-2.5-flash-lite", "gemini-2.0-flash-lite", "gemini-2.5-flash"];
+// Quality-first model chain. gemini-2.5-flash leads (markedly better reasoning
+// and language than lite); lite variants are the resilience net for 503 spikes.
+const MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -29,10 +30,34 @@ function asProfile(p?: Partial<Profile> | null): Profile {
   };
 }
 
-function pick(mode: string, profile: Profile, deityId?: string, astrologerId?: string) {
-  if (mode === "deity") return deitySystem(deityById(deityId || profile.deity_id), profile);
-  if (mode === "consult") return consultSystem(astrologerById(astrologerId || "a1"), profile);
-  return jyotishiSystem(profile);
+/** Deity persona from the DB (source of truth), demo seed as fallback. */
+async function loadDeity(id: string) {
+  try {
+    const { data } = await supabaseAdmin().from("deities").select("*").eq("id", id).maybeSingle();
+    if (data) {
+      return {
+        ...deityById(id),
+        name: data.name, deva: data.deva, tagline: data.tagline,
+        persona: data.persona, aarti: data.aarti, color: data.color,
+        suggestedMantraId: data.suggested_mantra_id,
+      };
+    }
+  } catch { /* fall through */ }
+  return deityById(id);
+}
+
+async function loadAstrologer(id: string) {
+  try {
+    const { data } = await supabaseAdmin().from("astrologers").select("*").eq("id", id).maybeSingle();
+    if (data) {
+      return {
+        ...astrologerById(id),
+        name: data.name, specialty: data.specialty, exp: data.exp,
+        rating: Number(data.rating), langs: data.langs, rate: data.rate,
+      };
+    }
+  } catch { /* fall through */ }
+  return astrologerById(id);
 }
 
 const enc = new TextEncoder();
@@ -50,15 +75,14 @@ function cannedStream(text: string) {
   });
 }
 
-function cannedFor(mode: string, p: Profile): string {
-  const fn = (p.name || "devotee").split(" ")[0];
-  if (mode === "deity") {
-    return `${fn}, abhi divya sambandh mein thodi der ho rahi hai. Kuch pal mein phir se prashn poochhiye — main yahin hoon.`;
-  }
-  return `${fn} ji, abhi jyotish sewa par bahut bhaar hai. Kripya kuch second baad apna prashn dobara poochhiye — main turant margdarshan dunga.`;
+function cannedFor(mode: string, name: string): string {
+  const fn = (name || "devotee").split(" ")[0];
+  if (mode === "deity")
+    return `${fn}, abhi divya sambandh mein kshan bhar ka viraam hai. Ek gehri saans lijiye aur kuch pal mein phir se poochhiye — main yahin hoon.`;
+  return `${fn} ji, is samay jyotish seva par asadharan bhaar hai. Kripya 20-30 second baad apna prashn dobara bhejiye — main aapki kundli ke saath taiyar hoon.`;
 }
 
-// Find the first model that streams successfully (retrying transient 429/5xx).
+/** Open a streaming completion, walking the model chain with retries. */
 async function openUpstream(payload: object, key: string): Promise<Response | null> {
   for (const model of MODELS) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
@@ -70,8 +94,7 @@ async function openUpstream(payload: object, key: string): Promise<Response | nu
           body: JSON.stringify(payload),
         });
         if (r.ok && r.body) return r;
-        // transient → retry same model, else move to next model
-        if (r.status === 429 || r.status >= 500) { await sleep(350 * (attempt + 1)); continue; }
+        if (r.status === 429 || r.status >= 500) { await sleep(400 * (attempt + 1)); continue; }
         break;
       } catch { await sleep(300); }
     }
@@ -81,30 +104,33 @@ async function openUpstream(payload: object, key: string): Promise<Response | nu
 
 export async function POST(req: Request) {
   let body: { mode?: string; deityId?: string; astrologerId?: string; messages?: Msg[]; profile?: Partial<Profile> } = {};
-  try { body = await req.json(); } catch {}
+  try { body = await req.json(); } catch { /* empty body */ }
   const mode = body.mode || "jyotishi";
-  // keep the last 16 turns — enough context, avoids drift/echo on long threads
   const messages = (body.messages || []).filter((m) => m.content?.trim()).slice(-16);
   const profile = asProfile(body.profile);
-  const system = pick(mode, profile, body.deityId, body.astrologerId);
+
+  // Real grounding: system prompts compute the user's actual kundli + today's
+  // live panchang (see lib/prompts.ts) — the model never invents chart facts.
+  let system: string;
+  if (mode === "deity") system = deitySystem(await loadDeity(body.deityId || profile.deity_id), profile);
+  else if (mode === "consult") system = consultSystem(await loadAstrologer(body.astrologerId || "a1"), profile);
+  else system = jyotishiSystem(profile);
 
   const key = process.env.GEMINI_API_KEY;
   const fallbackHeaders = { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "fallback" };
-
-  if (!key) {
-    return new Response(cannedStream(cannedFor(mode, profile)), { headers: fallbackHeaders });
-  }
+  if (!key) return new Response(cannedStream(cannedFor(mode, profile.name || "")), { headers: fallbackHeaders });
 
   const payload = {
     systemInstruction: { parts: [{ text: system }] },
     contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
-    generationConfig: { maxOutputTokens: 600, temperature: 0.7, topP: 0.95 },
+    // 1600 tokens: long Hinglish answers never hit MAX_TOKENS mid-sentence
+    // (the exact bug behind replies that stopped mid-thought).
+    generationConfig: { maxOutputTokens: 1600, temperature: 0.65, topP: 0.9 },
   };
 
   const upstream = await openUpstream(payload, key);
   if (!upstream || !upstream.body) {
-    // every model was unreachable — graceful, NON-persisted message
-    return new Response(cannedStream(cannedFor(mode, profile)), { headers: fallbackHeaders });
+    return new Response(cannedStream(cannedFor(mode, profile.name || "")), { headers: fallbackHeaders });
   }
 
   const stream = new ReadableStream({
@@ -113,9 +139,16 @@ export async function POST(req: Request) {
       const dec = new TextDecoder();
       let buf = "";
       let emitted = false;
+      // Watchdog: if Gemini stalls >20s between chunks, close cleanly so the
+      // client is never stuck on a spinner.
+      const readWithTimeout = () =>
+        Promise.race([
+          reader.read(),
+          sleep(20000).then(() => ({ done: true, value: undefined as Uint8Array | undefined })),
+        ]);
       try {
         for (;;) {
-          const { done, value } = await reader.read();
+          const { done, value } = await readWithTimeout();
           if (done) break;
           buf += dec.decode(value, { stream: true });
           const lines = buf.split("\n");
@@ -128,17 +161,21 @@ export async function POST(req: Request) {
             try {
               const obj = JSON.parse(json);
               const parts = obj?.candidates?.[0]?.content?.parts;
-              if (Array.isArray(parts)) for (const pt of parts) if (pt?.text) { controller.enqueue(enc.encode(pt.text)); emitted = true; }
-            } catch {}
+              if (Array.isArray(parts)) {
+                for (const pt of parts) if (pt?.text) { controller.enqueue(enc.encode(pt.text)); emitted = true; }
+              }
+            } catch { /* partial SSE chunk */ }
           }
         }
       } catch {
-        // mid-stream drop — if nothing came through, give a graceful nudge
-        if (!emitted) controller.enqueue(enc.encode(cannedFor(mode, profile)));
+        if (!emitted) controller.enqueue(enc.encode(cannedFor(mode, profile.name || "")));
       }
+      try { reader.cancel(); } catch { /* already closed */ }
       controller.close();
     },
   });
 
-  return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "live" } });
+  return new Response(stream, {
+    headers: { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "live" },
+  });
 }
