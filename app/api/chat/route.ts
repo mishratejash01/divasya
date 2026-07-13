@@ -125,7 +125,7 @@ export async function POST(req: Request) {
     contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
     // 1600 tokens: long Hinglish answers never hit MAX_TOKENS mid-sentence
     // (the exact bug behind replies that stopped mid-thought).
-    generationConfig: { maxOutputTokens: 1600, temperature: 0.65, topP: 0.9 },
+    generationConfig: { maxOutputTokens: 2000, temperature: 0.65, topP: 0.9, thinkingConfig: { thinkingBudget: 0 } },
   };
 
   const upstream = await openUpstream(payload, key);

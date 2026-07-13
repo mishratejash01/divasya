@@ -35,7 +35,7 @@ Voice: grounded, luminous, reassuring — orientation, not fear. 55–75 words o
           headers: { "Content-Type": "application/json", "x-goog-api-key": key },
           body: JSON.stringify({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: { maxOutputTokens: 400, temperature: 0.8 },
+            generationConfig: { maxOutputTokens: 700, temperature: 0.8, thinkingConfig: { thinkingBudget: 0 } },
           }),
         }
       );
