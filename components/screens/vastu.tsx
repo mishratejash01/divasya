@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Compass, Camera, X } from "lucide-react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
+import { useCatalog, getVastuZones } from "@/lib/catalog";
 
 const DIRS16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
 const ZONES: Record<string, { zone: string; use: string; tip: string }> = {
@@ -33,8 +34,11 @@ export function VastuScreen() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const zones = useCatalog(getVastuZones, Object.entries(ZONES).map(([dir, z]) => ({ dir, zone: z.zone, use: z.use, tip: z.tip })));
+  const zoneFor = (dir: string) => zones.find((z) => z.dir === dir) ?? ZONES[dir] ?? ZONES.N;
+
   const facing = DIRS16[Math.round(heading / 22.5) % 16];
-  const z = ZONES[main8(facing)] || ZONES.N;
+  const z = zoneFor(main8(facing));
 
   function onOrient(e: DeviceOrientationEvent) {
     const ev = e as DeviceOrientationEvent & { webkitCompassHeading?: number };
@@ -105,8 +109,8 @@ export function VastuScreen() {
         <div className="flex flex-col items-center px-5">
           <div className="relative mt-3" style={{ width: 270, height: 270 }}>
             {/* fixed top pointer */}
-            <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "12px solid var(--saffron)" }} />
-            <div className="absolute inset-0 rounded-full surface" style={{ transform: `rotate(${-heading}deg)`, transition: live ? "transform 0.12s linear" : undefined }}>
+            <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "12px solid var(--amber)" }} />
+            <div className="absolute inset-0 rounded-full surface" style={{ border: "1px solid var(--line)", transform: `rotate(${-heading}deg)`, transition: live ? "transform 0.12s linear" : undefined }}>
               {DIRS16.map((d, i) => {
                 const a = (i / 16) * 360;
                 const main = ["N", "E", "S", "W"].includes(d);
@@ -148,15 +152,18 @@ export function VastuScreen() {
       <div className="mt-4 flex-1 overflow-y-auto px-5 pb-6 no-scrollbar">
         <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Direction Guide</h3>
         <div className="overflow-hidden rounded-2xl surface">
-          {(["NE", "E", "SE", "S", "SW", "W", "NW", "N"] as const).map((d, i) => (
-            <div key={d} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-              <span className="mt-0.5 w-8 text-[13px] font-medium text-gold">{d}</span>
-              <div>
-                <div className="text-[13px] text-ink">{ZONES[d].zone} · {ZONES[d].use}</div>
-                <div className="text-[11.5px] leading-snug text-muted">{ZONES[d].tip}</div>
+          {(["NE", "E", "SE", "S", "SW", "W", "NW", "N"] as const).map((d, i) => {
+            const zd = zoneFor(d);
+            return (
+              <div key={d} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
+                <span className="mt-0.5 w-8 text-[13px] font-medium text-gold">{d}</span>
+                <div>
+                  <div className="text-[13px] text-ink">{zd.zone} · {zd.use}</div>
+                  <div className="text-[11.5px] leading-snug text-muted">{zd.tip}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

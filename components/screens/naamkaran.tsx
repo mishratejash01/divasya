@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronLeft, Baby, Sparkles } from "lucide-react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
+import { useCatalog, getNakshatraSyllables, getBabyNames } from "@/lib/catalog";
 
 type G = "m" | "f";
 const NAKSHATRAS = [
@@ -69,10 +70,15 @@ function luckyNo(name: string) {
 
 export function NaamkaranScreen() {
   const { back, haptic } = useApp();
-  const [nak, setNak] = useState(NAKSHATRAS[0]);
+  const nakshatras = useCatalog(getNakshatraSyllables, NAKSHATRAS.map((n) => ({ name: n.name, syl: n.syl, deity: n.deity, planet: n.planet })));
+  const names = useCatalog(getBabyNames, NAMES.map((n) => ({ n: n.n, g: n.g, m: n.m, syl: n.syl })));
+  const [nakName, setNakName] = useState<string | null>(null);
   const [gender, setGender] = useState<G | "all">("all");
 
-  const list = NAMES.filter((x) => nak.syl.includes(x.syl) && (gender === "all" || x.g === gender));
+  const nak = nakshatras.find((n) => n.name === nakName) ?? nakshatras[0];
+  const syllables = nak?.syl ?? [];
+
+  const list = names.filter((x) => syllables.includes(x.syl) && (gender === "all" || x.g === gender));
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
@@ -82,16 +88,16 @@ export function NaamkaranScreen() {
           <div className="font-display text-lg leading-tight text-ink">Naamkaran</div>
           <div className="text-[11px] text-muted">Auspicious names by Janma Nakshatra</div>
         </div>
-        <Baby size={20} className="ml-auto text-[var(--saffron-soft)]" />
+        <Baby size={20} strokeWidth={1.7} className="ml-auto text-[var(--amber)]" />
       </div>
 
       {/* nakshatra */}
       <div className="px-5">
         <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Birth Nakshatra</h3>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 no-scrollbar">
-          {NAKSHATRAS.map((n) => (
-            <button key={n.name} onClick={() => { setNak(n); haptic(8); }}
-              className={cx("shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px]", n.name === nak.name ? "btn-saffron" : "surface text-muted")}>
+          {nakshatras.map((n) => (
+            <button key={n.name} onClick={() => { setNakName(n.name); haptic(8); }}
+              className={cx("shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px]", n.name === nak?.name ? "btn-saffron" : "surface text-muted")}>
               {n.name}
             </button>
           ))}
@@ -100,12 +106,12 @@ export function NaamkaranScreen() {
 
       {/* prescribed syllables */}
       <div className="mx-5 mt-3 flex items-center gap-3 rounded-2xl card-temple p-4">
-        <Sparkles size={18} className="text-[var(--saffron)]" />
+        <Sparkles size={18} strokeWidth={1.7} className="text-[var(--amber)]" />
         <div className="flex-1">
           <div className="text-[12px] text-muted">Prescribed starting sounds</div>
-          <div className="font-display text-lg text-gold">{nak.syl.join(" · ")}</div>
+          <div className="font-display text-lg text-gold">{syllables.join(" · ")}</div>
         </div>
-        <div className="text-right text-[11px] text-muted">{nak.deity}<br />{nak.planet}</div>
+        <div className="text-right text-[11px] text-muted">{nak?.deity}<br />{nak?.planet}</div>
       </div>
 
       {/* gender */}
@@ -121,7 +127,7 @@ export function NaamkaranScreen() {
           <div key={x.n} className="rounded-2xl surface p-3.5">
             <div className="flex items-center justify-between">
               <span className="font-display text-[17px] text-ink">{x.n}</span>
-              <span className="text-[10px] text-muted">{x.g === "m" ? "♂" : "♀"}</span>
+              <span className="text-[10px] uppercase tracking-wide text-muted">{x.g === "m" ? "Boy" : "Girl"}</span>
             </div>
             <div className="mt-0.5 text-[11.5px] leading-snug text-muted">{x.m}</div>
             <div className="mt-2 flex items-center justify-between text-[10.5px] text-muted">
