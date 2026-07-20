@@ -6,7 +6,7 @@
 // ============================================================================
 
 import type {
-  AstroConfig, Body, BodyPosition, EphemerisProvider, Houses, Precision,
+  AstroConfig, Body, BodyPosition, EphemerisProvider, Houses, Luminaries, Precision,
 } from "../types";
 import { SWE_ID, norm360, GRAHAS } from "../constants";
 import { RawBody, enrichOne, applyCrossBody } from "../bodystate";
@@ -49,6 +49,15 @@ export class SwephProvider implements EphemerisProvider {
 
   ayanamsa(jdUT: number): number {
     return this.swe.get_ayanamsa_ut(jdUT);
+  }
+
+  luminaries(jdUT: number): Luminaries {
+    const s = this.swe.calc_ut(jdUT, this.C.SE_SUN, this.baseFlags);
+    const m = this.swe.calc_ut(jdUT, this.C.SE_MOON, this.baseFlags);
+    return {
+      sun: { lon: norm360(s.data[0]), speed: s.data[3] },
+      moon: { lon: norm360(m.data[0]), speed: m.data[3] },
+    };
   }
 
   async positions(jdUT: number, bodies: Body[], cfg: AstroConfig): Promise<Record<Body, BodyPosition>> {

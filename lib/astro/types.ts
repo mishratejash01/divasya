@@ -92,11 +92,19 @@ export interface EphemerisResult {
   timingGrade: boolean;
 }
 
+/** Sidereal Sun/Moon longitude + speed (°/day) — for anga root-finding. */
+export interface Luminaries {
+  sun: { lon: number; speed: number };
+  moon: { lon: number; speed: number };
+}
+
 /** Low-level provider contract — the only code that talks to an ephemeris. */
 export interface EphemerisProvider {
   readonly precision: Precision;
   readonly timingGrade: boolean;
   init(): Promise<void>;
+  /** Fast synchronous sidereal Sun/Moon lon+speed — the root-finder's hot path. */
+  luminaries(jdUT: number): Luminaries;
   positions(jdUT: number, bodies: Body[], cfg: AstroConfig): Promise<Record<Body, BodyPosition>>;
   houses(jdUT: number, lat: number, lon: number, cfg: AstroConfig): Promise<Houses>;
   ayanamsa(jdUT: number): number;

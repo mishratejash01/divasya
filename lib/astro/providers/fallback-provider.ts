@@ -8,7 +8,7 @@
 
 import * as A from "astronomy-engine";
 import type {
-  AstroConfig, Body, BodyPosition, EphemerisProvider, Houses, Precision,
+  AstroConfig, Body, BodyPosition, EphemerisProvider, Houses, Luminaries, Precision,
 } from "../types";
 import { SWE_ID, norm360, lahiriAyanamsa } from "../constants";
 import { RawBody, enrichOne, applyCrossBody } from "../bodystate";
@@ -48,6 +48,20 @@ export class FallbackProvider implements EphemerisProvider {
   async init(): Promise<void> { /* nothing to load */ }
 
   ayanamsa(jdUT: number): number { return lahiriAyanamsa(jdUT); }
+
+  luminaries(jdUT: number): Luminaries {
+    const ayan = this.ayanamsa(jdUT);
+    const dt = 0.02;
+    const at = (jd: number, body: "sun" | "moon") =>
+      tropicalOfDate(body, A.MakeTime(jdToDate(jd))).lon;
+    const sunLon = at(jdUT, "sun"), moonLon = at(jdUT, "moon");
+    const sunSpeed = (norm360(at(jdUT + dt, "sun") - at(jdUT - dt, "sun") + 540) - 180) / (2 * dt);
+    const moonSpeed = (norm360(at(jdUT + dt, "moon") - at(jdUT - dt, "moon") + 540) - 180) / (2 * dt);
+    return {
+      sun: { lon: norm360(sunLon - ayan), speed: sunSpeed },
+      moon: { lon: norm360(moonLon - ayan), speed: moonSpeed },
+    };
+  }
 
   async positions(jdUT: number, bodies: Body[], cfg: AstroConfig): Promise<Record<Body, BodyPosition>> {
     const time = A.MakeTime(jdToDate(jdUT));
