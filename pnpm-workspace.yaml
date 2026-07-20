@@ -1,6 +1,9 @@
 allowBuilds:
   sharp: false
+  sweph: true
   unrs-resolver: false
+onlyBuiltDependencies:
+  - sweph
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
