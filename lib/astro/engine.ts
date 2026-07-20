@@ -16,6 +16,10 @@ import { FallbackProvider } from "./providers/fallback-provider";
 import { dateToJd } from "./riseset";
 
 let resolved: Promise<EphemerisProvider> | null = null;
+let fallbackReason: string | null = null;
+
+/** Why the primary (sweph) tier was skipped, if it was. For diagnostics. */
+export function getFallbackReason(): string | null { return fallbackReason; }
 
 /** Resolve (and cache) the best available provider for this process. */
 export function getEphemeris(): Promise<EphemerisProvider> {
@@ -26,7 +30,8 @@ export function getEphemeris(): Promise<EphemerisProvider> {
       await p.init();
       return p as EphemerisProvider;
     } catch (e) {
-      console.warn("[divasya/astro] sweph unavailable, falling back to astronomy-engine:", (e as Error)?.message);
+      fallbackReason = (e as Error)?.message || String(e);
+      console.warn("[divasya/astro] sweph unavailable, falling back to astronomy-engine:", fallbackReason);
       const f = new FallbackProvider();
       await f.init();
       return f as EphemerisProvider;
