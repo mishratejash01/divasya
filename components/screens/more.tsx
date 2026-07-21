@@ -15,6 +15,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: "Astrology & Guidance",
     items: [
+      { label: "My Kundli", icon: IconStar, to: "kundli", live: true },
       { label: "AI Astrology", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, live: true },
       { label: "Talk to your Devta", icon: IconDiya, to: "ai", params: { mode: "deity" }, live: true },
       { label: "Consult Astrologers", icon: IconChat, to: "consult", live: true },

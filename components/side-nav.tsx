@@ -3,7 +3,7 @@
 import { LayoutGrid, PanelLeftClose } from "lucide-react";
 import {
   IconHome, IconEye, IconDiya, IconChat, IconMandir, IconMala,
-  IconWheel, IconLotus, IconDarshan, IconCompass, IconComponent,
+  IconWheel, IconLotus, IconDarshan, IconCompass, IconStar, IconComponent,
 } from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
@@ -30,6 +30,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Guidance",
     items: [
+      { id: "kundli", label: "My Kundli", icon: IconStar, to: "kundli", match: ["kundli"] },
       { id: "ai", label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
       { id: "deity", label: "Talk to Devta", icon: IconDiya, to: "ai", params: { mode: "deity" }, match: [] },
       { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },

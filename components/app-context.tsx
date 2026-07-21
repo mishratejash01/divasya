@@ -11,7 +11,7 @@ import { logEvent } from "@/lib/chat";
 export type ScreenName =
   | "home" | "mala" | "mandir" | "ai" | "consult" | "consultChat"
   | "panchang" | "festivals" | "library" | "vastu" | "naamkaran"
-  | "puja" | "temple" | "sandesh" | "menu";
+  | "puja" | "temple" | "sandesh" | "kundli" | "menu";
 
 export type ScreenState = { name: ScreenName; params?: Record<string, unknown> };
 export type PushPayload = { title: string; body: string; tone?: "auspicious" | "info" };

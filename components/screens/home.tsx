@@ -18,6 +18,7 @@ import { rashiLabel } from "@/lib/astro";
 let firedOnce = false;
 
 const GRID = [
+  { label: "My Kundli", icon: IconStar, to: "kundli" },
   { label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" } },
   { label: "Talk to Devta", icon: IconDiya, to: "ai", params: { mode: "deity" } },
   { label: "My Mandir", icon: IconMandir, to: "mandir" },
