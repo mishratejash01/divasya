@@ -1,11 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "life.divasya.app",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_PLAY_APP_SIGNING_SHA256_FINGERPRINT"
+        "A2:18:7D:E7:4B:6F:F7:B7:FB:9B:76:A9:1E:E4:7D:E3:B7:62:FB:8B:80:24:69:CD:5D:D8:72:AF:52:AB:FC:01"
       ]
     }
   }
