@@ -1,6 +1,7 @@
 import { computeKundli } from "@/lib/kundli/index";
 import { currentDasha, dashaChainSummary } from "@/lib/dasha";
 import { vargaSign } from "@/lib/kundli/varga";
+import { geocodePlace } from "@/lib/geocode";
 import { RASHIS_SA, NAKSHATRAS } from "@/lib/astro/constants";
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -13,15 +14,29 @@ const ABBR: Record<string, string> = {
 export async function GET(req: Request) {
   const u = new URL(req.url);
   const dob = u.searchParams.get("dob"); const tob = u.searchParams.get("tob");
-  const lat = Number(u.searchParams.get("lat") ?? 28.6139), lon = Number(u.searchParams.get("lon") ?? 77.209);
-  const tz = u.searchParams.get("tz") || "Asia/Kolkata";
+  const place = u.searchParams.get("place");
   if (!dob) return Response.json({ error: "dob required (YYYY-MM-DD)" }, { status: 400 });
+
+  // Resolve birthplace → real coordinates + timezone (arcsecond-accurate Lagna).
+  // Explicit lat/lon override the lookup; default to Delhi only as a last resort.
+  let lat = Number(u.searchParams.get("lat") ?? NaN);
+  let lon = Number(u.searchParams.get("lon") ?? NaN);
+  let tz = u.searchParams.get("tz") || "";
+  let resolvedPlace: string | null = null;
+  if ((Number.isNaN(lat) || Number.isNaN(lon)) && place) {
+    const geo = await geocodePlace(place);
+    if (geo) { lat = geo.lat; lon = geo.lon; tz = tz || geo.tz; resolvedPlace = geo.display; }
+  }
+  if (Number.isNaN(lat) || Number.isNaN(lon)) { lat = 28.6139; lon = 77.209; }
+  if (!tz) tz = "Asia/Kolkata";
+
   const k = await computeKundli({ dob, tob, lat, lon, tz });
   const g = k.chart.grahas;
   const navamsaLagnaIndex = vargaSign("D9", k.chart.ascendant);
 
   return Response.json({
     precision: k.meta.precision, timingGrade: k.meta.timingGrade, approximate: k.meta.approximate,
+    place: resolvedPlace, tz,
     ayanamsa: Number(k.meta.ayanamsa.toFixed(3)),
     lagna: { sign: RASHIS_SA[k.chart.lagnaSign], signIndex: k.chart.lagnaSign, deg: Number(k.chart.ascendant.toFixed(2)) },
     moon: { sign: RASHIS_SA[k.moonSign], nakshatra: NAKSHATRAS[k.moonNakshatra], pada: k.moonPada },

@@ -15,6 +15,7 @@ import { karanaIndexFromSlot } from "../panchang/angas";
 import { fmtTimeInZone } from "../astro/time";
 import { currentDasha } from "../dasha";
 import { supabaseAdmin } from "../supabase";
+import { geocodePlace } from "../geocode";
 
 /** Grounded remedy + dasha-theme for the running mahadasha lord (from Supabase). */
 async function remedyContext(mdLord: string): Promise<string> {
@@ -41,7 +42,13 @@ Name: ${p.name || "devotee"} | DOB: ${p.dob || "unknown"} | TOB: ${p.tob || "unk
 Chart: birth date unknown — ask gently for it once, then guide with general wisdom meanwhile.`;
   }
   try {
-    const k = await computeKundli({ dob: p.dob, tob: p.tob ?? null, lat: DEF.lat, lon: DEF.lon, tz: DEF.tz });
+    // Geocode the birthplace for an accurate Lagna; fall back to the default.
+    let loc = DEF;
+    if (p.birthplace) {
+      const geo = await geocodePlace(p.birthplace);
+      if (geo) loc = { lat: geo.lat, lon: geo.lon, tz: geo.tz };
+    }
+    const k = await computeKundli({ dob: p.dob, tob: p.tob ?? null, lat: loc.lat, lon: loc.lon, tz: loc.tz });
     const chain = currentDasha(k.dashas.vimshottari);
     const mdLord = chain[0]?.lord;
     const remedies = mdLord ? await remedyContext(mdLord) : "";

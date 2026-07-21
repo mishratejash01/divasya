@@ -271,7 +271,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     let nakshatra: string | null = null;
     if (fields.dob) {
       try {
-        const r = await fetch(`/api/kundli?dob=${fields.dob}${fields.tob ? `&tob=${fields.tob}` : ""}`);
+        const place = fields.birthplace ? `&place=${encodeURIComponent(fields.birthplace)}` : "";
+        const r = await fetch(`/api/kundli?dob=${fields.dob}${fields.tob ? `&tob=${fields.tob}` : ""}${place}`);
         const k = await r.json();
         if (k?.moon?.sign) {
           rashi = k.moon.sign;

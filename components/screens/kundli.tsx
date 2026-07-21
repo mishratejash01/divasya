@@ -33,8 +33,9 @@ export function KundliScreen() {
     if (!profile?.dob) { setErr("Add your birth date in your profile to see your chart."); return; }
     const q = new URLSearchParams({ dob: profile.dob });
     if (profile.tob) q.set("tob", profile.tob);
+    if (profile.birthplace) q.set("place", profile.birthplace);
     fetch(`/api/kundli?${q}`).then((r) => r.json()).then((d) => d.error ? setErr(d.error) : setK(d)).catch(() => setErr("Could not compute the chart."));
-  }, [profile?.dob, profile?.tob]);
+  }, [profile?.dob, profile?.tob, profile?.birthplace]);
 
   const d1: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.rasiSign, retro: p.retro, combust: p.combust })) ?? [];
   const d9: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.navamsaSign, retro: p.retro, combust: p.combust })) ?? [];
