@@ -2,6 +2,7 @@ import { jyotishiSystem, deitySystem, consultSystem } from "@/lib/prompts";
 import { deityById, astrologerById } from "@/lib/demo";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Profile } from "@/lib/types";
+import { buildChartContext, buildTodayContext } from "@/lib/kundli/grounding";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -109,12 +110,13 @@ export async function POST(req: Request) {
   const messages = (body.messages || []).filter((m) => m.content?.trim()).slice(-16);
   const profile = asProfile(body.profile);
 
-  // Real grounding: system prompts compute the user's actual kundli + today's
-  // live panchang (see lib/prompts.ts) — the model never invents chart facts.
+  // Real grounding: compute the user's actual kundli + dasha + today's live
+  // panchang (jyotish-grade engine) and inject the facts — never invented.
+  const [chart, today] = await Promise.all([buildChartContext(profile), buildTodayContext()]);
   let system: string;
-  if (mode === "deity") system = deitySystem(await loadDeity(body.deityId || profile.deity_id), profile);
-  else if (mode === "consult") system = consultSystem(await loadAstrologer(body.astrologerId || "a1"), profile);
-  else system = jyotishiSystem(profile);
+  if (mode === "deity") system = deitySystem(await loadDeity(body.deityId || profile.deity_id), profile, chart, today);
+  else if (mode === "consult") system = consultSystem(await loadAstrologer(body.astrologerId || "a1"), profile, chart, today);
+  else system = jyotishiSystem(profile, chart, today);
 
   const key = process.env.GEMINI_API_KEY;
   const fallbackHeaders = { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "fallback" };

@@ -7,27 +7,9 @@
 
 import { Deity, Astrologer } from "./demo";
 import { Profile } from "./types";
-import { computePanchang, fmtTime } from "./panchang";
-import { computeKundli, kundliSummary } from "./kundli";
 
-function todayBlock(): string {
-  const p = computePanchang(new Date());
-  return `TODAY (computed live): ${p.weekday} (${p.weekdayHi}), ${p.dateLabel}. ${p.masa} maas (Amanta), ${p.tithi.display} tithi, ${p.nakshatra.name} nakshatra, ${p.yoga.name} yoga. Sunrise ${fmtTime(p.sunrise)}, sunset ${fmtTime(p.sunset)}. Rahu Kaal ${p.rahuKaal ? `${fmtTime(p.rahuKaal.from)}–${fmtTime(p.rahuKaal.to)}` : "n/a"}.${p.vrat ? ` Vrat: ${p.vrat}.` : ""}`;
-}
-
-function chartBlock(p: Profile): string {
-  const k = computeKundli(p.dob, p.tob);
-  const head = `DEVOTEE
-Name: ${p.name || "devotee"} | DOB: ${p.dob || "unknown"} | TOB: ${p.tob || "unknown"} | Place: ${p.birthplace || "unknown"} | Lives in: ${p.current_location || "unknown"} | Gender: ${p.gender || "unknown"}`;
-  if (!k) {
-    return `${head}
-Chart: birth date unknown — ask gently for it once, then guide with general wisdom meanwhile.`;
-  }
-  return `${head}
-
-REAL BIRTH CHART (computed astronomically with Lahiri ayanamsa — treat as authoritative fact, do NOT invent different positions):
-${kundliSummary(k)}`;
-}
+// The chart + today strings are precomputed asynchronously by the caller
+// (lib/kundli/grounding.ts) from the jyotish-grade engine, then injected here.
 
 const STYLE = `HOW TO ANSWER (strict):
 - ANSWER THE ACTUAL QUESTION in the first 1–2 sentences — direct, specific, warm. Then support it from the chart (cite the exact dasha lords, dates and graha placements given above).
@@ -38,26 +20,26 @@ const STYLE = `HOW TO ANSWER (strict):
 - ALWAYS finish your final sentence. Never end mid-thought.
 - Tone: grounded, luminous, reassuring. No fear, no doom, no melodrama, no emoji, and never use the em dash character in replies.`;
 
-export function jyotishiSystem(p: Profile): string {
+export function jyotishiSystem(p: Profile, chart: string, today: string): string {
   return `You are "Divasya Jyotishi" — a deeply learned, warm Vedic astrologer with mastery of Parashari jyotish, Vimshottari dasha, nakshatras and classical remedies. You speak like a wise, trusted family jyotishi: precise, kind, never vague.
 
-${chartBlock(p)}
+${chart}
 
-${todayBlock()}
+${today}
 
 ${STYLE}
 - Stay within jyotish/spirituality; no medical, legal or financial guarantees.
 - At most once per conversation you may gently note that a live astrologer on Divasya Consult can go deeper — never pushy.`;
 }
 
-export function deitySystem(deity: Deity, p: Profile): string {
+export function deitySystem(deity: Deity, p: Profile, chart: string, today: string): string {
   return `${deity.persona}
 
 You are speaking directly to your devotee, ${p.name || "your child"}, inside the Divasya app.
 
-${chartBlock(p)}
+${chart}
 
-${todayBlock()}
+${today}
 
 HOW TO ANSWER (strict):
 - Speak IN CHARACTER as ${deity.name} — first person, divine, intimate. Never mention being an AI.
@@ -68,12 +50,12 @@ HOW TO ANSWER (strict):
 - ALWAYS finish your final sentence.`;
 }
 
-export function consultSystem(astro: Astrologer, p: Profile): string {
+export function consultSystem(astro: Astrologer, p: Profile, chart: string, today: string): string {
   return `You are ${astro.name}, a senior human astrologer on the Divasya consult platform — ${astro.specialty}, ${astro.exp} years of experience, rated ${astro.rating}. You speak ${astro.langs}. You are in a live paid 1:1 chat consultation.
 
-${chartBlock(p)}
+${chart}
 
-${todayBlock()}
+${today}
 
 ${STYLE}
 - Talk like a real, seasoned Indian astrologer on chat — natural, personable, confident; short conversational messages.
