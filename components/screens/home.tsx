@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, ChevronRight, Share2, Sun, Sunrise } from "lucide-react";
 import {
   IconEye, IconDiya, IconMandir, IconMala, IconChat, IconLotus,
@@ -8,7 +8,7 @@ import {
 } from "../icons";
 import { useApp } from "../app-context";
 import { Avatar, SectionLabel, Wordmark, Logomark, cx } from "../ui";
-import { computePanchang, activeChoghadiya, fmtTime } from "@/lib/panchang";
+import { usePanchang } from "@/lib/use-panchang";
 import {
   useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
   Festival, Article, Shloka,
@@ -41,15 +41,16 @@ export function HomeScreen() {
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
 
-  // live panchang — recomputes every minute so choghadiya/NOW stays true
-  const [tick, setTick] = useState(0);
+  // live panchang from the jyotish-grade engine (server-side Swiss Ephemeris),
+  // fetched via /api/panchang and refreshed every 2 min.
+  const { panchang: pg } = usePanchang();
+  const chog = pg?.active ?? null;
+  // re-render each minute so the greeting stays current
+  const [, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 60000);
     return () => clearInterval(id);
   }, []);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const p = useMemo(() => computePanchang(new Date()), [tick]);
-  const chog = activeChoghadiya(p);
 
   // backend content
   const festivals = useCatalog<Festival[]>(() => getUpcomingFestivals(3), []);
@@ -72,14 +73,14 @@ export function HomeScreen() {
       sendPush({
         title: chog.good ? `${chog.name} Choghadiya is on` : `${chog.name} Choghadiya · pause new beginnings`,
         body: chog.good
-          ? `An auspicious window until ${fmtTime(chog.to)}.${p.vrat ? ` Aaj ${p.vrat} hai.` : ""}`
-          : `A better window opens at ${fmtTime(chog.to)}.${p.vrat ? ` Aaj ${p.vrat} hai.` : ""}`,
+          ? `An auspicious window until ${chog.to}.${pg?.vrat ? ` Aaj ${pg.vrat} hai.` : ""}`
+          : `A better window opens at ${chog.to}.${pg?.vrat ? ` Aaj ${pg.vrat} hai.` : ""}`,
         tone: "auspicious",
       });
     }, 4200);
     return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sendPush]);
+  }, [sendPush, chog]);
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
@@ -99,7 +100,7 @@ export function HomeScreen() {
             chog &&
             sendPush({
               title: `${chog.name} Choghadiya ${chog.good ? "· shubh samay" : "chal raha hai"}`,
-              body: `${fmtTime(chog.from)} – ${fmtTime(chog.to)}.${p.vrat ? ` Aaj ${p.vrat}.` : ""}`,
+              body: `Till ${chog.to}.${pg?.vrat ? ` Aaj ${pg.vrat}.` : ""}`,
               tone: "auspicious",
             })
           }
@@ -113,12 +114,12 @@ export function HomeScreen() {
       <div className="flex items-center gap-3 px-5 pt-6">
         <Avatar name={name} size={46} tint="#C88131" />
         <div>
-          <div className="text-[13px] text-muted">{salutation(p.date)}</div>
+          <div className="text-[13px] text-muted">{salutation(new Date())}</div>
           <div className="font-display text-xl text-ink">{name}</div>
         </div>
         <div className="ml-auto text-right">
           <div className="text-[12px] text-muted">{rashi}</div>
-          <div className="text-[12px] text-gold">{p.tithi.display}</div>
+          <div className="text-[12px] text-gold">{pg?.tithiDisplay ?? ""}</div>
         </div>
       </div>
 
@@ -128,12 +129,12 @@ export function HomeScreen() {
         className="mx-5 mt-5 flex w-[calc(100%-2.5rem)] items-stretch gap-3 rounded-2xl surface p-3 text-left"
       >
         <div className="flex flex-col justify-center gap-1.5 border-r pr-3" style={{ borderColor: "var(--line)" }}>
-          <div className="flex items-center gap-1.5 text-[12px] text-muted"><Sunrise size={13} className="text-[var(--amber)]" /> {fmtTime(p.sunrise)}</div>
-          <div className="flex items-center gap-1.5 text-[12px] text-muted"><Sun size={13} className="text-[var(--ochre-deep)]" /> {fmtTime(p.sunset)}</div>
+          <div className="flex items-center gap-1.5 text-[12px] text-muted"><Sunrise size={13} className="text-[var(--amber)]" /> {pg?.sunrise ?? "…"}</div>
+          <div className="flex items-center gap-1.5 text-[12px] text-muted"><Sun size={13} className="text-[var(--ochre-deep)]" /> {pg?.sunset ?? "…"}</div>
         </div>
         <div className="flex flex-1 flex-col justify-center">
           <div className="text-[11px] uppercase tracking-wider text-muted">
-            Now · Choghadiya · {p.weekdayHi}
+            Now · Choghadiya · {pg?.weekdayShort ?? ""}
           </div>
           {chog ? (
             <div className="flex items-center gap-2">
@@ -141,14 +142,14 @@ export function HomeScreen() {
                 {chog.name}
               </span>
               <span className="text-[12px] text-muted">
-                {chog.good ? "Shubh" : "Avoid"} · till {fmtTime(chog.to)}
+                {chog.good ? "Shubh" : "Avoid"} · till {chog.to}
               </span>
             </div>
           ) : (
-            <div className="text-[15px] text-ink">{p.tithi.display}</div>
+            <div className="text-[15px] text-ink">{pg?.tithiDisplay ?? "…"}</div>
           )}
           <div className="text-[11px] text-muted">
-            Rahu Kaal {p.rahuKaal ? `${fmtTime(p.rahuKaal.from)} – ${fmtTime(p.rahuKaal.to)}` : "—"}
+            Rahu Kaal {pg?.rahuKaal ?? "—"}
           </div>
         </div>
         <ChevronRight size={18} className="self-center text-muted" />
@@ -159,7 +160,7 @@ export function HomeScreen() {
         <div className="overflow-hidden rounded-2xl card-temple p-5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-[0.2em] text-gold">Aaj ka Sandesh</span>
-            <span className="text-[11px] text-muted">{p.weekday} · {p.dateLabel}</span>
+            <span className="text-[11px] text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
           </div>
           <p className="mt-3 font-deva text-[17px] leading-relaxed text-ink">
             {shloka?.deva ?? "…"}
@@ -168,7 +169,7 @@ export function HomeScreen() {
             {shloka ? `${shloka.meaning} · ${shloka.source}` : ""}
           </p>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-[12.5px] text-muted">{p.vrat ? `Aaj: ${p.vrat}` : `${p.masa} maas · ${p.nakshatra.name}`}</span>
+            <span className="text-[12.5px] text-muted">{pg?.vrat ? `Aaj: ${pg.vrat}` : pg ? `${pg.masa} maas · ${pg.nakshatra}` : ""}</span>
             <button
               onClick={() => go("sandesh")}
               className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] btn-gold"

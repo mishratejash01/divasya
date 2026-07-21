@@ -30,7 +30,24 @@ export async function GET(req: Request) {
   const tithiName = cat.tithi[p.tithi.current - 1];
   const karanaIdx = karanaIndexFromSlot(p.karana.current);
 
+  // Display-ready block for the home screen (+ the currently-active choghadiya).
+  const activeC = p.choghadiya.find((c) => moment >= c.start && moment < c.end) ?? null;
+  const rkNow = p.kaals.find((k) => k.code === "rahu_kaal");
+  const VRAT: Record<number, string> = { 4: "Sankashti Chaturthi", 11: "Ekadashi", 13: "Pradosh Vrat", 15: "Purnima Vrat", 19: "Sankashti Chaturthi", 26: "Ekadashi", 28: "Pradosh Vrat", 30: "Amavasya" };
+  const home = {
+    tithiDisplay: `${tithiName?.paksha === "shukla" ? "Shukla" : "Krishna"} ${tithiName?.name}`,
+    weekday: cat.vaara[p.weekday]?.name_en,
+    weekdayShort: cat.vaara[p.weekday]?.name_sa,
+    dateLabel: new Intl.DateTimeFormat("en-GB", { timeZone: tz, day: "numeric", month: "long", year: "numeric" }).format(moment),
+    sunrise: T(p.sunrise), sunset: T(p.sunset),
+    rahuKaal: rkNow ? `${T(rkNow.start)} – ${T(rkNow.end)}` : null,
+    masa: cat.masa[p.masa.amantaId]?.amanta, nakshatra: cat.nakshatra[p.nakshatra.current]?.name,
+    vrat: VRAT[p.tithi.current] ?? null,
+    active: activeC ? { name: activeC.name, good: activeC.good, to: T(activeC.end), toISO: activeC.end.toISOString() } : null,
+  };
+
   return Response.json({
+    home,
     precision: p.precision,
     timingGrade: p.timingGrade,
     location: { lat, lon, tz },
