@@ -13,6 +13,23 @@ import { computePanchang } from "../panchang/index";
 import { getCatalog } from "../panchang/catalog";
 import { karanaIndexFromSlot } from "../panchang/angas";
 import { fmtTimeInZone } from "../astro/time";
+import { currentDasha } from "../dasha";
+import { supabaseAdmin } from "../supabase";
+
+/** Grounded remedy + dasha-theme for the running mahadasha lord (from Supabase). */
+async function remedyContext(mdLord: string): Promise<string> {
+  try {
+    const sb = supabaseAdmin();
+    const [rem, prof] = await Promise.all([
+      sb.from("remedies").select("mantra,gemstone,donation,weekday,deity,remedy_note").eq("graha_id", mdLord).maybeSingle(),
+      sb.from("dasha_lord_profiles").select("themes,favorable_for,caution_for").eq("graha_id", mdLord).maybeSingle(),
+    ]);
+    const parts: string[] = [];
+    if (prof.data) parts.push(`Running ${mdLord} mahadasha themes: ${prof.data.themes} Favourable for: ${(prof.data.favorable_for || []).join(", ")}. Caution: ${(prof.data.caution_for || []).join(", ")}.`);
+    if (rem.data) parts.push(`Grounded remedy for ${mdLord}: chant "${rem.data.mantra}"; gemstone ${rem.data.gemstone}; donate ${rem.data.donation} on ${rem.data.weekday}; ${rem.data.remedy_note}`);
+    return parts.length ? "\n\nAPP REMEDY DATA (prefer these when suggesting an upaya):\n" + parts.join("\n") : "";
+  } catch { return ""; }
+}
 
 const DEF = { lat: 28.6139, lon: 77.209, tz: "Asia/Kolkata" };
 
@@ -25,7 +42,10 @@ Chart: birth date unknown — ask gently for it once, then guide with general wi
   }
   try {
     const k = await computeKundli({ dob: p.dob, tob: p.tob ?? null, lat: DEF.lat, lon: DEF.lon, tz: DEF.tz });
-    return `${head}\n\n${chartSummaryForAI(k)}`;
+    const chain = currentDasha(k.dashas.vimshottari);
+    const mdLord = chain[0]?.lord;
+    const remedies = mdLord ? await remedyContext(mdLord) : "";
+    return `${head}\n\n${chartSummaryForAI(k)}${remedies}`;
   } catch {
     return `${head}\nChart temporarily unavailable — guide with general wisdom.`;
   }

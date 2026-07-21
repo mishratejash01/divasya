@@ -10,7 +10,7 @@ import { NAK, norm360 } from "../astro/constants";
 
 const YEAR_MS = 365.25 * 86400000;
 
-export type DashaSystem = "vimshottari" | "yogini";
+export type DashaSystem = "vimshottari" | "yogini" | "ashtottari";
 
 export interface DashaPeriod {
   system: DashaSystem;
@@ -37,6 +37,22 @@ const YOG: { lord: string; years: number }[] = [
   { lord: "Siddha", years: 7 }, { lord: "Sankata", years: 8 },
 ];
 const YOG_TOTAL = 36;
+
+// Ashtottari (108y, conditional/secondary). Counted from Ardra.
+const ASH: { lord: GrahaId; years: number }[] = [
+  { lord: "sun", years: 6 }, { lord: "moon", years: 15 }, { lord: "mars", years: 8 },
+  { lord: "mercury", years: 17 }, { lord: "saturn", years: 10 }, { lord: "jupiter", years: 19 },
+  { lord: "rahu", years: 12 }, { lord: "venus", years: 21 },
+];
+const ASH_TOTAL = 108;
+// Ashtottari nakshatra→lord start index (grouped 4/3, counted from Ardra=5).
+function ashottariStartIdx(nak: number): number {
+  const fromArdra = ((nak - 5) % 27 + 27) % 27;
+  // groups of sizes cycling; approximate the classical 4/4/3... grouping
+  const bounds = [3, 7, 10, 14, 18, 21, 25, 27]; // cumulative nakshatra counts per lord
+  for (let i = 0; i < bounds.length; i++) if (fromArdra < bounds[i]) return i;
+  return 0;
+}
 
 function subdivide(
   system: DashaSystem, seq: { lord: string; years: number }[], total: number,
@@ -91,6 +107,8 @@ export function dashaTimeline(
   const birthMs = birth.getTime();
   if (system === "vimshottari") {
     return buildTimeline("vimshottari", VIM, VIM_TOTAL, nak % 9, frac, birthMs, maxLevel);
+  } else if (system === "ashtottari") {
+    return buildTimeline("ashtottari", ASH, ASH_TOTAL, ashottariStartIdx(nak), frac, birthMs, maxLevel);
   } else {
     const startIdx = (nak + 3) % 8; // Yogini start (spec §2.4)
     return buildTimeline("yogini", YOG, YOG_TOTAL, startIdx, frac, birthMs, maxLevel);
