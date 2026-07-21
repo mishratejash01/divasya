@@ -6,7 +6,6 @@ import { supabaseBrowser } from "@/lib/supabase";
 import * as db from "@/lib/db";
 import { Profile, UserState, EMPTY_STATE } from "@/lib/types";
 import { rashiLabel } from "@/lib/astro";
-import { computeKundli } from "@/lib/kundli";
 import { logEvent } from "@/lib/chat";
 
 export type ScreenName =
@@ -266,10 +265,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const completeOnboarding = useCallback(async (fields: Partial<Profile>) => {
     if (!userRef.current) return;
     // Real Vedic identity: sidereal moon rashi + janma nakshatra from the
-    // computed kundli (falls back to sun-sign label if birth date is unusable).
-    const k = computeKundli(fields.dob ?? null, fields.tob ?? null);
-    const rashi = k ? k.moonSign : rashiLabel({ rashi: fields.rashi ?? null, dob: fields.dob ?? null });
-    const nakshatra = k ? `${k.nakshatra.name} (pada ${k.nakshatra.pada})` : null;
+    // jyotish-grade engine (/api/kundli, Swiss Ephemeris). Falls back to the
+    // sun-sign label if the birth date is unusable or the call fails.
+    let rashi = rashiLabel({ rashi: fields.rashi ?? null, dob: fields.dob ?? null });
+    let nakshatra: string | null = null;
+    if (fields.dob) {
+      try {
+        const r = await fetch(`/api/kundli?dob=${fields.dob}${fields.tob ? `&tob=${fields.tob}` : ""}`);
+        const k = await r.json();
+        if (k?.moon?.sign) {
+          rashi = k.moon.sign;
+          nakshatra = `${k.moon.nakshatra} (pada ${k.moon.pada})`;
+        }
+      } catch { /* keep sun-sign fallback */ }
+    }
     const merged = { ...fields, rashi, nakshatra, onboarded: true };
     // Optimistic: enter the app immediately so a slow/failed write can never
     // pin the user on the "Building your chart" spinner.

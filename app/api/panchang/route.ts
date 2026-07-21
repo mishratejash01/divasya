@@ -67,6 +67,6 @@ export async function GET(req: Request) {
     samvat: { vikram: p.masa.vikramSamvat, shaka: p.masa.shakaSamvat, samvatsara: cat.samvatsara[p.masa.samvatsaraId] },
     kaals: p.kaals.map((k) => ({ code: k.code, from: T(k.start), to: T(k.end) })),
     muhurtas: p.muhurtas.map((m) => ({ code: m.code, from: T(m.start), to: T(m.end) })),
-    choghadiya: p.choghadiya.map((c) => ({ name: c.name, good: c.good, night: c.night, from: T(c.start), to: T(c.end) })),
+    choghadiya: p.choghadiya.map((c) => ({ name: c.name, good: c.good, night: c.night, from: T(c.start), to: T(c.end), active: moment >= c.start && moment < c.end })),
   });
 }

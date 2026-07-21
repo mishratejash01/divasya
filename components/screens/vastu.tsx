@@ -4,27 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, Compass, Camera, X } from "lucide-react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
-import { useCatalog, getVastuZones } from "@/lib/catalog";
+import { ZONES16, zone16 } from "@/lib/vastu";
 
 const DIRS16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
-const ZONES: Record<string, { zone: string; use: string; tip: string }> = {
-  N: { zone: "Uttara · Kuber", use: "Wealth & career", tip: "Keep open, light, water elements. Good for cash/lockers facing." },
-  NE: { zone: "Ishan", use: "Puja & meditation", tip: "Most sacred. Place your mandir here. Keep clean, never a toilet." },
-  E: { zone: "Purva", use: "Health & growth", tip: "Morning light zone. Good for windows, study, entrance." },
-  SE: { zone: "Agni", use: "Kitchen & fire", tip: "Ideal for kitchen, gas, electricals. Avoid water tanks here." },
-  S: { zone: "Dakshina", use: "Fame & relationships", tip: "Keep heavier, can host bedrooms. Avoid main entrance." },
-  SW: { zone: "Nairutya", use: "Master bedroom", tip: "Heaviest, most stable zone. Master bedroom + storage. Never a toilet/kitchen." },
-  W: { zone: "Paschima", use: "Children & gains", tip: "Good for children's room, dining. Keep moderately heavy." },
-  NW: { zone: "Vayavya", use: "Guests & support", tip: "Guest room, finished goods, helps relationships & movement." },
-};
-
-function main8(dir: string) {
-  if (["NNE", "ENE"].includes(dir)) return "NE";
-  if (["ESE", "SSE"].includes(dir)) return "SE";
-  if (["SSW", "WSW"].includes(dir)) return "SW";
-  if (["WNW", "NNW"].includes(dir)) return "NW";
-  return dir;
-}
+// 16-zone data from the jyotish-grade Vastu engine (lib/vastu).
+const ZONE_INFO: Record<string, { zone: string; use: string; tip: string }> = Object.fromEntries(
+  ZONES16.map((z) => [z.code, {
+    zone: z.sanskrit || z.direction,
+    use: z.lifeArea,
+    tip: `Ideal for ${z.idealFor.join(", ")}. Avoid ${z.avoidFor.join(", ") || "nothing critical"}. Element ${z.element}.`,
+  }])
+);
 
 export function VastuScreen() {
   const { back } = useApp();
@@ -34,11 +24,9 @@ export function VastuScreen() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const zones = useCatalog(getVastuZones, Object.entries(ZONES).map(([dir, z]) => ({ dir, zone: z.zone, use: z.use, tip: z.tip })));
-  const zoneFor = (dir: string) => zones.find((z) => z.dir === dir) ?? ZONES[dir] ?? ZONES.N;
-
-  const facing = DIRS16[Math.round(heading / 22.5) % 16];
-  const z = zoneFor(main8(facing));
+  const zoneFor = (dir: string) => ZONE_INFO[dir] ?? ZONE_INFO.N;
+  const facing = DIRS16[zone16(heading)];
+  const z = zoneFor(facing);
 
   function onOrient(e: DeviceOrientationEvent) {
     const ev = e as DeviceOrientationEvent & { webkitCompassHeading?: number };

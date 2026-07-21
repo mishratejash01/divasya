@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import {
   ChevronLeft, Download, Share2, Sun, Moon, Check, Clock, Flame,
@@ -15,7 +15,7 @@ import {
   useCatalog, getFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
   type Festival, type Shloka,
 } from "@/lib/catalog";
-import { computePanchang, activeChoghadiya, fmtTime, type ChoghadiyaSlot } from "@/lib/panchang";
+import { useFullPanchang, usePanchang, type ChoghadiyaSlot } from "@/lib/use-panchang";
 
 function Header({ title, sub }: { title: string; sub?: string }) {
   const { back } = useApp();
@@ -31,42 +31,39 @@ function Header({ title, sub }: { title: string; sub?: string }) {
 }
 
 /* ---------------- Panchang ---------------- */
-function ChoghadiyaRow({ slot, first, active }: { slot: ChoghadiyaSlot; first: boolean; active: boolean }) {
+function ChoghadiyaRow({ slot, first }: { slot: ChoghadiyaSlot; first: boolean }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3" style={{ borderTop: first ? undefined : "1px solid var(--line)" }}>
       <span className={cx("h-2 w-2 rounded-full", slot.good ? "bg-[var(--good)]" : "bg-[var(--avoid)]")} />
       <span className={cx("w-16 text-[14px]", slot.night ? "text-ink-dim" : "text-ink")}>{slot.name}</span>
-      <span className="flex-1 text-[12px] text-muted">{fmtTime(slot.from)} – {fmtTime(slot.to)}</span>
-      {active && <span className="rounded-full px-2 py-0.5 text-[10px] btn-saffron">NOW</span>}
+      <span className="flex-1 text-[12px] text-muted">{slot.from} – {slot.to}</span>
+      {slot.active && <span className="rounded-full px-2 py-0.5 text-[10px] btn-saffron">NOW</span>}
       <span className={cx("text-[11px]", slot.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>{slot.good ? "Shubh" : "Avoid"}</span>
     </div>
   );
 }
 
 export function PanchangScreen() {
-  const p = useMemo(() => computePanchang(), []);
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setTick((n) => n + 1), 60_000);
-    return () => clearInterval(t);
-  }, []);
-  const active = activeChoghadiya(p);
+  const { data: p } = useFullPanchang();
+  if (!p) return <div className="h-full pt-24 text-center text-muted">Computing panchang…</div>;
   const daySlots = p.choghadiya.filter((c) => !c.night);
   const nightSlots = p.choghadiya.filter((c) => c.night);
+  const kaal = (code: string) => p.kaals.find((k) => k.code === code);
+  const rahu = kaal("rahu_kaal"), yama = kaal("yamaganda");
   const grid: [string, string][] = [
-    ["Tithi", p.tithi.display],
-    ["Nakshatra", `${p.nakshatra.name} · pada ${p.nakshatra.pada}`],
+    ["Tithi", `${p.tithi.paksha === "shukla" ? "Shukla" : "Krishna"} ${p.tithi.name}`],
+    ["Nakshatra", p.nakshatra.name],
     ["Yoga", p.yoga.name],
     ["Karana", p.karana.name],
-    ["Vaar", p.weekdayHi],
-    ["Masa", `${p.masa} (Amanta)`],
+    ["Vaar", p.vaara.name_sa],
+    ["Masa", `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`],
   ];
   return (
     <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
-      <Header title="Panchang" sub={`${p.weekdayHi} · ${p.dateLabel}`} />
+      <Header title="Panchang" sub={`${p.vaara.name_en} · ${p.home.dateLabel}`} />
       <div className="flex items-center justify-between gap-3 px-5 pb-3">
-        <div className="text-[11px] text-muted">Location: {p.location}</div>
-        {p.vrat && <Pill tone="gold">{p.vrat}</Pill>}
+        <div className="text-[11px] text-muted">Vikram {p.samvat.vikram} · {p.samvat.samvatsara}</div>
+        {p.home.vrat && <Pill tone="gold">{p.home.vrat}</Pill>}
       </div>
 
       <div className="mx-5 flex gap-3 rounded-2xl surface p-4">
@@ -74,14 +71,14 @@ export function PanchangScreen() {
           <Sunrise size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
           <div>
             <div className="text-[10px] uppercase tracking-wider text-muted">Sunrise</div>
-            <div className="text-[14px] text-ink">{fmtTime(p.sunrise)}</div>
+            <div className="text-[14px] text-ink">{p.sun.rise}</div>
           </div>
         </div>
         <div className="flex flex-1 items-center gap-2.5">
           <Sunset size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
           <div>
             <div className="text-[10px] uppercase tracking-wider text-muted">Sunset</div>
-            <div className="text-[14px] text-ink">{fmtTime(p.sunset)}</div>
+            <div className="text-[14px] text-ink">{p.sun.set}</div>
           </div>
         </div>
       </div>
@@ -99,30 +96,26 @@ export function PanchangScreen() {
         <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Choghadiya · Today</h3>
         <div className="overflow-hidden rounded-2xl surface">
           {daySlots.map((c, i) => (
-            <ChoghadiyaRow key={i} slot={c} first={i === 0} active={active === c} />
+            <ChoghadiyaRow key={i} slot={c} first={i === 0} />
           ))}
         </div>
 
         <h4 className="mb-2 mt-4 text-[11px] uppercase tracking-[0.18em] text-muted">Night</h4>
         <div className="overflow-hidden rounded-2xl surface-2">
           {nightSlots.map((c, i) => (
-            <ChoghadiyaRow key={i} slot={c} first={i === 0} active={active === c} />
+            <ChoghadiyaRow key={i} slot={c} first={i === 0} />
           ))}
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           <div className="rounded-2xl surface p-4">
             <div className="text-[13px] text-ink">Rahu Kaal</div>
-            <div className="mt-0.5 text-[12px] text-[var(--avoid)]">
-              {p.rahuKaal ? `${fmtTime(p.rahuKaal.from)} – ${fmtTime(p.rahuKaal.to)}` : "–"}
-            </div>
+            <div className="mt-0.5 text-[12px] text-[var(--avoid)]">{rahu ? `${rahu.from} – ${rahu.to}` : "–"}</div>
             <div className="mt-1 text-[11px] text-muted">Avoid new beginnings</div>
           </div>
           <div className="rounded-2xl surface p-4">
             <div className="text-[13px] text-ink">Yamaganda</div>
-            <div className="mt-0.5 text-[12px] text-[var(--avoid)]">
-              {p.yamaganda ? `${fmtTime(p.yamaganda.from)} – ${fmtTime(p.yamaganda.to)}` : "–"}
-            </div>
+            <div className="mt-0.5 text-[12px] text-[var(--avoid)]">{yama ? `${yama.from} – ${yama.to}` : "–"}</div>
             <div className="mt-1 text-[11px] text-muted">Best kept quiet</div>
           </div>
         </div>
@@ -274,7 +267,7 @@ export function SandeshScreen() {
   const [busy, setBusy] = useState(false);
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
-  const p = useMemo(() => computePanchang(), []);
+  const { panchang: pg } = usePanchang();
   const [shloka, setShloka] = useState<Shloka | null>(null);
   useEffect(() => { getShlokaOfDay().then(setShloka); }, []);
   const [horo, setHoro] = useState<string | null>(null);
@@ -291,7 +284,7 @@ export function SandeshScreen() {
     } catch {} finally { setBusy(false); }
   }
   function whatsapp() {
-    const text = `Aaj ka Sandesh · ${p.dateLabel}\n\n${shloka?.deva ?? ""}\n${shloka?.translit ?? ""}\n"${shloka?.meaning ?? ""}"\n\nA blessing for ${name} · ${rashi.split(" ")[0]}\nShared via Divasya`;
+    const text = `Aaj ka Sandesh · ${pg?.dateLabel ?? ""}\n\n${shloka?.deva ?? ""}\n${shloka?.translit ?? ""}\n"${shloka?.meaning ?? ""}"\n\nA blessing for ${name} · ${rashi.split(" ")[0]}\nShared via Divasya`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
@@ -302,14 +295,14 @@ export function SandeshScreen() {
         <div ref={card} className="card-temple overflow-hidden rounded-3xl p-6">
           <div className="flex items-center justify-between">
             <Wordmark size={15} />
-            <span className="text-[11px] text-muted">{p.weekdayHi} · {p.tithi.display}</span>
+            <span className="text-[11px] text-muted">{pg ? `${pg.weekdayShort} · ${pg.tithiDisplay}` : ""}</span>
           </div>
           <div className="mt-5 flex justify-center"><DeityGlyph deity={deity} size={64} /></div>
           <div className="mt-3 text-center font-deva text-[20px] leading-relaxed text-ink">{shloka?.deva}</div>
           <div className="mt-2 text-center text-[12.5px] text-muted">{shloka?.translit}</div>
           <div className="my-4 h-px w-full" style={{ background: "var(--line)" }} />
           <div className="text-center text-[13px] leading-relaxed text-ink-dim">
-            {horo ?? `Aaj ka din shubh ho · ${p.tithi.display}`}
+            {horo ?? `Aaj ka din shubh ho · ${pg?.tithiDisplay ?? ""}`}
           </div>
           <div className="mt-5 text-center">
             <div className="text-[12px] text-muted">A blessing for</div>
