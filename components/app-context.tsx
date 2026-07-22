@@ -69,6 +69,45 @@ function withTimeout<T>(p: PromiseLike<T>, ms: number, fallback: T): Promise<T> 
   ]);
 }
 
+// ---------------------------------------------------------------- preview mode
+// Local design-review only: set NEXT_PUBLIC_PREVIEW=1 in .env.local to skip the
+// Google/allow-list gate and render every screen against lib/demo seed data.
+// Never set this in production — .env* is gitignored, and the flag is read at
+// build time so it compiles out entirely when unset.
+const PREVIEW = process.env.NEXT_PUBLIC_PREVIEW === "1";
+
+const PREVIEW_USER = {
+  id: "preview-user",
+  email: "preview@divasya.local",
+  user_metadata: { full_name: "Preview" },
+  app_metadata: {},
+  aud: "authenticated",
+  created_at: "2026-01-01T00:00:00.000Z",
+} as unknown as User;
+
+const PREVIEW_PROFILE: Profile = {
+  id: "preview-user",
+  name: "Preview",
+  dob: "1995-08-14",
+  tob: "06:45",
+  birthplace: "Varanasi, Uttar Pradesh, India",
+  current_location: "Varanasi, Uttar Pradesh, India",
+  gender: "m",
+  deity_id: "shiva",
+  rashi: null,
+  nakshatra: null,
+  onboarded: true,
+};
+
+const PREVIEW_STATE: UserState = {
+  japa_lifetime: 10800,
+  japa_today: 108,
+  last_japa: null,
+  streak: 12,
+  punya: 2450,
+  wallet: 500,
+};
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,6 +167,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+
+    // Preview mode: seed a signed-in, onboarded user and skip auth entirely.
+    if (PREVIEW) {
+      const st = { ...PREVIEW_STATE, last_japa: todayStr() };
+      statsRef.current = st;
+      setStats(st);
+      userRef.current = PREVIEW_USER;
+      setUser(PREVIEW_USER);
+      setProfile(PREVIEW_PROFILE);
+      markProfileLoaded(true);
+      setLoading(false);
+      return;
+    }
+
     let sb: ReturnType<typeof supabaseBrowser> | null = null;
     try {
       sb = supabaseBrowser();
@@ -192,6 +245,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [loadUserData, checkAllowed, markProfileLoaded]);
 
   const scheduleFlush = useCallback(() => {
+    if (PREVIEW) return;              // no backend to persist to in preview mode
     if (!userRef.current) return;
     if (flushT.current) clearTimeout(flushT.current);
     flushT.current = setTimeout(() => {
@@ -201,7 +255,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // flush on tab hide / unload so nothing is lost
   useEffect(() => {
-    const flush = () => { if (userRef.current) db.patchState(userRef.current.id, statsRef.current); };
+    const flush = () => { if (!PREVIEW && userRef.current) db.patchState(userRef.current.id, statsRef.current); };
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
     window.addEventListener("pagehide", flush);
     return () => window.removeEventListener("pagehide", flush);
