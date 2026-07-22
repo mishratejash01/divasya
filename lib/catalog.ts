@@ -26,7 +26,9 @@ export type Article = {
 };
 export type Shloka = { id: number; deva: string; translit: string; meaning: string; source: string; deity: string };
 export type VastuZone = { dir: string; zone: string; use: string; tip: string };
-export type NakshatraSyl = { name: string; syl: string[]; deity: string; planet: string };
+export type NakshatraSyl = {
+  name: string; deva: string; syl: string[]; syld: string[]; deity: string; planet: string;
+};
 export type BabyName = { n: string; deva?: string; g: "m" | "f"; m: string; syl: string };
 
 // darken a hex tint for legacy grad pairs
@@ -156,7 +158,10 @@ export const getVastuZones = () =>
 export const getNakshatraSyllables = () =>
   cached<NakshatraSyl[]>("naksyl", async () => {
     const r = await rows<Record<string, never>>("nakshatra_syllables");
-    return r.map((n) => ({ name: n["name"], syl: n["syllables"] ?? [], deity: n["deity"], planet: n["planet"] }));
+    return r.map((n) => ({
+      name: n["name"], deva: n["deva"] ?? "", syl: n["syllables"] ?? [],
+      syld: n["syllables_deva"] ?? [], deity: n["deity"], planet: n["planet"],
+    }));
   }, NAKSHATRA_SYLLABLES);
 
 export const getBabyNames = () =>
