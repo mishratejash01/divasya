@@ -192,23 +192,6 @@ strong { font-weight: 500; }
 .divider { border-top: 1px solid var(--line); }
 .ring-gold { border: 1px solid var(--line-gold); }
 
-/* Aaj ka Sandesh — the one solid-colour panel on the screen. Deep bhagwa
-   ground, everything on it set light. It is the only card that inverts, which
-   is exactly why the verse reads first. */
-.card-sandesh {
-  background: linear-gradient(158deg, #FB7D22 0%, #E45D04 100%);
-  border: 1px solid rgba(214, 84, 3, 0.5);
-  color: #FFFFFF;
-}
-.card-sandesh .on-bhagwa      { color: rgba(255, 255, 255, 0.72); }
-.card-sandesh .on-bhagwa-mid  { color: rgba(255, 255, 255, 0.88); }
-.btn-on-bhagwa {
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  color: #FFFFFF;
-  transition: background 0.15s ease;
-}
-.btn-on-bhagwa:hover { background: rgba(255, 255, 255, 0.14); }
-
 /* Hero card — the one place a warm wash survives, and only faintly. */
 .card-temple {
   background:

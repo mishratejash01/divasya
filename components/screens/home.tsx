@@ -6,7 +6,7 @@ import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
   IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
   IconSandesh, IconStar, IconSunrise, IconSunset, IconWheel,
-  Ornament, type IconComponent,
+  type IconComponent,
 } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { Avatar, SectionLabel, Logomark, cx } from "../ui";
@@ -198,38 +198,40 @@ export function HomeScreen() {
         </div>
       </div>
 
-      {/* Aaj ka Sandesh — the day's shloka, and the only inverted panel on the
-          screen. Deep bhagwa ground, the verse set large in white Devanagari,
-          a granth rule dividing it from its reading. No watermark behind it:
-          the colour is what makes it lead. */}
+      {/* Aaj ka Sandesh — white panel. The verse sits on white and leads; the
+          tinted foot carries only its reading, its source and the share, so
+          the colour marks the translation rather than the whole card. */}
       <div className="gutter pt-2">
-        <div className="overflow-hidden rounded-2xl card-sandesh p-4">
-          <div className="flex items-center justify-between gap-3">
-            <span className="eyebrow on-bhagwa">Aaj ka Sandesh</span>
-            <span className="text-[10px] tnum on-bhagwa">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
+        <div className="overflow-hidden rounded-2xl surface">
+          <div className="p-3.5 pb-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="eyebrow text-muted">Aaj ka Sandesh</span>
+              <span className="text-[10px] tnum text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
+            </div>
+            <p className="mt-2.5 measure font-deva text-[17px] leading-[1.8] text-ink">
+              {shloka?.deva ?? "…"}
+            </p>
           </div>
-          <p className="mt-3 measure font-deva text-[17px] leading-[1.8]">
-            {shloka?.deva ?? "…"}
-          </p>
-          <Ornament className="mt-3 measure text-white/45" />
-          <p className="mt-2.5 measure text-[11px] leading-relaxed on-bhagwa-mid">
-            {shloka?.meaning ?? ""}
-          </p>
-          <div className="mt-3.5 flex items-end justify-between gap-3">
-            <span className="text-[10.5px] leading-snug on-bhagwa">
-              {shloka?.source ?? ""}
-              {pg && (
-                <span className="block">
-                  {pg.vrat ? `Aaj: ${pg.vrat}` : `${pg.masa} maas · ${pg.nakshatra}`}
-                </span>
-              )}
-            </span>
-            <button
-              onClick={() => go("sandesh")}
-              className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] btn-on-bhagwa"
-            >
-              <ShareNetwork size={12} /> Share
-            </button>
+          <div className="p-3.5" style={{ background: "var(--surface-2)" }}>
+            <p className="measure text-[11px] leading-relaxed text-ink-dim">
+              {shloka?.meaning ?? ""}
+            </p>
+            <div className="mt-3 flex items-end justify-between gap-3">
+              <span className="text-[10.5px] leading-snug text-muted">
+                {shloka?.source ?? ""}
+                {pg && (
+                  <span className="block">
+                    {pg.vrat ? `Aaj: ${pg.vrat}` : `${pg.masa} maas · ${pg.nakshatra}`}
+                  </span>
+                )}
+              </span>
+              <button
+                onClick={() => go("sandesh")}
+                className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] btn-saffron"
+              >
+                <ShareNetwork size={12} /> Share
+              </button>
+            </div>
           </div>
         </div>
       </div>
