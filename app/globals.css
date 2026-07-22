@@ -10,11 +10,10 @@
      once it was put next to the cream surfaces. */
   --bhagwa: #F26B0F;
   --bhagwa-deep: #D65403;
-  /* The bhagwa dhwaj saffron. It was previously darkened to #C24A02 so white
-     type would clear 4.5:1, and that darkening is exactly what made it read
-     brown. Kept vivid here and set in ink instead — 6.4:1, and dark on saffron
-     is how the colour is actually used. */
-  --bhagwa-flag: #F4761C;
+  /* Ground for the Sandesh block: a dark orange-red, deeper and redder than
+     the saffron accent. At 5.1:1 it carries white type comfortably, which the
+     bright saffron could not — that one only managed 2.8:1. */
+  --bhagwa-dark: #C1440E;
   --bhagwa-soft: #FF8A33;
   --amber: #C88131;          /* Amber Earth — the steady accent */
   --amber-deep: #A5661F;

@@ -209,12 +209,12 @@ export function HomeScreen() {
           <p className="mt-2 measure font-deva text-[18px] leading-[1.85] text-ink">
             {shloka?.deva ?? "…"}
           </p>
-          <div className="mt-3 rounded-xl p-3" style={{ background: "var(--bhagwa-flag)" }}>
-            <p className="measure text-[11.5px] leading-relaxed text-ink">
+          <div className="mt-3 rounded-xl p-3" style={{ background: "var(--bhagwa-dark)" }}>
+            <p className="measure text-[11.5px] leading-relaxed text-white/95">
               {shloka?.meaning ?? ""}
             </p>
             <div className="mt-3 flex items-center justify-between gap-3">
-              <span className="truncate text-[10.5px] text-[rgba(23,22,19,0.68)]">{shloka?.source ?? ""}</span>
+              <span className="truncate text-[10.5px] text-white/75">{shloka?.source ?? ""}</span>
               <button
                 onClick={() => go("sandesh")}
                 className="flex shrink-0 items-center gap-1.5 rounded-[5px] px-3.5 py-2 text-[11.5px] btn-white"
