@@ -377,7 +377,7 @@ export function HomeScreen() {
           )}
           <button
             onClick={() => go("ai", { mode: "jyotishi" })}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-[5px] px-4 py-2.5 text-[12px] btn-saffron"
+            className="mt-3 ml-auto flex items-center gap-1.5 rounded-[5px] px-4 py-2.5 text-[12px] btn-saffron"
           >
             <IconEye size={14} /> Ask the AI Jyotishi
           </button>
@@ -390,7 +390,7 @@ export function HomeScreen() {
           <section className="rounded-2xl surface p-2.5">
             <div className="mb-2.5 flex items-end justify-between">
               <h3 className="section-title">Spiritual Library</h3>
-              <button onClick={() => go("library")} className="text-[11px] text-[var(--bhagwa-deep)]">
+              <button onClick={() => go("library")} className="text-[11px] text-ink">
                 Explore all
               </button>
             </div>
@@ -408,13 +408,13 @@ export function HomeScreen() {
                   <div className="relative">
                     <div className="h-[58px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
                     <span
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 whitespace-nowrap rounded-[4px] px-2 py-[3px] text-[9.5px] tnum text-ink"
+                      className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[8.5px] tnum text-ink"
                       style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
                     >
                       {l.read} read
                     </span>
                   </div>
-                  <div className="px-1 pb-0.5 pt-3.5">
+                  <div className="px-1 pb-0.5 pt-4">
                     {/* two lines reserved so the cards stay the same height
                         across the row whether the title wraps or not */}
                     <div className="line-clamp-2 min-h-[2.3em] text-[11px] font-medium leading-tight text-ink">
