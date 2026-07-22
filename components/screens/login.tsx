@@ -4,12 +4,19 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { CaretLeft, CircleNotch, ShieldWarning } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { Logomark, cx } from "../ui";
-import { IconSunrise, IconSunset } from "../icons";
-import { usePanchang } from "@/lib/use-panchang";
+import { cx } from "../ui";
 import * as db from "@/lib/db";
 
 type Step = "phone" | "code";
+
+/**
+ * Phone sign-in is built but not switched on: Supabase relays the SMS through a
+ * provider (Twilio and the like) and none is configured on the project yet, so
+ * a real send would fail on the user's side with nothing to show for it. The
+ * field stays visible and says plainly that it isn't live; flip this to true
+ * once a provider is set up and the whole flow below works as written.
+ */
+const PHONE_LOGIN_LIVE = false;
 
 export function LoginScreen() {
   const { signInGoogle, denied } = useApp();
@@ -19,12 +26,6 @@ export function LoginScreen() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const codeRef = useRef<HTMLInputElement>(null);
-
-  // The panchang route needs no session, so the app can do its job before it
-  // asks for anything. That is the idea of this screen.
-  const { panchang: p } = usePanchang();
-  const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long" });
-  const weekday = new Date().toLocaleDateString("en-IN", { weekday: "long" });
 
   const digits = phone.replace(/\D/g, "").slice(0, 10);
   const e164 = `+91${digits}`;
@@ -41,6 +42,10 @@ export function LoginScreen() {
 
   async function sendCode() {
     if (digits.length !== 10 || busy) return;
+    if (!PHONE_LOGIN_LIVE) {
+      setNote("Phone sign-in isn't switched on yet. Continue with Google for now.");
+      return;
+    }
     setBusy("otp"); setNote(null);
     try {
       await db.sendPhoneOtp(e164);
@@ -62,74 +67,71 @@ export function LoginScreen() {
     }
   }
 
-  return (
-    <div className="stage-dawn relative flex h-full flex-col items-center justify-center overflow-hidden px-6 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="relative flex w-full max-w-[340px] flex-col items-center"
-      >
-        <div className="text-[var(--bhagwa)]"><Logomark size={50} /></div>
+  // Fields sit on the dark half of the image, so they are glass rather than
+  // white slabs — a white box here would punch a hole in the photograph.
+  const fieldStyle = {
+    background: "rgba(255,255,255,0.10)",
+    border: "1px solid rgba(255,255,255,0.30)",
+  } as const;
 
-        <h1 className="mt-3.5 font-display text-[32px] leading-none tracking-[-0.02em] text-[var(--bhagwa)]">
+  return (
+    <div className="relative flex h-full flex-col justify-end overflow-hidden" style={{ background: "#0B0A09" }}>
+      {/* The photograph is the screen. Anchored to the top so the face stays
+          above the vignette however tall the phone is. */}
+      <img
+        src="/login/hero.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ objectPosition: "50% 22%" }}
+      />
+
+      {/* Black from below. Three stops rather than one, so the type sits on
+          solid black while the sage's face stays clear of it. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(11,10,9,0) 30%, rgba(11,10,9,0.55) 52%, rgba(11,10,9,0.93) 70%, #0B0A09 84%)",
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        /* Full width of the stage. It was pinned to 360px inside a 460px
+           frame, which left fifty dead pixels down each side. */
+        className="relative z-10 w-full px-5 pb-7"
+      >
+        <p className="text-[12.5px] font-medium leading-none tracking-[0.01em] text-white">
+          India&apos;s No.1 spiritual companion
+        </p>
+        <h1 className="mt-2 font-display text-[40px] leading-none tracking-[-0.025em] text-white">
           Divasya
         </h1>
-        <p className="mt-2 font-deva text-[12.5px] leading-none text-[var(--bhagwa-deep)]">
+        <p className="mt-2 font-deva text-[13px] leading-none text-[var(--bhagwa-soft)]">
           आपकी आध्यात्मिक यात्रा
         </p>
 
-        {/* Today, computed live. A sign-in screen that already tells you the
-            tithi is making a claim the tagline cannot. */}
-        <div className="mt-5 w-full overflow-hidden rounded-2xl surface">
-          <div className="flex items-baseline justify-between gap-3 px-3.5 pb-2 pt-2.5">
-            <div className="font-display text-[14.5px] leading-none text-ink">{today}</div>
-            <div className="text-[11px] leading-none text-ink">{p?.weekday ?? weekday}</div>
-          </div>
-          <div className="px-3.5 pb-2.5 text-[11px] leading-relaxed text-ink">
-            {p
-              ? <>{p.tithiDisplay} · {p.nakshatra} nakshatra</>
-              : <span className="opacity-45">Reading today&apos;s panchang…</span>}
-          </div>
-          {/* Labelled. The sunrise and sunset marks are the same silhouette at
-              14px, so the icon alone said "a sun" and nothing more. */}
-          <div className="grid grid-cols-2" style={{ borderTop: "1px solid var(--line)" }}>
-            {([[IconSunrise, "Sunrise", p?.sunrise], [IconSunset, "Sunset", p?.sunset]] as const).map(
-              ([Icon, label, value], i) => (
-                <div key={label} className="flex items-center gap-2 px-3.5 py-2"
-                  style={{ borderLeft: i ? "1px solid var(--line)" : undefined }}>
-                  <Icon size={14} className="shrink-0 text-[var(--bhagwa)]" strokeWidth={1.7} />
-                  <div className="min-w-0">
-                    <div className="text-[9.5px] leading-none text-[var(--muted-2)]">{label}</div>
-                    <div className="mt-1 text-[11.5px] leading-none tnum text-ink">{value ?? "—"}</div>
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-
         {denied && (
-          <div className="mt-3 flex w-full items-start gap-2.5 rounded-[6px] px-3 py-2.5 text-left"
-            style={{ background: "rgba(180,86,75,0.08)", border: "1px solid rgba(180,86,75,0.28)" }}>
-            <ShieldWarning size={15} className="mt-px shrink-0 text-[var(--avoid)]" />
+          <div className="mt-4 flex items-start gap-2.5 rounded-[6px] px-3 py-2.5"
+            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,140,120,0.45)" }}>
+            <ShieldWarning size={15} className="mt-px shrink-0 text-[#FF9E8A]" />
             <div>
-              <div className="text-[11.5px] font-medium text-ink">Access is invite-only</div>
-              <div className="mt-0.5 text-[10.5px] leading-snug text-ink">
+              <div className="text-[11.5px] font-medium text-white">Access is invite-only</div>
+              <div className="mt-0.5 text-[10.5px] leading-snug text-white/75">
                 This account isn&apos;t on the approved list. Use an authorised one, or contact the admin.
               </div>
             </div>
           </div>
         )}
 
-        {/* Phone first — it is how most people in India sign in — with Google
-            kept as the alternative rather than the only door. */}
         {step === "phone" ? (
-          <div className="mt-4 w-full">
-            <div className="flex items-stretch overflow-hidden rounded-[6px]"
-              style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}>
-              <span className="grid shrink-0 place-items-center px-3 text-[13px] tnum text-ink"
-                style={{ borderRight: "1px solid var(--line)" }}>+91</span>
+          <div className="mt-5">
+            <div className="flex items-stretch overflow-hidden rounded-[6px]" style={fieldStyle}>
+              <span className="grid shrink-0 place-items-center px-3 text-[13px] tnum text-white"
+                style={{ borderRight: "1px solid rgba(255,255,255,0.25)" }}>+91</span>
               <input
                 type="tel"
                 inputMode="numeric"
@@ -138,25 +140,25 @@ export function LoginScreen() {
                 onChange={(e) => setPhone(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendCode()}
                 placeholder="Mobile number"
-                className="w-full bg-transparent px-3 py-3 text-[13px] tnum text-ink outline-none placeholder:text-[var(--muted-2)] placeholder:tracking-normal"
+                className="w-full bg-transparent px-3 py-3 text-[13px] tnum text-white outline-none placeholder:text-white/55"
               />
             </div>
             <button
               onClick={sendCode}
               disabled={digits.length !== 10 || busy !== null}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-[6px] btn-saffron py-3 text-[13px] font-medium disabled:opacity-45"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-[6px] btn-saffron py-3 text-[13px] font-medium disabled:opacity-40"
             >
               {busy === "otp" && <CircleNotch size={14} weight="bold" className="animate-spin" />}
               {busy === "otp" ? "Sending code…" : "Send code"}
             </button>
           </div>
         ) : (
-          <div className="mt-4 w-full">
+          <div className="mt-5">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[11px] text-ink">Code sent to <span className="tnum">{e164}</span></span>
+              <span className="text-[11px] text-white/85">Code sent to <span className="tnum">{e164}</span></span>
               <button
                 onClick={() => { setStep("phone"); setCode(""); setNote(null); }}
-                className="flex items-center gap-0.5 text-[11px] text-[var(--bhagwa-deep)]"
+                className="flex items-center gap-0.5 text-[11px] text-[var(--bhagwa-soft)]"
               >
                 <CaretLeft size={11} weight="bold" /> Change
               </button>
@@ -175,33 +177,30 @@ export function LoginScreen() {
                  unconditionally it spaced the placeholder too, and
                  placeholder:tracking-normal did not win it back. */
               className={cx(
-                "mt-1.5 w-full rounded-[6px] px-3 py-3 text-center tnum text-ink outline-none placeholder:text-[var(--muted-2)]",
+                "mt-1.5 w-full rounded-[6px] px-3 py-3 text-center tnum text-white outline-none placeholder:text-white/55",
                 code ? "text-[16px] tracking-[0.4em]" : "text-[13px]",
               )}
-              style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
+              style={fieldStyle}
             />
             <button
               onClick={verify}
               disabled={code.length < 4 || busy !== null}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-[6px] btn-saffron py-3 text-[13px] font-medium disabled:opacity-45"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-[6px] btn-saffron py-3 text-[13px] font-medium disabled:opacity-40"
             >
               {busy === "verify" && <CircleNotch size={14} weight="bold" className="animate-spin" />}
               {busy === "verify" ? "Checking…" : "Verify and continue"}
             </button>
-            <button
-              onClick={sendCode}
-              disabled={busy !== null}
-              className="mt-2 w-full text-center text-[11px] text-[var(--bhagwa-deep)] disabled:opacity-45"
-            >
+            <button onClick={sendCode} disabled={busy !== null}
+              className="mt-2 w-full text-center text-[11px] text-[var(--bhagwa-soft)] disabled:opacity-45">
               Send it again
             </button>
           </div>
         )}
 
-        <div className="my-3 flex w-full items-center gap-3">
-          <span className="h-px flex-1" style={{ background: "var(--line-strong)" }} />
-          <span className="text-[10.5px] text-[var(--muted-2)]">or</span>
-          <span className="h-px flex-1" style={{ background: "var(--line-strong)" }} />
+        <div className="my-3 flex items-center gap-3">
+          <span className="h-px flex-1" style={{ background: "rgba(255,255,255,0.22)" }} />
+          <span className="text-[10.5px] text-white/65">or</span>
+          <span className="h-px flex-1" style={{ background: "rgba(255,255,255,0.22)" }} />
         </div>
 
         <button
@@ -211,14 +210,14 @@ export function LoginScreen() {
             "flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-ink",
             busy !== null && "opacity-60",
           )}
-          style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
+          style={{ background: "#FFFFFF" }}
         >
           <GoogleMark /> {busy === "google" ? "Connecting…" : "Continue with Google"}
         </button>
 
-        {note && <p className="mt-2.5 text-center text-[11px] leading-relaxed text-[var(--avoid)]">{note}</p>}
+        {note && <p className="mt-2.5 text-center text-[11px] leading-relaxed text-[#FFB4A2]">{note}</p>}
 
-        <p className="mt-3 text-center text-[10px] leading-relaxed text-[var(--muted-2)]">
+        <p className="mt-3 text-center text-[10px] leading-relaxed text-white/55">
           Invite-only. Your birth details stay private.
         </p>
       </motion.div>
