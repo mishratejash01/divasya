@@ -160,34 +160,57 @@ export function DeityGlyph({
 }
 
 /**
- * Deity portrait for the profile frame.
+ * Framed deity portrait.
+ *
+ * The frame takes its proportions from the artwork rather than the other way
+ * round: height comes from the block it sits in, and the width follows the
+ * image's own aspect ratio once it loads. A fixed-width frame had to crop the
+ * picture to fill itself, which cut the top off a portrait painting.
  *
  * Shows a real image from /public when one is present, and falls back to the
  * drawn mark if it is missing or fails to load — so the frame is never empty
- * and never a broken-image icon. Drop the artwork at the path below (any of
- * .png / .jpg / .webp, square, ideally 256px or larger) and it appears with no
- * code change. Use artwork you hold the rights to.
+ * and never a broken-image icon. Drop artwork at the path below (.png / .jpg /
+ * .webp, any aspect) and it appears with no code change. Record its licence in
+ * public/deity/SOURCES.md, and use artwork you hold the rights to.
  */
 export function DeityPortrait({
   src = "/deity/ganesha.jpg",
   alt = "Ganesh ji",
+  width = 56,
+  height = 68,
   fallback,
 }: {
   src?: string;
   alt?: string;
+  width?: number;
+  height?: number;
   fallback: ReactNode;
 }) {
   const [failed, setFailed] = useState(false);
-  if (failed) return <>{fallback}</>;
+
+  // The frame is the limit; the artwork scales to fill it and is cropped to
+  // fit. Letting the image set the frame's size instead meant a large file
+  // sized the layout — a 508x727 painting rendered a 508px-wide frame.
+  const style = {
+    width,
+    height,
+    border: "2px solid var(--ink)",
+    background: "var(--surface-2)",
+  };
+  const frame = "grid shrink-0 place-items-center overflow-hidden rounded-xl";
+
+  if (failed) return <div className={frame} style={style}>{fallback}</div>;
+
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      // fills the frame edge to edge; the frame's own overflow-hidden clips it
-      className="h-full w-full object-cover"
-      onError={() => setFailed(true)}
-    />
+    <div className={frame} style={style}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className="h-full w-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
   );
 }
 

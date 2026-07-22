@@ -222,15 +222,10 @@ export function HomeScreen() {
           rows, stepping down in size from the name. */}
       <div className="gutter pt-1.5">
         <div className="flex items-stretch gap-3 rounded-2xl surface p-2.5">
-          <div
-            className="grid w-[68px] shrink-0 place-items-center self-stretch overflow-hidden rounded-xl"
-            // 2px reads as a mount around the picture; 1px read as a hairline
-            style={{ background: "var(--surface-2)", border: "2px solid var(--ink)" }}
-          >
-            <DeityPortrait
-              fallback={<IconGanesha size={46} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
-            />
-          </div>
+          {/* The portrait owns its own frame — its width follows the artwork. */}
+          <DeityPortrait
+            fallback={<IconGanesha size={44} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
+          />
 
           <div className="min-w-0 flex-1 py-0.5">
             <div className="flex items-center gap-1.5">
