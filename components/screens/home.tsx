@@ -406,13 +406,20 @@ export function HomeScreen() {
                       a frame reads as a stock placeholder, and says nothing the
                       title doesn't already say. */}
                   <div className="h-[58px] w-full" style={{ background: `${l.tint}30` }} />
-                  <div className="p-2.5">
-                    {/* two lines reserved so "N min read" shares a baseline
+                  {/* The read time sits in a break in the rule under the
+                      picture, so it reads as a caption on the image rather
+                      than as another line of the title block. */}
+                  <div className="flex items-center gap-1.5 px-2.5 pt-2">
+                    <span className="h-px flex-1" style={{ background: "var(--line-strong)" }} />
+                    <span className="shrink-0 text-[9.5px] tnum text-muted">{l.read} read</span>
+                    <span className="h-px flex-1" style={{ background: "var(--line-strong)" }} />
+                  </div>
+                  <div className="px-2.5 pb-2.5 pt-1.5">
+                    {/* two lines reserved so the cards stay the same height
                         across the row whether the title wraps or not */}
                     <div className="line-clamp-2 min-h-[2.3em] text-[11px] font-medium leading-tight text-ink">
                       {l.title}
                     </div>
-                    <div className="mt-1 text-[10px] text-muted">{l.read} read</div>
                   </div>
                 </button>
               ))}

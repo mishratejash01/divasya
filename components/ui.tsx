@@ -192,7 +192,9 @@ export function DeityPortrait({
   // fit. Letting the image set the frame's size instead meant a large file
   // sized the layout — a 508x727 painting rendered a 508px-wide frame.
   const style = { width, height, background: "var(--surface-2)" };
-  const frame = "grid shrink-0 place-items-center overflow-hidden rounded-xl";
+  // The padding is the mount: the tinted frame shows as a mat around the
+  // picture rather than the image running to the edge.
+  const frame = "grid shrink-0 place-items-center overflow-hidden rounded-xl p-1";
 
   if (failed) return <div className={frame} style={style}>{fallback}</div>;
 
@@ -202,7 +204,7 @@ export function DeityPortrait({
       <img
         src={src}
         alt={alt}
-        className="h-full w-full object-cover"
+        className="h-full w-full rounded-[5px] object-cover"
         onError={() => setFailed(true)}
       />
     </div>
