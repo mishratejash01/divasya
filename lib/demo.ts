@@ -341,12 +341,18 @@ export const astrologerById = (id: string) =>
 //  TEMPLES (Live Darshan directory)
 // ----------------------------------------------------------------------------
 export const TEMPLES: Temple[] = [
-  { id: "kashi", name: "Kashi Vishwanath", deity: "Lord Shiva", location: "Varanasi, UP", timing: "Mangala Aarti 3:00 AM", about: "One of the twelve Jyotirlingas, on the banks of the Ganga.", grad: ["#2c2738", "#14121a"] },
+  // youtubeChannel is set only where the channel was confirmed to belong to the
+  // temple's own trust — each id below was resolved from the handle and then
+  // checked against the channel's title. Handles are not proof: the plausible
+  // @mahakaleshwartempleujjain resolves to an unrelated creator account, so
+  // Mahakaleshwar is deliberately left without a stream rather than pointing
+  // devotees at someone else's video.
+  { id: "kashi", name: "Kashi Vishwanath", deity: "Lord Shiva", location: "Varanasi, UP", timing: "Mangala Aarti 3:00 AM", about: "One of the twelve Jyotirlingas, on the banks of the Ganga.", grad: ["#2c2738", "#14121a"], youtubeChannel: "UCdMj2twWfMHXrWgX5oVdoyA" },
   { id: "mahakal", name: "Mahakaleshwar", deity: "Lord Shiva", location: "Ujjain, MP", timing: "Bhasma Aarti 4:00 AM", about: "The only south-facing Jyotirlinga; famous Bhasma Aarti.", grad: ["#33231b", "#1a1310"] },
-  { id: "tirupati", name: "Tirupati Balaji", deity: "Lord Venkateswara", location: "Tirumala, AP", timing: "Suprabhatam 3:00 AM", about: "The richest and most-visited temple in the world.", grad: ["#322a1a", "#1a160f"] },
+  { id: "tirupati", name: "Tirupati Balaji", deity: "Lord Venkateswara", location: "Tirumala, AP", timing: "Suprabhatam 3:00 AM", about: "The richest and most-visited temple in the world.", grad: ["#322a1a", "#1a160f"], youtubeChannel: "UCS2Y83GD-fc7qqgNW5uj41g" },
   { id: "siddhi", name: "Siddhivinayak", deity: "Lord Ganesha", location: "Mumbai, MH", timing: "Kakad Aarti 5:30 AM", about: "Mumbai's most beloved Ganpati temple.", grad: ["#33271c", "#1a1410"] },
   { id: "vaishno", name: "Vaishno Devi", deity: "Maa Vaishnavi", location: "Katra, J&K", timing: "Aarti 6:00 AM & 7:00 PM", about: "The holy cave shrine of the Divine Mother.", grad: ["#332028", "#1a1014"] },
-  { id: "somnath", name: "Somnath", deity: "Lord Shiva", location: "Prabhas Patan, GJ", timing: "Aarti 7:00 AM", about: "The first among the twelve Jyotirlingas.", grad: ["#1f2a33", "#10161a"] },
+  { id: "somnath", name: "Somnath", deity: "Lord Shiva", location: "Prabhas Patan, GJ", timing: "Aarti 7:00 AM", about: "The first among the twelve Jyotirlingas.", grad: ["#1f2a33", "#10161a"], youtubeChannel: "UCcwrTb0z-J3iJ4hH0LHFsCQ" },
 ];
 
 export const templeById = (id: string) =>
