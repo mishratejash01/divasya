@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CaretRight } from "@phosphor-icons/react";
+import { CaretRight, List, MagnifyingGlass } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
   IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
@@ -31,9 +31,10 @@ type Block = {
 //           tiles are the main way in and want presence.
 //   row   — mark beside the name, 2-up. For the short utility list, where a
 //           column of tall tiles would be all air.
-const SECTIONS: { title: string; layout: "stack" | "row"; blocks: Block[] }[] = [
+const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: Block[] }[] = [
   {
     title: "Astrology & Guidance",
+    tab: "astro",
     layout: "stack",
     blocks: [
       { label: "My Kundli", icon: IconStar, to: "kundli" },
@@ -46,6 +47,7 @@ const SECTIONS: { title: string; layout: "stack" | "row"; blocks: Block[] }[] = 
   },
   {
     title: "Devotion",
+    tab: "devotion",
     layout: "stack",
     blocks: [
       { label: "Mala Jaap", icon: IconMala, to: "mala" },
@@ -58,6 +60,7 @@ const SECTIONS: { title: string; layout: "stack" | "row"; blocks: Block[] }[] = 
   },
   {
     title: "Tools",
+    tab: "tools",
     layout: "row",
     blocks: [
       { label: "Vastu", icon: IconCompass, to: "vastu" },
@@ -68,9 +71,31 @@ const SECTIONS: { title: string; layout: "stack" | "row"; blocks: Block[] }[] = 
   },
 ];
 
+// Short labels — the strip has to fit a phone without scrolling to be useful.
+const TABS = [
+  { id: "today", label: "Today" },
+  { id: "astro", label: "Astro" },
+  { id: "devotion", label: "Devotion" },
+  { id: "tools", label: "Tools" },
+  { id: "library", label: "Library" },
+] as const;
+
 export function HomeScreen() {
   const { go, sendPush, streak, japaToday, profile } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<string>("today");
+
+  // Tabs jump to a section, and the selected one follows the scroll so the
+  // strip keeps telling the truth about where you are.
+  const scrollToSection = (id: string) => {
+    const sc = scrollRef.current;
+    const el = sc?.querySelector<HTMLElement>(`[data-section="${id}"]`);
+    if (!sc || !el) return;
+    setActiveTab(id);
+    sc.scrollTo({ top: Math.max(0, el.offsetTop - 96), behavior: "smooth" });
+  };
+
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
 
@@ -125,6 +150,28 @@ export function HomeScreen() {
     },
   ].filter(Boolean) as { label: string; value: string; title?: string }[];
 
+  // Keep the selected tab honest as the page scrolls. Re-runs when the
+  // sections that render conditionally appear or disappear.
+  useEffect(() => {
+    const sc = scrollRef.current;
+    if (!sc) return;
+    const els = TABS
+      .map((t) => sc.querySelector<HTMLElement>(`[data-section="${t.id}"]`))
+      .filter((el): el is HTMLElement => el !== null);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const top = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (top) setActiveTab((top.target as HTMLElement).dataset.section || "today");
+      },
+      { root: sc, rootMargin: "-104px 0px -60% 0px" }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [library.length, nextFestival]);
+
   useEffect(() => {
     if (firedOnce || !chog) return;
     firedOnce = true;
@@ -142,12 +189,65 @@ export function HomeScreen() {
   }, [sendPush, chog]);
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      {/* Header is desktop-only. On mobile the fixed tab bar is the navigation,
-          so a top bar would just be a second one competing with it. */}
+    <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar screen-bottom lg:screen-top">
+      {/* Top bar — mobile only. Haldi ground, black marks, and a strip of text
+          tabs beneath that jump to the sections below. The tabs are content,
+          not destinations, so they don't repeat what the bottom bar does. */}
+      <div className="sticky top-0 z-30 lg:hidden" style={{ background: "var(--bar-yellow)" }}>
+        <div
+          className="flex items-center gap-3 gutter"
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)", paddingBottom: 8 }}
+        >
+          {/* The bar's marks carry more weight than the app default — at this
+              size the global "light" stroke went spindly on the yellow. */}
+          <button onClick={() => go("menu")} aria-label="Menu" className="shrink-0">
+            <List size={23} weight="regular" className="text-ink" />
+          </button>
+          <span className="font-display text-[17px] tracking-[-0.01em] text-ink">Divasya</span>
+          <div className="ml-auto flex shrink-0 items-center gap-3.5">
+            <button
+              ref={bellRef}
+              aria-label="Notifications"
+              onClick={() =>
+                chog &&
+                sendPush({
+                  title: `${chog.name} Choghadiya ${chog.good ? "· shubh samay" : "chal raha hai"}`,
+                  body: `Till ${chog.to}.${pg?.vrat ? ` Aaj ${pg.vrat}.` : ""}`,
+                  tone: "auspicious",
+                })
+              }
+            >
+              <IconBell size={22} strokeWidth={1.9} className="text-ink" />
+            </button>
+            <button onClick={() => go("menu")} aria-label="Search" className="shrink-0">
+              <MagnifyingGlass size={22} weight="bold" className="text-ink" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex gap-4 gutter overflow-x-auto no-scrollbar">
+          {TABS.map((t) => {
+            const on = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => scrollToSection(t.id)}
+                className={cx(
+                  "shrink-0 whitespace-nowrap pb-2 pt-1 text-[12.5px] transition-colors",
+                  on ? "font-medium text-ink" : "text-[rgba(23,22,19,0.55)]"
+                )}
+                style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bell lives in the top bar on mobile; desktop keeps its own row. */}
       <div className="hidden items-center justify-end gutter pt-2 lg:flex">
         <button
-          ref={bellRef}
           onClick={() =>
             chog &&
             sendPush({
@@ -164,7 +264,7 @@ export function HomeScreen() {
 
       {/* What is running now — the one time-sensitive thing on the screen, so
           it gets a status dot and reads in a single glance. */}
-      <div className="gutter pt-2">
+      <div data-section="today" className="gutter pt-2">
         <button
           onClick={() => go("panchang")}
           className="flex w-full items-center gap-2.5 rounded-2xl surface px-3 py-2.5 text-left"
@@ -296,7 +396,7 @@ export function HomeScreen() {
           together. The panel is the unit — a heading floating above loose
           cards left it ambiguous which tiles belonged to which heading. */}
       {SECTIONS.map((sec) => (
-        <div key={sec.title} className="gutter pt-1.5">
+        <div key={sec.title} data-section={sec.tab} className="gutter pt-1.5">
           <section className="rounded-2xl surface p-2.5">
             <h3 className="section-title mb-2.5">{sec.title}</h3>
             <div
@@ -386,7 +486,7 @@ export function HomeScreen() {
 
       {/* library — in the same panel form as every other section */}
       {library.length > 0 && (
-        <div className="gutter pt-1.5">
+        <div data-section="library" className="gutter pt-1.5">
           <section className="rounded-2xl surface p-2.5">
             <div className="mb-2.5 flex items-end justify-between">
               <h3 className="section-title">Spiritual Library</h3>
