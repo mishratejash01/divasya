@@ -88,6 +88,42 @@ const TABS: { id: string; label: string; to?: ScreenName }[] = [
   { id: "library", label: "Library" },
 ];
 
+// Poster verses. Unlike festival dates these are safe to hold locally: they are
+// ancient, fixed and among the best known lines in the tradition, so there is
+// nothing to go stale or to get wrong by a day.
+const POSTERS: { deva: string; meaning: string; source: string; tint: [string, string] }[] = [
+  {
+    deva: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।",
+    meaning: "You have the right to action alone, never to its fruits.",
+    source: "Bhagavad Gita 2.47",
+    tint: ["#7E1D2E", "#3F0C17"],
+  },
+  {
+    deva: "सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः।",
+    meaning: "May all be happy, may all be free from illness.",
+    source: "Shanti Mantra",
+    tint: ["#0F4F49", "#052A26"],
+  },
+  {
+    deva: "वसुधैव कुटुम्बकम्।",
+    meaning: "The world is one family.",
+    source: "Maha Upanishad 6.72",
+    tint: ["#4A2472", "#22103E"],
+  },
+  {
+    deva: "असतो मा सद्गमय।",
+    meaning: "Lead me from the unreal to the real.",
+    source: "Brihadaranyaka Upanishad 1.3.28",
+    tint: ["#153C6B", "#071D38"],
+  },
+  {
+    deva: "योगः कर्मसु कौशलम्।",
+    meaning: "Yoga is skill in action.",
+    source: "Bhagavad Gita 2.50",
+    tint: ["#8A3B08", "#4A1D03"],
+  },
+];
+
 // Deep jewel grounds for the darshan cards. Saturated rather than merely dark:
 // the temple records carry near-black greys that turn to mud at card size.
 const DARSHAN_TINTS: [string, string][] = [
@@ -149,6 +185,9 @@ export function HomeScreen() {
   }, [rashi]);
 
   const nextFestival = festivals[0];
+
+  // One verse per day, stable for the whole day and different tomorrow.
+  const poster = POSTERS[Math.floor(Date.now() / 86_400_000) % POSTERS.length];
 
   // The birth record, as labelled fields rather than a run of sentences. A
   // date and a place mean nothing on their own — "14 Aug 1995" could be
@@ -608,6 +647,26 @@ export function HomeScreen() {
           </section>
         </div>
       )}
+
+      {/* One closing poster, full width. A single verse given the whole column
+          lands harder than five competing for a swipe, and the screen ends on
+          something worth reading rather than trailing into a footer. It turns
+          over daily, so the page is not identical tomorrow. */}
+      <div className="gutter pt-1.5">
+        <button
+          onClick={() => go("sandesh")}
+          className="w-full overflow-hidden rounded-2xl p-4 text-left"
+          style={{ background: `linear-gradient(148deg, ${poster.tint[0]}, ${poster.tint[1]})` }}
+        >
+          <span className="block measure font-deva text-[19px] leading-[1.75] text-white">
+            {poster.deva}
+          </span>
+          <span className="mt-3 block measure text-[11.5px] leading-relaxed text-white/85">
+            {poster.meaning}
+          </span>
+          <span className="mt-2 block text-[10px] text-white/60">{poster.source}</span>
+        </button>
+      </div>
 
       <div className="flex items-center justify-center gap-2 gutter pb-2 pt-5">
         <Logomark size={13} className="text-[var(--amber)]" />

@@ -88,7 +88,9 @@ export const getTemples = () =>
     const r = await rows<Record<string, never>>("temples");
     return r.map((t) => ({
       id: t["id"], name: t["name"], deity: t["deity"], location: t["location"],
-      timing: t["timing"], about: t["about"], youtubeId: t["youtube_id"] ?? undefined,
+      timing: t["timing"], about: t["about"],
+      youtubeId: t["youtube_id"] ?? undefined,
+      youtubeChannel: t["youtube_channel"] ?? undefined,
       grad: [t["tint"], shade(t["tint"], 0.55)] as [string, string],
     }));
   }, TEMPLES);

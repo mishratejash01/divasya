@@ -28,6 +28,25 @@ function ItemMark({ item, size = 48 }: { item: Item; size?: number }) {
   );
 }
 
+/**
+ * The darshan stream URL for a temple, or null if none is configured.
+ *
+ * Always muted: a temple stream that starts talking the moment someone opens
+ * the screen is the wrong first impression, and browsers refuse to autoplay
+ * unmuted anyway. playsinline keeps iOS from throwing it fullscreen.
+ *
+ * To switch a temple on, set youtube_channel (a UC… id) on its row — that
+ * follows the channel's current broadcast, so it survives each new stream.
+ * youtube_id is only for a fixed recording. Neither is seeded locally: a wrong
+ * id renders "Video unavailable", which is worse than the honest placeholder.
+ */
+function darshanEmbed(t: { youtubeChannel?: string; youtubeId?: string }): string | null {
+  const p = "autoplay=1&mute=1&playsinline=1&rel=0";
+  if (t.youtubeChannel) return `https://www.youtube.com/embed/live_stream?channel=${t.youtubeChannel}&${p}`;
+  if (t.youtubeId) return `https://www.youtube.com/embed/${t.youtubeId}?${p}`;
+  return null;
+}
+
 /* ---------------- Puja + Chadhava ---------------- */
 export function PujaScreen() {
   const { back, haptic, profile, user, screen } = useApp();
@@ -198,8 +217,17 @@ export function TempleScreen() {
 
         {/* live player */}
         <div className="relative gutter-m overflow-hidden rounded-2xl" style={{ aspectRatio: "16/10", background: "var(--surface-2)" }}>
-          {t.youtubeId ? (
-            <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${t.youtubeId}?autoplay=1&mute=1`} allow="autoplay; encrypted-media" />
+          {darshanEmbed(t) ? (
+            <iframe
+              className="h-full w-full"
+              src={darshanEmbed(t)!}
+              title={`${t.name} live darshan`}
+              // mute=1 in the URL *and* autoplay in allow — browsers block
+              // autoplay outright unless the player is muted.
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
           ) : (
             // No stream yet — say so, rather than pulsing a decorative glyph.
             <div className="relative grid h-full w-full place-items-center">

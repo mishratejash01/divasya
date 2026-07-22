@@ -49,7 +49,12 @@ export type Temple = {
   timing: string;
   about: string;
   grad: [string, string];
-  youtubeId?: string; // optional real live-darshan stream
+  // A live darshan source. Prefer youtubeChannel: a live stream's video id
+  // changes with every broadcast, so a hardcoded youtubeId goes dead the next
+  // morning, while /embed/live_stream?channel= always resolves to whatever
+  // that channel is streaming now.
+  youtubeChannel?: string; // UC… channel id
+  youtubeId?: string;      // a specific video, for a fixed recording
 };
 
 // ----------------------------------------------------------------------------
