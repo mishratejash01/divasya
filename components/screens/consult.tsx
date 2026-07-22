@@ -267,41 +267,67 @@ export function ConsultChatScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col screen-top">
-      {/* header */}
-      <div className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: "1px solid var(--line)" }}>
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <Avatar name={astro.name} size={34} tint={astro.grad[0]} status="online" />
-        <div className="flex-1">
-          <div className="text-[12px] font-medium text-ink">{astro.name}</div>
-          <div className="text-[10px] text-[var(--good)]">● online</div>
+    <div className="flex h-full flex-col">
+      {/* Yellow header, bare caret — a circle around a back arrow is a frame
+          doing no work. The subtitle carries the live state: while a reply is
+          streaming it reads typing, the way a chat should. */}
+      <div
+        className="flex items-center gap-2.5 gutter"
+        style={{
+          background: "var(--bar-yellow)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 10px)",
+          paddingBottom: 10,
+        }}
+      >
+        <button onClick={back} aria-label="Back" className="shrink-0">
+          <CaretLeft size={20} weight="regular" className="text-ink" />
+        </button>
+        <Avatar name={astro.name} size={34} tint={astro.grad[0]} photo={astro.photo} status="online" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13px] font-medium text-ink">{astro.name}</div>
+          <div className="text-[10px] text-ink/65">
+            {streaming ? "typing…" : "Online now"}
+          </div>
         </div>
+        {/* Timer as a labelled readout, not a chip: the number is what matters,
+            so it leads, with what it counts named beneath in small caps-free
+            text. A pill made it look like a button that toggles something. */}
         <button
           onClick={() => phase === "free" && setFreeLeft(8)}
-          className={cx("flex items-center gap-1.5 rounded-full surface px-3 py-1.5 text-[11px]",
-            phase === "paid" ? "text-ink" : phase === "free" ? "text-[var(--good)]" : "text-[var(--avoid)]")}
+          className="shrink-0 text-right leading-none"
         >
-          <Clock size={12} />
-          {phase === "free" && <span>Free {fmt(freeLeft)}</span>}
-          {phase === "paid" && <span>₹{astro.rate}/min · ₹{Math.max(balanceLeft, 0)}</span>}
-          {phase === "ended" && <span>Ended</span>}
+          <span className="block text-[15px] tnum font-medium leading-none text-ink">
+            {phase === "free" && fmt(freeLeft)}
+            {phase === "paid" && `₹${Math.max(balanceLeft, 0)}`}
+            {phase === "ended" && "0:00"}
+          </span>
+          <span className="mt-1 block text-[9px] leading-none text-ink/65">
+            {phase === "free" && "free left"}
+            {phase === "paid" && "balance"}
+            {phase === "ended" && "session ended"}
+          </span>
         </button>
       </div>
 
-      {phase === "free" && (
-        <div className="px-4 py-1.5 text-center text-[10px] text-muted">First consultation free · tap the timer to skip ahead</div>
-      )}
       {phase === "paid" && (
-        <div className="px-4 py-1.5 text-center text-[10px] text-muted">Session {fmt(paidElapsed)} · ₹{paidSpent} spent · Balance ₹{Math.max(balanceLeft, 0)}</div>
+        <div className="gutter py-1 text-center text-[10px] tnum text-muted" style={{ background: "var(--surface)" }}>
+          {fmt(paidElapsed)} · ₹{paidSpent} spent · ₹{astro.rate}/min
+        </div>
       )}
 
-      {/* messages */}
-      <div ref={scroller} className="relative flex-1 space-y-3 overflow-y-auto px-4 py-4 no-scrollbar">
-        <Row role="assistant" astroName={astro.name} tint={astro.grad[0]}>{greet}</Row>
+      {/* Transcript on its own ground so the white bubbles read as bubbles. */}
+      <div
+        ref={scroller}
+        className="relative flex-1 space-y-2 overflow-y-auto gutter py-3 no-scrollbar"
+        style={{ background: "var(--surface)" }}
+      >
+        <Row role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>{greet}</Row>
         {messages.map((m, i) =>
           m.role === "user"
             ? <Row key={i} role="user">{m.content}</Row>
-            : <Row key={i} role="assistant" astroName={astro.name} tint={astro.grad[0]}>{m.content || <Typing />}</Row>
+            : <Row key={i} role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>
+                {m.content || <Typing />}
+              </Row>
         )}
       </div>
 
@@ -329,30 +355,65 @@ export function ConsultChatScreen() {
         )}
       </AnimatePresence>
 
-      {/* input */}
-      <div className="flex items-center gap-2 px-4 pt-1 above-tabbar">
+      {/* Composer, pinned. Its own ground and a top rule so it reads as a fixed
+          bar rather than the last thing on the page. */}
+      <div
+        className="sticky bottom-0 z-20 flex items-center gap-2 gutter pt-2 above-tabbar"
+        style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
+      >
         <input value={input} onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder={phase === "ended" ? "Recharge to continue…" : "Type your question…"}
           disabled={phase === "ended"}
-          className="flex-1 rounded-full px-4 py-3 text-[12.5px] text-ink outline-none placeholder:text-muted disabled:opacity-50"
-          style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }} />
+          className="flex-1 rounded-[6px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted disabled:opacity-50"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
         <button onClick={() => send(input)} disabled={streaming || phase === "ended"}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full btn-saffron disabled:opacity-50">
-          <PaperPlaneTilt size={15} />
+          aria-label="Send"
+          className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[6px] btn-saffron disabled:opacity-50">
+          <PaperPlaneTilt size={15} weight="fill" />
         </button>
       </div>
     </div>
   );
 }
 
-function Row({ role, children, astroName, tint }: { role: "user" | "assistant"; children: React.ReactNode; astroName?: string; tint?: string }) {
+/**
+ * A line of the transcript.
+ *
+ * Two parties, two grounds: theirs is the app's yellow, ours the deep rust the
+ * Sandesh block already uses. Orange against yellow would have been two warm
+ * colours fighting, and blue is spoken for as the Chat action colour, so rust
+ * keeps the pair inside the app's own world while staying clearly separate.
+ * The tail corner is squared on the sender's side so the direction reads
+ * without needing alignment alone.
+ */
+function Row({ role, children, astroName, tint, photo }: {
+  role: "user" | "assistant";
+  children: React.ReactNode;
+  astroName?: string;
+  tint?: string;
+  photo?: string;
+}) {
   if (role === "user")
-    return <div className="flex justify-end"><div className="max-w-[78%] whitespace-pre-wrap rounded-2xl rounded-br-md px-3.5 py-2.5 text-[12px] leading-relaxed btn-saffron">{children}</div></div>;
+    return (
+      <div className="flex justify-end">
+        <div
+          className="max-w-[80%] whitespace-pre-wrap rounded-xl rounded-br-[3px] px-3 py-2 text-[12px] leading-relaxed text-white"
+          style={{ background: "var(--bhagwa-dark)" }}
+        >
+          {children}
+        </div>
+      </div>
+    );
   return (
-    <div className="flex items-end gap-2">
-      <Avatar name={astroName || "A"} size={25} tint={tint} />
-      <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[12px] leading-relaxed text-ink surface">{children}</div>
+    <div className="flex items-end gap-1.5">
+      <Avatar name={astroName || "A"} size={24} tint={tint} photo={photo} />
+      <div
+        className="max-w-[80%] whitespace-pre-wrap rounded-xl rounded-bl-[3px] px-3 py-2 text-[12px] leading-relaxed text-ink"
+        style={{ background: "var(--bubble-in)" }}
+      >
+        {children}
+      </div>
     </div>
   );
 }

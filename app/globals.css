@@ -18,6 +18,10 @@
   /* Top bar ground. Haldi yellow, light enough that black marks and the
      wordmark sit on it at well over 4.5:1. */
   --bar-yellow: #FFC93C;
+  /* Incoming chat bubble. A softer yellow than the header — at the same value
+     the bubbles merged into the bar above them and the screen read as one
+     yellow mass. */
+  --bubble-in: #FFE08A;
   --amber: #C88131;          /* Amber Earth — the steady accent */
   --amber-deep: #A5661F;
   --amber-soft: #D9954C;
