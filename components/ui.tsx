@@ -184,7 +184,8 @@ export function DeityPortrait({
     <img
       src={src}
       alt={alt}
-      className="h-full w-full rounded-[5px] object-cover"
+      // fills the frame edge to edge; the frame's own overflow-hidden clips it
+      className="h-full w-full object-cover"
       onError={() => setFailed(true)}
     />
   );
