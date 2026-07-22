@@ -67,14 +67,25 @@ function fallbackCatalog(): PanchangCatalog {
   const TN = ["Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi", "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Purnima"];
   const YN = ["Vishkambha", "Priti", "Ayushman", "Saubhagya", "Shobhana", "Atiganda", "Sukarma", "Dhriti", "Shula", "Ganda", "Vriddhi", "Dhruva", "Vyaghata", "Harshana", "Vajra", "Siddhi", "Vyatipata", "Variyana", "Parigha", "Shiva", "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma", "Indra", "Vaidhriti"];
   const KN = ["Bava", "Balava", "Kaulava", "Taitila", "Garaja", "Vanija", "Vishti", "Shakuni", "Chatushpada", "Naga", "Kimstughna"];
-  const VN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  // Weekday names in all three, not the English one copied across all three
+  // fields — the Panchang screen shows the vaara in Sanskrit next to the
+  // English date, and it was printing "Wednesday" twice.
+  const VN: [string, string, string][] = [
+    ["Sunday", "Ravivara", "रविवार"],
+    ["Monday", "Somavara", "सोमवार"],
+    ["Tuesday", "Mangalavara", "मंगलवार"],
+    ["Wednesday", "Budhavara", "बुधवार"],
+    ["Thursday", "Guruvara", "गुरुवार"],
+    ["Friday", "Shukravara", "शुक्रवार"],
+    ["Saturday", "Shanivara", "शनिवार"],
+  ];
   const MN = ["", "Chaitra", "Vaishakha", "Jyeshtha", "Ashadha", "Shravana", "Bhadrapada", "Ashwina", "Kartika", "Margashirsha", "Pausha", "Magha", "Phalguna"];
   return {
     tithi: Array.from({ length: 30 }, (_, i) => ({ name: i === 29 ? "Amavasya" : TN[i % 15], paksha: i < 15 ? "shukla" : "krishna", category: "" })),
     nakshatra: NAKSHATRAS.map((n) => ({ name: n, name_sa: n, lord: "" })),
     yoga: YN.map((y) => ({ name: y, nature: "" })),
     karana: KN.map((k, i) => ({ name: k, is_vishti: i === 6 })),
-    vaara: VN.map((v) => ({ name_en: v, name_sa: v, name_hi: v })),
+    vaara: VN.map(([en, sa, hi]) => ({ name_en: en, name_sa: sa, name_hi: hi })),
     masa: MN.map((m) => ({ amanta: m, sa: m })),
     samvatsara: [""],
     rashi: RASHIS_SA.map((r) => ({ name: r, sa: r })),

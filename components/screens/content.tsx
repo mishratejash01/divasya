@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { IconShare, IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
 import { Bank, CaretLeft, Check, Clock, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword } from "@phosphor-icons/react";
@@ -22,14 +22,88 @@ function Header({ title, sub }: { title: string; sub?: string }) {
 }
 
 /* ---------------- Panchang ---------------- */
-function ChoghadiyaRow({ slot, first }: { slot: ChoghadiyaSlot; first: boolean }) {
+
+/** One titled white panel. Same unit as the home screen: the heading and the
+ *  rows it governs live inside one box, so nothing is ambiguous about which
+ *  heading owns which rows. */
+function Panel({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3" style={{ borderTop: first ? undefined : "1px solid var(--line)" }}>
-      <span className={cx("h-2 w-2 rounded-full", slot.good ? "bg-[var(--good)]" : "bg-[var(--avoid)]")} />
-      <span className={cx("w-16 text-[12.5px]", slot.night ? "text-ink-dim" : "text-ink")}>{slot.name}</span>
-      <span className="flex-1 text-[11px] tnum text-muted">{slot.from} – {slot.to}</span>
-      {slot.active && <span className="rounded-full px-2 py-0.5 text-[9px] btn-saffron">Now</span>}
-      <span className={cx("text-[10px]", slot.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>{slot.good ? "Shubh" : "Avoid"}</span>
+    <div className="gutter pt-1.5">
+      <section className="overflow-hidden rounded-2xl surface">
+        <div className="px-3 pb-2 pt-2.5">
+          <h3 className="section-title">{title}</h3>
+          {/* Every one of these words is Sanskrit. A line of plain English under
+              the heading is the difference between a table you can read and a
+              table you can only look at. */}
+          {note && <p className="mt-1 text-[10.5px] leading-relaxed text-[var(--muted-2)]">{note}</p>}
+        </div>
+        {children}
+      </section>
+    </div>
+  );
+}
+
+/** Label left, value right, and the time it runs out underneath — which is the
+ *  part people actually came for. */
+function Row({ label, value, until, gloss }: { label: string; value: string; until?: string | null; gloss?: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3 px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
+      <div className="min-w-0">
+        <div className="text-[12px] text-ink">{label}</div>
+        {gloss && <div className="mt-0.5 text-[10px] leading-relaxed text-[var(--muted-2)]">{gloss}</div>}
+      </div>
+      <div className="shrink-0 text-right">
+        <div className="text-[12.5px] text-ink">{value}</div>
+        {until && <div className="mt-0.5 text-[10px] tnum text-[var(--muted-2)]">till {until}</div>}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * What each choghadiya is for. The old row said only "Shubh" or "Avoid", which
+ * tells you the verdict but not the reason, and the names themselves — Labh,
+ * Rog, Udveg — carry the meaning for anyone who knows Sanskrit and nothing at
+ * all for anyone who doesn't.
+ */
+const CHOGHADIYA: Record<string, { meaning: string; use: string }> = {
+  Amrit: { meaning: "Nectar", use: "Best hour of the day — good for anything" },
+  Shubh: { meaning: "Auspicious", use: "Ceremonies, marriage, worship" },
+  Labh: { meaning: "Gain", use: "Business, new work, money matters" },
+  Char: { meaning: "Moving", use: "Travel and errands" },
+  Udveg: { meaning: "Unrest", use: "Routine work only" },
+  Rog: { meaning: "Illness", use: "Postpone anything important" },
+  Kaal: { meaning: "Loss", use: "Postpone anything important" },
+};
+
+function ChoghadiyaRow({ slot }: { slot: ChoghadiyaSlot }) {
+  const info = CHOGHADIYA[slot.name];
+  return (
+    <div
+      className="flex items-start gap-2.5 px-3 py-2.5"
+      style={{
+        borderTop: "1px solid var(--line)",
+        background: slot.active ? "var(--surface-2)" : undefined,
+      }}
+    >
+      <span
+        className="mt-1 h-2 w-2 shrink-0 rounded-full"
+        style={{ background: slot.good ? "var(--good)" : "var(--avoid)" }}
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline gap-x-1.5">
+          <span className="text-[12.5px] text-ink">{slot.name}</span>
+          {info && <span className="text-[10.5px] text-[var(--muted-2)]">{info.meaning}</span>}
+          {slot.active && (
+            <span className="rounded-[3px] px-1.5 py-px text-[9px] btn-saffron">Now</span>
+          )}
+        </div>
+        {info && <div className="mt-0.5 text-[10.5px] leading-relaxed text-ink">{info.use}</div>}
+      </div>
+      <div className="shrink-0 text-right">
+        <div className="text-[11px] tnum text-ink">{slot.from}</div>
+        <div className="text-[11px] tnum text-[var(--muted-2)]">{slot.to}</div>
+      </div>
     </div>
   );
 }
@@ -40,80 +114,111 @@ export function PanchangScreen() {
   const daySlots = p.choghadiya.filter((c) => !c.night);
   const nightSlots = p.choghadiya.filter((c) => c.night);
   const kaal = (code: string) => p.kaals.find((k) => k.code === code);
-  const rahu = kaal("rahu_kaal"), yama = kaal("yamaganda");
-  const grid: [string, string][] = [
-    ["Tithi", `${p.tithi.paksha === "shukla" ? "Shukla" : "Krishna"} ${p.tithi.name}`],
-    ["Nakshatra", p.nakshatra.name],
-    ["Yoga", p.yoga.name],
-    ["Karana", p.karana.name],
-    ["Vaar", p.vaara.name_sa],
-    ["Masa", `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`],
+  const AVOID: [string, string, string][] = [
+    ["rahu_kaal", "Rahu Kaal", "Start nothing new"],
+    ["yamaganda", "Yamaganda", "Best kept quiet"],
+    ["gulika", "Gulika Kaal", "Avoid travel and signing"],
   ];
+  const paksha = p.tithi.paksha === "shukla" ? "Shukla" : "Krishna";
+
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <Header title="Panchang" sub={`${p.vaara.name_en} · ${p.home.dateLabel}`} />
-      <div className="flex items-center justify-between gap-3 gutter pb-3">
-        <div className="text-[10px] tnum text-muted">
-          Vikram {p.samvat.vikram}
-          {p.samvat.samvatsara ? ` · ${p.samvat.samvatsara}` : ""}
-        </div>
-        {p.home.vrat && <Pill tone="gold">{p.home.vrat}</Pill>}
-      </div>
+      <Header title="Panchang" />
 
-      <div className="gutter-m flex gap-3 rounded-2xl surface p-3">
-        <div className="flex flex-1 items-center gap-2.5 border-r pr-3" style={{ borderColor: "var(--line)" }}>
-          <IconSunrise size={15} className="text-[var(--bhagwa)]" strokeWidth={1.7} />
-          <div>
-            <div className="eyebrow text-muted">Sunrise</div>
-            <div className="text-[12.5px] text-ink">{p.sun.rise}</div>
+      <Panel
+        title="Today"
+        note="The five limbs of the day — vaar, tithi, nakshatra, yoga and karana. Each ends at its own hour, not at midnight."
+      >
+        {/* The date and samvat used to sit loose above the first card, left of a
+            pill and aligned to nothing. They belong to this panel. */}
+        <div className="px-3 pb-2.5" style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="font-display text-[15px] leading-tight text-ink">{p.home.dateLabel}</div>
+            <div className="shrink-0 text-[11px] text-ink">{p.vaara.name_en}</div>
           </div>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[10.5px] text-[var(--muted-2)]">
+            <span>{p.masa.amanta} {paksha} paksha</span>
+            <span>·</span>
+            <span className="tnum">Vikram Samvat {p.samvat.vikram}</span>
+            <span>·</span>
+            <span className="tnum">Shaka {p.samvat.shaka}</span>
+          </div>
+          {p.home.vrat && <div className="mt-2"><Pill tone="gold">{p.home.vrat}</Pill></div>}
         </div>
-        <div className="flex flex-1 items-center gap-2.5">
-          <IconSunset size={15} className="text-[var(--bhagwa)]" strokeWidth={1.7} />
-          <div>
-            <div className="eyebrow text-muted">Sunset</div>
-            <div className="text-[12.5px] text-ink">{p.sun.set}</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="gutter-m mt-2 grid grid-cols-2 gap-2.5">
-        {grid.map(([k, v]) => (
-          <div key={k} className="rounded-2xl surface p-3">
-            <div className="eyebrow text-muted">{k}</div>
-            <div className="mt-0.5 text-[13.5px] text-ink">{v}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="gutter pt-2">
-        <h3 className="mb-2 section-title">Choghadiya · Today</h3>
-        <div className="overflow-hidden rounded-2xl surface">
-          {daySlots.map((c, i) => (
-            <ChoghadiyaRow key={i} slot={c} first={i === 0} />
+        {/* Sun and moon on one strip — four times that belong together. */}
+        <div className="grid grid-cols-2" style={{ borderTop: "1px solid var(--line)" }}>
+          {([
+            [IconSunrise, "Sunrise", p.sun.rise],
+            [IconSunset, "Sunset", p.sun.set],
+            [null, "Moonrise", p.moon.rise],
+            [null, "Moonset", p.moon.set],
+          ] as const).map(([Icon, label, value], i) => (
+            <div
+              key={label}
+              className="flex items-center gap-2 px-3 py-2.5"
+              style={{
+                borderTop: i > 1 ? "1px solid var(--line)" : undefined,
+                borderLeft: i % 2 ? "1px solid var(--line)" : undefined,
+              }}
+            >
+              {Icon
+                ? <Icon size={15} className="shrink-0 text-[var(--bhagwa)]" strokeWidth={1.7} />
+                : <Moon size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />}
+              <div className="min-w-0">
+                <div className="text-[10px] leading-none text-[var(--muted-2)]">{label}</div>
+                <div className="mt-1 text-[12.5px] leading-none tnum text-ink">{value}</div>
+              </div>
+            </div>
           ))}
         </div>
 
-        <h4 className="mb-2 mt-3 section-title">Night</h4>
-        <div className="overflow-hidden rounded-2xl surface-2">
-          {nightSlots.map((c, i) => (
-            <ChoghadiyaRow key={i} slot={c} first={i === 0} />
-          ))}
-        </div>
+        <Row label="Tithi" gloss="Lunar day" value={`${paksha} ${p.tithi.name}`} until={p.tithi.endsAt} />
+        <Row label="Nakshatra" gloss="The moon's constellation" value={p.nakshatra.name} until={p.nakshatra.endsAt} />
+        <Row label="Yoga" gloss="Sun and moon combined" value={p.yoga.name} until={p.yoga.endsAt} />
+        <Row label="Karana" gloss="Half a tithi" value={p.karana.name} until={p.karana.endsAt} />
+        <Row label="Vaar" gloss="Weekday" value={p.vaara.name_sa} />
+        <Row
+          label="Masa"
+          gloss="Lunar month"
+          value={`${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`}
+        />
+      </Panel>
 
-        <div className="mt-3 grid grid-cols-2 gap-2.5">
-          <div className="rounded-2xl surface p-3">
-            <div className="text-[11.5px] text-ink">Rahu Kaal</div>
-            <div className="mt-0.5 text-[11px] tnum text-[var(--avoid)]">{rahu ? `${rahu.from} – ${rahu.to}` : "–"}</div>
-            <div className="mt-1 text-[10px] text-muted">Avoid new beginnings</div>
-          </div>
-          <div className="rounded-2xl surface p-3">
-            <div className="text-[11.5px] text-ink">Yamaganda</div>
-            <div className="mt-0.5 text-[11px] tnum text-[var(--avoid)]">{yama ? `${yama.from} – ${yama.to}` : "–"}</div>
-            <div className="mt-1 text-[10px] text-muted">Best kept quiet</div>
-          </div>
-        </div>
-      </div>
+      <Panel
+        title="Choghadiya · Day"
+        note="Sunrise to sunset split into eight parts. Green is a good window to begin something; red is one to let pass."
+      >
+        {daySlots.map((c, i) => <ChoghadiyaRow key={i} slot={c} />)}
+      </Panel>
+
+      <Panel
+        title="Choghadiya · Night"
+        note="Sunset to the next sunrise, split the same way."
+      >
+        {nightSlots.map((c, i) => <ChoghadiyaRow key={i} slot={c} />)}
+      </Panel>
+
+      <Panel
+        title="Hours to avoid"
+        note="Fixed inauspicious windows. They fall at a different hour each weekday."
+      >
+        {AVOID.map(([code, label, why]) => {
+          const k = kaal(code);
+          return (
+            <div key={code} className="flex items-center justify-between gap-3 px-3 py-2.5"
+              style={{ borderTop: "1px solid var(--line)" }}>
+              <div className="min-w-0">
+                <div className="text-[12.5px] text-ink">{label}</div>
+                <div className="mt-0.5 text-[10.5px] text-ink">{why}</div>
+              </div>
+              <div className="shrink-0 text-right text-[11px] tnum" style={{ color: "var(--avoid)" }}>
+                {k ? <>{k.from}<br />{k.to}</> : "—"}
+              </div>
+            </div>
+          );
+        })}
+      </Panel>
     </div>
   );
 }
