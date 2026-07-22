@@ -1,7 +1,9 @@
 "use client";
 
 import { CaretRight, SidebarSimple, SignOut, UserCircle } from "@phosphor-icons/react";
-import { IconHome, IconEye, IconChat, IconComponent } from "./icons";
+import {
+  IconHome, IconEye, IconChat, IconStar, IconDiya, IconAarti, IconCompass, IconComponent,
+} from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
 import { rashiLabel } from "@/lib/astro";
@@ -13,21 +15,27 @@ type NavItem = {
   to: ScreenName;
   params?: Record<string, unknown>;
   match: ScreenName[];
+  /** Category pages all share one screen name, so they are told apart by id. */
+  cat?: string;
 };
 
 /**
- * The sidebar carries the primary destinations only — the same four the tab bar
- * carries on mobile, since the bar is hidden at this width and this stands in
- * for it.
+ * Main tabs only. Nothing here expands in place — the three that hold more than
+ * one thing (Astrology, Devotion, Guides) open a page listing what is inside,
+ * so the sidebar stays one flat list at every width instead of growing a tree.
  *
- * It used to list eleven entries across three groups, every one of which now
- * appears on the home screen in its own titled section. That made the sidebar a
- * second copy of the homepage: two places to maintain, and no answer to "which
- * one am I supposed to use". Everything not below is one tap away on Home.
+ * It used to list eleven entries across three groups, which made it a second
+ * copy of the homepage: two places to maintain and no answer to which one you
+ * were meant to use. The tools themselves live in CATEGORIES, read by both this
+ * and the category screen, so neither can drift from the other.
  */
 const ITEMS: NavItem[] = [
   { id: "home", label: "Home", icon: IconHome, to: "home", match: ["home"] },
-  { id: "ai", label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
+  { id: "kundli", label: "My Kundli", icon: IconStar, to: "kundli", match: ["kundli"] },
+  { id: "astro", label: "Astrology", icon: IconEye, to: "category", params: { id: "astro" }, match: [], cat: "astro" },
+  { id: "devotion", label: "Devotion", icon: IconDiya, to: "category", params: { id: "devotion" }, match: [], cat: "devotion" },
+  { id: "festival", label: "Festivals", icon: IconAarti, to: "festivals", match: ["festivals"] },
+  { id: "tools", label: "Guides", icon: IconCompass, to: "category", params: { id: "tools" }, match: [], cat: "tools" },
   { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
   { id: "menu", label: "Account", icon: UserCircle as unknown as IconComponent, to: "menu", match: ["menu"] },
 ];
@@ -66,7 +74,9 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
       <nav className="flex-1 space-y-0.5 overflow-y-auto no-scrollbar">
         {ITEMS.map((it) => {
           const Icon = it.icon;
-          const active = it.match.includes(screen.name);
+          const active = it.cat
+            ? screen.name === "category" && screen.params?.id === it.cat
+            : it.match.includes(screen.name);
           return (
             <button
               key={it.id}

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
+import { CategoryScreen } from "./screens/category";
 import { PushToast } from "./push-toast";
 import { Logomark } from "./ui";
 
@@ -40,6 +41,7 @@ function Screen() {
     case "consult": return <ConsultScreen />;
     case "consultChat": return <ConsultChatScreen />;
     case "menu": return <MoreScreen />;
+    case "category": return <CategoryScreen />;
     case "panchang": return <PanchangScreen />;
     case "festivals": return <FestivalsScreen />;
     case "library": return <LibraryScreen />;
