@@ -1,116 +1,126 @@
 "use client";
 
-import { CaretLeft, CaretRight, GearSix, Question, SignOut } from "@phosphor-icons/react";
-import {
-  IconEye, IconDiya, IconChat, IconWheel, IconLotus, IconDarshan, IconMandir,
-  IconMala, IconStar, IconCompass, IconBaby, IconJournal, IconSandesh, IconShare, IconComponent,
-} from "../icons";
-import { useApp, ScreenName } from "../app-context";
+import { useState } from "react";
+import { Check, EnvelopeSimple, ShareNetwork, SignOut } from "@phosphor-icons/react";
+import { useApp } from "../app-context";
 import { Avatar, Logomark, ScreenHeader } from "../ui";
 import { rashiLabel } from "@/lib/astro";
 
-type Item = { label: string; icon: IconComponent; to?: ScreenName; params?: Record<string, unknown>; live?: boolean };
-
-const SECTIONS: { title: string; items: Item[] }[] = [
-  {
-    title: "Astrology & Guidance",
-    items: [
-      { label: "My Kundli", icon: IconStar, to: "kundli", live: true },
-      { label: "AI Astrology", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, live: true },
-      { label: "Talk to your Devta", icon: IconDiya, to: "ai", params: { mode: "deity" }, live: true },
-      { label: "Consult Astrologers", icon: IconChat, to: "consult", live: true },
-      { label: "Panchang & Muhurat", icon: IconWheel, to: "panchang" },
-    ],
-  },
-  {
-    title: "Devotion",
-    items: [
-      { label: "Online Puja & Chadhava", icon: IconLotus, to: "puja", live: true },
-      { label: "Live Temple Darshan", icon: IconDarshan, to: "temple", live: true },
-      { label: "My Mandir", icon: IconMandir, to: "mandir" },
-      { label: "Mala Jaap", icon: IconMala, to: "mala" },
-      { label: "Festivals & Pooja Guide", icon: IconStar, to: "festivals" },
-    ],
-  },
-  {
-    title: "Guides & Tools",
-    items: [
-      { label: "Vastu Compass", icon: IconCompass, to: "vastu", live: true },
-      { label: "Naamkaran", icon: IconBaby, to: "naamkaran", live: true },
-      { label: "Spiritual Library", icon: IconJournal, to: "library" },
-      { label: "Daily Sandesh", icon: IconSandesh, to: "sandesh" },
-    ],
-  },
-];
-
-const UTILITY: Item[] = [
-  { label: "GearSix", icon: GearSix },
-  { label: "Help & Support", icon: Question },
-  { label: "Share App", icon: IconShare },
-  { label: "Logout", icon: SignOut },
-];
+/**
+ * The menu used to carry fourteen entries across three sections — Astrology,
+ * Devotion, Guides — every single one of which is already a titled section on
+ * the home screen. That made this a second copy of the homepage: two places to
+ * maintain and no answer to which one you were meant to use.
+ *
+ * What is left is the handful of things that have nowhere else to live: who you
+ * are signed in as, sharing the app, and the way out.
+ */
+function prettyDob(iso: string) {
+  const d = new Date(`${iso}T12:00:00`);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+}
 
 export function MoreScreen() {
-  const { back, go, haptic, profile, logout } = useApp();
+  const { back, haptic, profile, user, logout } = useApp();
+  const [shared, setShared] = useState(false);
+
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
+
+  // How this account actually got in — the email for Google, the number for
+  // phone. Shown rather than implied, because "manage account" screens that
+  // don't say which login you used are the reason people get locked out.
+  const provider = user?.app_metadata?.provider;
+  const signedInWith = user?.email ?? user?.phone ?? null;
+  const providerLabel =
+    provider === "google" ? "Google" : provider === "phone" ? "Phone" : provider ? provider : null;
+
+  async function share() {
+    haptic(8);
+    const url = typeof window !== "undefined" ? window.location.origin : "";
+    const text = "Divasya — panchang, kundli and daily darshan in one place.";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Divasya", text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      setShared(true);
+      setTimeout(() => setShared(false), 2200);
+    } catch {
+      /* dismissed the share sheet, or clipboard refused — nothing to report */
+    }
+  }
+
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <ScreenHeader title="Menu" onBack={back} />
+      <ScreenHeader title="Account" onBack={back} />
 
-      {/* profile */}
-      <button className="gutter-m flex gutter-w items-center gap-3 rounded-2xl card-temple p-3 text-left">
-        <Avatar name={name} size={47} tint="#C88131" />
-        <div className="flex-1">
-          <div className="font-display text-[15.5px] text-ink">{name}</div>
-          <div className="text-[11px] text-muted">{rashi}</div>
-        </div>
-        <CaretRight size={16} className="text-muted" />
-      </button>
-
-      {SECTIONS.map((sec) => (
-        <div key={sec.title} className="gutter pt-2">
-          <h3 className="mb-2 section-title">{sec.title}</h3>
-          <div className="overflow-hidden rounded-2xl surface">
-            {sec.items.map((it, i) => {
-              const Icon = it.icon;
-              return (
-                <button key={it.label}
-                  onClick={() => it.to && go(it.to, it.params)}
-                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
-                  style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                  <Icon size={16} className="text-[var(--bhagwa)]" strokeWidth={1.7} />
-                  <span className="flex-1 text-[12.5px] text-ink">{it.label}</span>
-                  {it.live && (
-                    <span className="rounded-full px-2 py-0.5 text-[9px] font-medium tracking-wide"
-                      style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}>Live</span>
-                  )}
-                  <CaretRight size={14} className="text-muted" />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-
+      {/* Who you are, and which login this is. Not a button — there is no
+          profile editor behind it, and a row that opens nothing is worse than
+          a row that plainly states a fact. */}
       <div className="gutter pt-2">
         <div className="overflow-hidden rounded-2xl surface">
-          {UTILITY.map((it, i) => {
-            const Icon = it.icon;
-            const danger = it.label === "Logout";
-            return (
-              <button key={it.label} onClick={() => { haptic(8); if (danger) logout(); }}
-                className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
-                style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                <Icon size={16} className={danger ? "text-[var(--avoid)]" : "text-muted"} strokeWidth={1.8} />
-                <span className={danger ? "flex-1 text-[12.5px] text-[var(--avoid)]" : "flex-1 text-[12.5px] text-ink"}>{it.label}</span>
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-3 p-3">
+            <Avatar name={name} size={44} tint="#C88131" />
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-display text-[15px] text-ink">{name}</div>
+              <div className="truncate text-[11px] text-ink">{rashi}</div>
+            </div>
+          </div>
+          {signedInWith && (
+            <div className="flex items-center gap-3 px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
+              <EnvelopeSimple size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] leading-none text-[var(--muted-2)]">
+                  Signed in{providerLabel ? ` with ${providerLabel}` : ""}
+                </div>
+                <div className="mt-1 truncate text-[12px] leading-none text-ink">{signedInWith}</div>
+              </div>
+            </div>
+          )}
+          {profile?.dob && (
+            <div className="px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
+              <div className="text-[10px] leading-none text-[var(--muted-2)]">Birth details</div>
+              {/* Read as a date, not as an ISO string. */}
+              <div className="mt-1 truncate text-[12px] leading-none text-ink">
+                {prettyDob(profile.dob)}{profile.tob ? `, ${profile.tob}` : ""}
+                {profile.birthplace ? ` · ${profile.birthplace}` : ""}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-5 text-[10px] text-muted">
+      <div className="gutter pt-2">
+        <div className="overflow-hidden rounded-2xl surface">
+          <button
+            onClick={share}
+            className="flex w-full items-center gap-3 px-3 py-3 text-left"
+          >
+            <ShareNetwork size={16} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
+            <span className="flex-1 text-[12.5px] text-ink">Share app</span>
+            {shared && (
+              <span className="flex items-center gap-1 text-[10.5px] text-[var(--good)]">
+                <Check size={11} weight="bold" /> Link copied
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => { haptic(8); logout(); }}
+            className="flex w-full items-center gap-3 px-3 py-3 text-left"
+            style={{ borderTop: "1px solid var(--line)" }}
+          >
+            <SignOut size={16} weight="light" className="shrink-0 text-[var(--avoid)]" />
+            <span className="flex-1 text-[12.5px] text-[var(--avoid)]">Sign out</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-5 text-[10px] text-[var(--muted-2)]">
         <Logomark size={13} className="text-[var(--bhagwa)]" /> Divasya · Spiritual Journey
       </div>
     </div>

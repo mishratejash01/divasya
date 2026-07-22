@@ -1,6 +1,6 @@
 "use client";
 
-import { SidebarSimple, SquaresFour } from "@phosphor-icons/react";
+import { CaretRight, SidebarSimple, SignOut, UserCircle } from "@phosphor-icons/react";
 import { IconHome, IconEye, IconChat, IconComponent } from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
@@ -29,7 +29,7 @@ const ITEMS: NavItem[] = [
   { id: "home", label: "Home", icon: IconHome, to: "home", match: ["home"] },
   { id: "ai", label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
   { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
-  { id: "menu", label: "All features", icon: SquaresFour as unknown as IconComponent, to: "menu", match: ["menu"] },
+  { id: "menu", label: "Account", icon: UserCircle as unknown as IconComponent, to: "menu", match: ["menu"] },
 ];
 
 export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: () => void }) {
@@ -40,24 +40,25 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
   if (!open) return null;
 
   return (
-    <aside className="hidden h-full w-[256px] shrink-0 flex-col border-r border-[var(--line)] px-4 py-6 lg:flex"
-      style={{ background: "linear-gradient(180deg, rgba(200,129,49,0.05), transparent 30%)" }}>
-      {/* brand + collapse */}
-      <div className="mb-7 flex items-center gap-3 px-2">
-        <button onClick={() => go("home")} className="flex flex-1 items-center gap-3 text-left">
-          <Logomark size={32} className="shrink-0 text-[var(--bhagwa)]" />
-          <span>
-            <Wordmark size={17} />
-            <span className="block font-deva text-[9.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
+    <aside
+      className="hidden h-full w-[248px] shrink-0 flex-col border-r px-3 pb-6 pt-5 lg:flex"
+      style={{ borderColor: "var(--line)", background: "var(--bg-0)" }}
+    >
+      <div className="mb-5 flex items-center gap-2.5 px-2">
+        <button onClick={() => go("home")} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+          <Logomark size={28} className="shrink-0 text-[var(--bhagwa)]" />
+          <span className="min-w-0">
+            <Wordmark size={16} />
+            <span className="block font-deva text-[9px] leading-tight text-[var(--muted-2)]">आध्यात्मिक यात्रा</span>
           </span>
         </button>
         {onToggle && (
           <button
             onClick={onToggle}
             aria-label="Hide sidebar"
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--amber-deep)]"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-[5px] text-[var(--muted-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-ink"
           >
-            <SidebarSimple size={14} />
+            <SidebarSimple size={15} />
           </button>
         )}
       </div>
@@ -71,36 +72,53 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
               key={it.id}
               onClick={() => { haptic(6); go(it.to, it.params); }}
               className={cx(
-                "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                active ? "text-ink" : "text-muted hover:text-ink"
+                "group flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors",
+                !active && "hover:bg-[var(--surface-2)]",
               )}
-              style={active ? { background: "var(--surface-2)", border: "1px solid var(--line)" } : { border: "1px solid transparent" }}
+              style={active
+                ? { background: "var(--surface-2)", border: "1px solid var(--line-card)" }
+                : { border: "1px solid transparent" }}
             >
-              <Icon size={17} strokeWidth={active ? 2.1 : 1.7}
-                className={cx("shrink-0 transition-colors", active ? "text-[var(--bhagwa)]" : "text-[var(--muted)] group-hover:text-[var(--bhagwa)]")} />
-              <span className="text-[12.5px]">{it.label}</span>
+              {/* Rank comes from the mark and the weight. Inactive rows used to
+                  be --muted, which since text went near-black is a shade off
+                  --ink — so the only thing separating current from not was the
+                  fill, and at a glance every row looked selected. */}
+              <Icon
+                size={16}
+                strokeWidth={1.7}
+                className={cx("shrink-0 transition-colors",
+                  active ? "text-[var(--bhagwa)]" : "text-[var(--muted-2)] group-hover:text-[var(--bhagwa)]")}
+              />
+              <span className={cx("text-[12.5px] text-ink", active && "font-medium")}>{it.label}</span>
             </button>
           );
         })}
-        <p className="px-3 pt-3 text-[10.5px] leading-relaxed text-[var(--muted-2)]">
-          Kundli, Panchang, Devotion and every tool live on Home.
-        </p>
       </nav>
 
-      {/* profile */}
-      <button onClick={() => go("menu")}
-        className="mt-4 flex items-center gap-3 rounded-2xl p-2.5 text-left transition-colors hover:bg-[rgba(200,129,49,0.06)]"
-        style={{ border: "1px solid var(--line)" }}>
-        <Avatar name={name} size={34} tint="#C88131" />
-        <div className="min-w-0 flex-1">
-          <div className="truncate font-display text-[12.5px] text-ink">{name}</div>
-          <div className="truncate text-[10px] text-muted">{rashi}</div>
-        </div>
-        <SquaresFour size={14} className="shrink-0 text-muted" />
-      </button>
-      <button onClick={logout} className="mt-1 px-3 py-1 text-left text-[10px] text-[var(--muted-2)] transition-colors hover:text-[var(--avoid)]">
-        Sign out
-      </button>
+      {/* Account and the way out, in one bordered group — the same shape the
+          Account screen uses. Sign out was a bare text link hanging below the
+          card, flush against the bottom edge. */}
+      <div className="mt-4 overflow-hidden rounded-[8px]" style={{ border: "1px solid var(--line)" }}>
+        <button
+          onClick={() => go("menu")}
+          className="flex w-full items-center gap-2.5 p-2.5 text-left transition-colors hover:bg-[var(--surface-2)]"
+        >
+          <Avatar name={name} size={30} tint="#C88131" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-display text-[12px] leading-tight text-ink">{name}</div>
+            <div className="truncate text-[10px] leading-tight text-[var(--muted-2)]">{rashi}</div>
+          </div>
+          <CaretRight size={13} className="shrink-0 text-[var(--muted-2)]" />
+        </button>
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-2.5 px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
+          style={{ borderTop: "1px solid var(--line)" }}
+        >
+          <SignOut size={15} weight="light" className="shrink-0 text-[var(--avoid)]" />
+          <span className="text-[11.5px] text-[var(--avoid)]">Sign out</span>
+        </button>
+      </div>
     </aside>
   );
 }
