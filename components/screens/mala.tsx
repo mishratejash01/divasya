@@ -85,6 +85,17 @@ export function MalaScreen() {
         }
       />
 
+      {/* Everything below the header scrolls. This screen was a fixed
+          full-height column with no scroller, so on anything shorter than
+          760px the auto-jaap controls and the japa counts were simply cut off
+          the bottom with no way to reach them — 70px gone at 640px, 150px at
+          560px. min-h-full keeps the mala centred when there is room to spare,
+          and lets the column grow past the viewport when there isn't. */}
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        <div
+          className="flex min-h-full flex-col"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+        >
       {/* mantra selector */}
       <div className="gutter pt-2">
         <section className="rounded-2xl surface p-2.5">
@@ -183,7 +194,7 @@ export function MalaScreen() {
       </div>
 
       {/* controls + stats */}
-      <div className="gutter pb-5">
+      <div className="gutter pt-4">
         <section className="mb-2 rounded-2xl surface p-2.5">
           <h3 className="section-title mb-2">Your japa</h3>
           <div className="grid grid-cols-3 gap-1.5 text-center">
@@ -202,6 +213,8 @@ export function MalaScreen() {
           <button onClick={reset} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost"><ArrowCounterClockwise size={16} /></button>
         </div>
         <p className="mt-2 text-center text-[10px] text-muted">Audio continues with screen off · haptic at every 27</p>
+      </div>
+        </div>
       </div>
     </div>
   );
