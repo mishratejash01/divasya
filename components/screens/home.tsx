@@ -399,22 +399,22 @@ export function HomeScreen() {
                 <button
                   key={l.id}
                   onClick={() => go("library")}
-                  className="w-[136px] shrink-0 overflow-hidden rounded-xl text-left"
+                  className="w-[136px] shrink-0 rounded-xl p-1.5 text-left"
                   style={{ background: "var(--surface-2)" }}
                 >
-                  {/* Flat faded field. No glyph — a decorative icon floating in
-                      a frame reads as a stock placeholder, and says nothing the
-                      title doesn't already say. */}
-                  <div className="h-[58px] w-full" style={{ background: `${l.tint}30` }} />
-                  {/* The read time sits in a break in the rule under the
-                      picture, so it reads as a caption on the image rather
-                      than as another line of the title block. */}
-                  <div className="flex items-center gap-1.5 px-2.5 pt-2">
-                    <span className="h-px flex-1" style={{ background: "var(--line-strong)" }} />
-                    <span className="shrink-0 text-[9.5px] tnum text-muted">{l.read} read</span>
-                    <span className="h-px flex-1" style={{ background: "var(--line-strong)" }} />
+                  {/* The picture is inset from the card's edges, and the read
+                      time is a chip straddling its lower edge — a label on the
+                      image rather than another line of text under it. */}
+                  <div className="relative">
+                    <div className="h-[58px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+                    <span
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 whitespace-nowrap rounded-[4px] px-2 py-[3px] text-[9.5px] tnum text-ink"
+                      style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
+                    >
+                      {l.read} read
+                    </span>
                   </div>
-                  <div className="px-2.5 pb-2.5 pt-1.5">
+                  <div className="px-1 pb-0.5 pt-3.5">
                     {/* two lines reserved so the cards stay the same height
                         across the row whether the title wraps or not */}
                     <div className="line-clamp-2 min-h-[2.3em] text-[11px] font-medium leading-tight text-ink">
