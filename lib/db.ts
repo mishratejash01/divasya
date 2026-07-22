@@ -33,6 +33,24 @@ export async function signInGoogle() {
   if (error) throw error;
 }
 
+/**
+ * Phone sign-in, in two steps: request a code, then verify it. Supabase sends
+ * the SMS through whichever provider is configured on the project — with none
+ * set up, sendPhoneOtp throws and the screen says so rather than sitting on a
+ * spinner waiting for a message that is never coming.
+ *
+ * `phone` must be E.164 (+919876543210). The screen prefixes +91.
+ */
+export async function sendPhoneOtp(phone: string) {
+  const { error } = await supabaseBrowser().auth.signInWithOtp({ phone });
+  if (error) throw error;
+}
+
+export async function verifyPhoneOtp(phone: string, token: string) {
+  const { error } = await supabaseBrowser().auth.verifyOtp({ phone, token, type: "sms" });
+  if (error) throw error;
+}
+
 export async function signOut() {
   await supabaseBrowser().auth.signOut();
 }

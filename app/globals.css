@@ -130,8 +130,8 @@ html, body { margin: 0; padding: 0; }
 html { height: 100%; }
 
 body {
-  /* Plain white. The warm dawn wash now belongs only to the login screen,
-     which opts into it with .stage-warm. */
+  /* Plain white. The warm dawn glow belongs only to the login screen, which
+     opts into it with .stage-dawn. */
   background: var(--bg-0);
   color: var(--ink);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
@@ -145,11 +145,15 @@ body {
 }
 
 /* The warm dawn field, kept for the login screen only. */
-.stage-warm {
+/* Login ground. The old one washed the whole screen in cream (#FCF9E8 to
+   #FAF5DF) with two overlapping radials, so the white sign-in card had almost
+   nothing to sit against and the page read muddy. Warmth is now a single soft
+   bhagwa glow at the top edge, falling to plain white by the middle — the card
+   and the fields land on white, like every other screen in the app. */
+.stage-dawn {
   background:
-    radial-gradient(1200px 700px at 50% -25%, rgba(222, 107, 31, 0.13), transparent 62%),
-    radial-gradient(900px 600px at 92% 6%, rgba(255, 217, 204, 0.42), transparent 55%),
-    linear-gradient(180deg, #FCF9E8 0%, #FAF5DF 100%);
+    radial-gradient(760px 420px at 50% -12%, rgba(242, 107, 15, 0.16), transparent 70%),
+    var(--bg-0);
 }
 
 ::selection { background: rgba(200, 129, 49, 0.22); color: var(--ink); }
