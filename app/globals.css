@@ -44,12 +44,15 @@
   --surface-2: #FFF1E3;      /* blocks inside a panel — bhagwa tint */
   --surface-3: #FFE7D0;
 
-  /* Near-black text on warm cream. Previously brown-tinted, which made every
-     word look faded; the warmth belongs in the background and the accent. */
+  /* Text is black. Secondary lines used to sit at #6A6760, which is a legible
+     grey but made every screen look washed out — meanings, labels and captions
+     are content, not chrome, and they were the majority of the words on the
+     page. Rank now comes from size and space, which is where it belonged; only
+     --muted-2 stays genuinely lighter, and only for counts and disabled marks. */
   --ink: #171613;
-  --ink-dim: #3A3833;
-  --muted: #6A6760;
-  --muted-2: #8C8880;
+  --ink-dim: #1E1D19;
+  --muted: #2B2924;
+  --muted-2: #565248;
 
   /* Section outline is a warm bhagwa hairline, not black. A black rule around
      every panel turned the screen into a set of boxes; this separates the

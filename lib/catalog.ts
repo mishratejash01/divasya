@@ -27,9 +27,10 @@ export type Article = {
 export type Shloka = { id: number; deva: string; translit: string; meaning: string; source: string; deity: string };
 export type VastuZone = { dir: string; zone: string; use: string; tip: string };
 export type NakshatraSyl = {
-  name: string; deva: string; syl: string[]; syld: string[]; deity: string; planet: string;
+  name: string; deva: string; syl: string[]; syld: string[];
+  deity: string; deityh: string; planet: string; planeth: string;
 };
-export type BabyName = { n: string; deva?: string; g: "m" | "f"; m: string; syl: string };
+export type BabyName = { n: string; deva?: string; g: "m" | "f"; m: string; mh: string; syl: string };
 
 // darken a hex tint for legacy grad pairs
 export function shade(hex: string, f = 0.72): string {
@@ -160,7 +161,9 @@ export const getNakshatraSyllables = () =>
     const r = await rows<Record<string, never>>("nakshatra_syllables");
     return r.map((n) => ({
       name: n["name"], deva: n["deva"] ?? "", syl: n["syllables"] ?? [],
-      syld: n["syllables_deva"] ?? [], deity: n["deity"], planet: n["planet"],
+      syld: n["syllables_deva"] ?? [],
+      deity: n["deity"], deityh: n["deity_hi"] ?? n["deity"],
+      planet: n["planet"], planeth: n["planet_hi"] ?? n["planet"],
     }));
   }, NAKSHATRA_SYLLABLES);
 
@@ -168,7 +171,10 @@ export const getBabyNames = () =>
   cached<BabyName[]>("names", async () => {
     const { data, error } = await supabaseBrowser().from("baby_names").select("*");
     if (error || !data?.length) throw error ?? new Error("empty");
-    return data.map((b) => ({ n: b.name, g: b.gender as "m" | "f", m: b.meaning, syl: b.syllable }));
+    return data.map((b) => ({
+      n: b.name, deva: b.deva ?? undefined, g: b.gender as "m" | "f",
+      m: b.meaning, mh: b.meaning_hi ?? b.meaning, syl: b.syllable,
+    }));
   }, BABY_NAMES);
 
 /** Daily horoscope for a rashi — served by /api/horoscope (Supabase-cached, AI-generated once per day). */
