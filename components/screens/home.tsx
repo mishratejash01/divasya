@@ -5,11 +5,11 @@ import { CaretRight } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
   IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
-  IconSandesh, IconShare, IconStar, IconSunrise, IconSunset, IconWheel,
+  IconSandesh, IconShare, IconStar, IconWheel,
   type IconComponent,
 } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
-import { Avatar, SectionLabel, Logomark, cx } from "../ui";
+import { Avatar, Logomark, cx } from "../ui";
 import { usePanchang } from "@/lib/use-panchang";
 import {
   useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
@@ -149,80 +149,82 @@ export function HomeScreen() {
         </button>
       </div>
 
-      {/* The day first, then who is reading it. Two rows: what is running now,
-          and the day's timings beneath. Was five rows across two columns. */}
+      {/* Greeting and the day, on the page rather than in a card. The day was
+          being told three times over — tithi in the greeting, weekday and date
+          in the Sandesh header, masa and nakshatra in its foot — which is what
+          made this area feel packed. It is stated once, here, on one line. */}
+      <div className="flex items-center gap-2.5 gutter pt-1">
+        <Avatar name={name} size={40} tint="#F26B0F" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[15px] leading-tight text-ink">
+            <span className="text-muted">{salutation(new Date())} </span>
+            <span className="font-display text-[17px]">{name}</span>
+          </div>
+          <div className="mt-0.5 flex items-center gap-1.5">
+            {/* A vrat is the one thing that changes what someone does today, so
+                it keeps the accent rather than being lost in the muted run. */}
+            {pg?.vrat && (
+              <span
+                className="shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10px] text-white"
+                style={{ background: "var(--bhagwa)" }}
+              >
+                {pg.vrat}
+              </span>
+            )}
+            <span className="truncate text-[11px] tnum text-muted">
+              {pg ? `${pg.weekdayShort} · ${pg.dateLabel} · ${pg.tithiDisplay} · ${pg.nakshatra}` : "…"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* What is running now — the one time-sensitive thing on the screen, so
+          it gets a status dot and reads in a single glance. */}
       <div className="gutter pt-2">
         <button
           onClick={() => go("panchang")}
-          className="flex w-full items-center gap-3 rounded-2xl surface px-2.5 py-2 text-left"
+          className="flex w-full items-center gap-2.5 rounded-2xl surface px-3 py-2.5 text-left"
         >
+          <span
+            className="h-2 w-2 shrink-0 rounded-full"
+            style={{ background: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)" }}
+          />
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-baseline gap-x-2">
+            <div className="truncate text-[12.5px] text-ink">
               {chog ? (
                 <>
-                  <span className={cx("text-[13px] font-medium", chog.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>
-                    {chog.name}
-                  </span>
-                  <span className="text-[11px] text-muted">
-                    {chog.good ? "Shubh" : "Avoid"} · till {chog.to}
+                  <span className="font-medium">{chog.name}</span>
+                  <span className="text-muted">
+                    {" "}· {chog.good ? "Shubh" : "Avoid"} till {chog.to}
                   </span>
                 </>
               ) : (
-                <span className="text-[13px] text-ink">{pg?.tithiDisplay ?? "…"}</span>
+                pg?.tithiDisplay ?? "…"
               )}
             </div>
-            <div className="mt-0.5 flex items-center gap-x-2.5 text-[10.5px] tnum text-muted">
-              <span className="flex items-center gap-1">
-                <IconSunrise size={13} className="shrink-0 text-[var(--bhagwa)]" /> {pg?.sunrise ?? "…"}
-              </span>
-              <span className="flex items-center gap-1">
-                <IconSunset size={13} className="shrink-0 text-[var(--muted)]" /> {pg?.sunset ?? "…"}
-              </span>
-              <span className="truncate">Rahu {pg?.rahuKaal ?? "—"}</span>
+            <div className="mt-0.5 truncate text-[10.5px] tnum text-muted">
+              Sunrise {pg?.sunrise ?? "…"} · Sunset {pg?.sunset ?? "…"} · Rahu {pg?.rahuKaal ?? "—"}
             </div>
           </div>
           <CaretRight size={16} className="shrink-0 text-muted" />
         </button>
       </div>
 
-      {/* greeting */}
-      <div className="flex items-center gap-3 gutter pt-2.5">
-        <Avatar name={name} size={38} tint="#DE6B1F" />
-        <div className="min-w-0">
-          <div className="text-[11px] text-muted">{salutation(new Date())}</div>
-          <div className="font-display text-[17px] leading-tight text-ink">{name}</div>
-        </div>
-        <div className="ml-auto text-right">
-          <div className="text-[11px] text-muted">{rashi}</div>
-          <div className="text-[11px] text-gold">{pg?.tithiDisplay ?? ""}</div>
-        </div>
-      </div>
-
-      {/* Aaj ka Sandesh — white panel. The verse leads on white; a dark orange
-          block, inset from the card's edges, carries only its reading, source
-          and share. The colour marks the translation, not the whole card. */}
+      {/* Aaj ka Sandesh — the anchor. With the day stated once above, this card
+          carries only the verse, its reading and the share, so the shloka gets
+          the room to actually land. */}
       <div className="gutter pt-2">
         <div className="rounded-2xl surface p-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="eyebrow text-muted">Aaj ka Sandesh</span>
-            <span className="text-[10px] tnum text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
-          </div>
-          <p className="mt-2.5 measure font-deva text-[17px] leading-[1.8] text-ink">
+          <span className="eyebrow text-muted">Aaj ka Sandesh</span>
+          <p className="mt-2 measure font-deva text-[18px] leading-[1.85] text-ink">
             {shloka?.deva ?? "…"}
           </p>
-          <div className="mt-2.5 rounded-xl p-2.5" style={{ background: "var(--bhagwa-dark)" }}>
-            <p className="measure text-[11px] leading-relaxed text-white/92">
+          <div className="mt-3 rounded-xl p-3" style={{ background: "var(--bhagwa-dark)" }}>
+            <p className="measure text-[11.5px] leading-relaxed text-white/92">
               {shloka?.meaning ?? ""}
             </p>
-            <div className="mt-3 flex items-end justify-between gap-3">
-              <span className="text-[10.5px] leading-snug text-white/72">
-                {shloka?.source ?? ""}
-                {pg && (
-                  <span className="block">
-                    {pg.vrat ? `Aaj: ${pg.vrat}` : `${pg.masa} maas · ${pg.nakshatra}`}
-                  </span>
-                )}
-              </span>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <span className="truncate text-[10.5px] text-white/72">{shloka?.source ?? ""}</span>
               <button
                 onClick={() => go("sandesh")}
                 className="flex shrink-0 items-center gap-1.5 rounded-[5px] px-3.5 py-2 text-[11.5px] btn-white"
