@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconSunrise, IconSunset } from "../icons";
+import { IconShare, IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
-import { Bank, CaretLeft, Check, Clock, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, ShareNetwork, Shield, Sparkle, Sun, Sword } from "@phosphor-icons/react";
+import { Bank, CaretLeft, Check, Clock, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { cx, DeityGlyph, Pill, Wordmark } from "../ui";
 import { deityById } from "@/lib/demo";
@@ -312,7 +312,7 @@ export function SandeshScreen() {
 
         <div className="mt-4 flex gap-3">
           <button onClick={whatsapp} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
-            <ShareNetwork size={14} /> Share to WhatsApp
+            <IconShare size={15} /> Share to WhatsApp
           </button>
           <button onClick={download} disabled={busy} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost">
             <DownloadSimple size={16} />

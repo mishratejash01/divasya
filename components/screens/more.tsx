@@ -1,9 +1,9 @@
 "use client";
 
-import { CaretLeft, CaretRight, GearSix, Question, ShareNetwork, SignOut } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, GearSix, Question, SignOut } from "@phosphor-icons/react";
 import {
   IconEye, IconDiya, IconChat, IconWheel, IconLotus, IconDarshan, IconMandir,
-  IconMala, IconStar, IconCompass, IconBaby, IconJournal, IconSandesh, IconComponent,
+  IconMala, IconStar, IconCompass, IconBaby, IconJournal, IconSandesh, IconShare, IconComponent,
 } from "../icons";
 import { useApp, ScreenName } from "../app-context";
 import { Avatar, Logomark } from "../ui";
@@ -46,7 +46,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 const UTILITY: Item[] = [
   { label: "GearSix", icon: GearSix },
   { label: "Help & Support", icon: Question },
-  { label: "Share App", icon: ShareNetwork },
+  { label: "Share App", icon: IconShare },
   { label: "Logout", icon: SignOut },
 ];
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CaretRight, ShareNetwork } from "@phosphor-icons/react";
+import { CaretRight } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
   IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
-  IconSandesh, IconStar, IconSunrise, IconSunset, IconWheel,
+  IconSandesh, IconShare, IconStar, IconSunrise, IconSunset, IconWheel,
   type IconComponent,
 } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
@@ -154,7 +154,7 @@ export function HomeScreen() {
       <div className="gutter pt-2">
         <button
           onClick={() => go("panchang")}
-          className="flex w-full items-center gap-3 rounded-2xl surface px-3 py-2.5 text-left"
+          className="flex w-full items-center gap-3 rounded-2xl surface px-2.5 py-2 text-left"
         >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-2">
@@ -198,26 +198,24 @@ export function HomeScreen() {
         </div>
       </div>
 
-      {/* Aaj ka Sandesh — white panel. The verse sits on white and leads; the
-          tinted foot carries only its reading, its source and the share, so
-          the colour marks the translation rather than the whole card. */}
+      {/* Aaj ka Sandesh — white panel. The verse leads on white; a dark orange
+          block, inset from the card's edges, carries only its reading, source
+          and share. The colour marks the translation, not the whole card. */}
       <div className="gutter pt-2">
-        <div className="overflow-hidden rounded-2xl surface">
-          <div className="p-3.5 pb-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="eyebrow text-muted">Aaj ka Sandesh</span>
-              <span className="text-[10px] tnum text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
-            </div>
-            <p className="mt-2.5 measure font-deva text-[17px] leading-[1.8] text-ink">
-              {shloka?.deva ?? "…"}
-            </p>
+        <div className="rounded-2xl surface p-3">
+          <div className="flex items-center justify-between gap-3">
+            <span className="eyebrow text-muted">Aaj ka Sandesh</span>
+            <span className="text-[10px] tnum text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
           </div>
-          <div className="p-3.5" style={{ background: "var(--surface-2)" }}>
-            <p className="measure text-[11px] leading-relaxed text-ink-dim">
+          <p className="mt-2.5 measure font-deva text-[17px] leading-[1.8] text-ink">
+            {shloka?.deva ?? "…"}
+          </p>
+          <div className="mt-2.5 rounded-xl p-2.5" style={{ background: "var(--bhagwa-dark)" }}>
+            <p className="measure text-[11px] leading-relaxed text-white/92">
               {shloka?.meaning ?? ""}
             </p>
             <div className="mt-3 flex items-end justify-between gap-3">
-              <span className="text-[10.5px] leading-snug text-muted">
+              <span className="text-[10.5px] leading-snug text-white/72">
                 {shloka?.source ?? ""}
                 {pg && (
                   <span className="block">
@@ -227,9 +225,9 @@ export function HomeScreen() {
               </span>
               <button
                 onClick={() => go("sandesh")}
-                className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] btn-saffron"
+                className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] btn-white"
               >
-                <ShareNetwork size={12} /> Share
+                <IconShare size={13} /> Share
               </button>
             </div>
           </div>
@@ -239,7 +237,7 @@ export function HomeScreen() {
       {/* japa streak */}
       <button
         onClick={() => go("mala")}
-        className="gutter-m mt-1.5 flex gutter-w items-center gap-4 rounded-2xl surface p-4 text-left"
+        className="gutter-m mt-1.5 flex gutter-w items-center gap-4 rounded-2xl surface p-3 text-left"
       >
         {/* Bare mark, set large. The tinted disc behind it was a container
             doing nothing but shrinking the thing it contained. */}
@@ -256,7 +254,7 @@ export function HomeScreen() {
           cards left it ambiguous which tiles belonged to which heading. */}
       {SECTIONS.map((sec) => (
         <div key={sec.title} className="gutter pt-1.5">
-          <section className="rounded-2xl surface p-3">
+          <section className="rounded-2xl surface p-2.5">
             <h3 className="section-title mb-2.5">{sec.title}</h3>
             <div
               className={cx(
@@ -318,7 +316,7 @@ export function HomeScreen() {
 
       {/* daily horoscope — AI-generated, Supabase-cached */}
       <div className="gutter pt-1.5">
-        <div className="rounded-2xl surface p-4">
+        <div className="rounded-2xl surface p-3">
           <div className="flex items-center justify-between">
             <span className="font-display text-[14.5px] text-ink">Today · {rashi.split(" ")[0]}</span>
           </div>
@@ -346,7 +344,7 @@ export function HomeScreen() {
       {/* library — in the same panel form as every other section */}
       {library.length > 0 && (
         <div className="gutter pt-1.5">
-          <section className="rounded-2xl surface p-3">
+          <section className="rounded-2xl surface p-2.5">
             <div className="mb-2.5 flex items-end justify-between">
               <h3 className="section-title">Spiritual Library</h3>
               <button onClick={() => go("library")} className="text-[11px] text-[var(--bhagwa-deep)]">

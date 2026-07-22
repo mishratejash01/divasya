@@ -10,6 +10,7 @@
      once it was put next to the cream surfaces. */
   --bhagwa: #F26B0F;
   --bhagwa-deep: #D65403;
+  --bhagwa-dark: #C24A02;    /* solid ground for white type — ~5:1 */
   --bhagwa-soft: #FF8A33;
   --amber: #C88131;          /* Amber Earth — the steady accent */
   --amber-deep: #A5661F;
@@ -58,11 +59,11 @@
 
   /* Single screen gutter for the whole app. Every screen edge reads from this,
      so density is one value to tune rather than sixty hardcoded classes. */
-  --gutter: 10px;
+  --gutter: 8px;
 }
 
-@media (min-width: 640px)  { :root { --gutter: 12px; } }
-@media (min-width: 1024px) { :root { --gutter: 14px; } }
+@media (min-width: 640px)  { :root { --gutter: 10px; } }
+@media (min-width: 1024px) { :root { --gutter: 12px; } }
 
 /* padding / margin / width helpers bound to the gutter */
 .gutter    { padding-left: var(--gutter); padding-right: var(--gutter); }
@@ -226,6 +227,15 @@ strong { font-weight: 500; }
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .btn-gold:hover { background: rgba(206, 185, 118, 0.14); }
+
+/* White pill with black type — for use on a dark orange ground. */
+.btn-white {
+  background: #FFFFFF;
+  color: var(--ink);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  transition: background 0.15s ease;
+}
+.btn-white:hover { background: #F1F1EF; }
 
 .btn-ghost {
   background: rgba(255, 254, 247, 0.6);

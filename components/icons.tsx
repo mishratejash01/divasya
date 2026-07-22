@@ -349,6 +349,25 @@ export function IconChat(p: IconProps) {
   );
 }
 
+/**
+ * Share — one mark passing to two, drawn as rhombi rather than the usual three
+ * circles. The rhombus is already this set's connective shape (kundli, menu,
+ * the granth rule), so sharing reads as part of the same hand.
+ */
+export function IconShare(p: IconProps) {
+  const d = (cx: number, cy: number, r = 2.5) =>
+    `M${cx} ${cy - r}l${r} ${r}-${r} ${r}-${r}-${r}Z`;
+  return (
+    <Svg {...p}>
+      <path d="M8.9 10.7 15 7.7M8.9 13.3 15 16.3" strokeWidth={1.2} opacity={0.85} />
+      <F d={d(6.4, 12)} o={0.22} />
+      <path d={d(6.4, 12)} />
+      <path d={d(17.2, 6.4, 2.3)} />
+      <path d={d(17.2, 17.6, 2.3)} />
+    </Svg>
+  );
+}
+
 /** Four rhombi, echoing the kundli grid — the menu. */
 export function IconMore(p: IconProps) {
   const d = (cx: number, cy: number) => `M${cx} ${cy - 2.9}l2.9 2.9-2.9 2.9-2.9-2.9Z`;
