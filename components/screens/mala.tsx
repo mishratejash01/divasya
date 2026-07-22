@@ -76,11 +76,11 @@ export function MalaScreen() {
   return (
     <div className="flex h-full flex-col screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Mala Jaap</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Fire size={13} className="text-[var(--amber)]" />
-          <span className="text-[12px] text-ink">{streak}</span>
+          <Fire size={12} className="text-[var(--amber)]" />
+          <span className="text-[11px] text-ink">{streak}</span>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export function MalaScreen() {
             key={m.id}
             onClick={() => { setMantraId(m.id); reset(); }}
             className={cx(
-              "shrink-0 rounded-full px-3.5 py-1.5 text-[12px] transition-colors",
+              "shrink-0 rounded-full px-3.5 py-1.5 text-[11px] transition-colors",
               m.id === mantraId ? "btn-saffron" : "surface text-muted"
             )}
           >
@@ -102,7 +102,7 @@ export function MalaScreen() {
 
       {/* the mala */}
       <div className="relative mt-4 flex flex-1 flex-col items-center justify-center">
-        <p className="px-8 text-center font-deva text-[15px] leading-relaxed text-muted">{mantra.deva}</p>
+        <p className="px-8 text-center font-deva text-[13.5px] leading-relaxed text-muted">{mantra.deva}</p>
 
         <button onClick={chant} className="relative mt-4 active:scale-[0.99]" style={{ width: SIZE, height: SIZE }}>
           {/* decorative rotating bead ring */}
@@ -115,7 +115,7 @@ export function MalaScreen() {
                 <span
                   key={i}
                   className="absolute h-2 w-2 rounded-full"
-                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--ochre-deep)" : "rgba(51,41,26,0.15)" }}
+                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--ochre-deep)" : "rgba(0,0,0,0.14)" }}
                 />
               );
             })}
@@ -123,7 +123,7 @@ export function MalaScreen() {
 
           {/* progress ring */}
           <svg width={SIZE} height={SIZE} className="absolute inset-0 -rotate-90">
-            <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(51,41,26,0.08)" strokeWidth={6} />
+            <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth={6} />
             <motion.circle
               cx={CENTER} cy={CENTER} r={R} fill="none"
               stroke="var(--amber)" strokeWidth={6} strokeLinecap="round"
@@ -147,13 +147,13 @@ export function MalaScreen() {
           <div className="absolute inset-0 grid place-items-center">
             {done ? (
               <div className="flex flex-col items-center">
-                <Check size={40} className="text-[var(--good)]" />
-                <span className="mt-1 font-deva text-[15px] text-ink">माला पूर्ण</span>
+                <Check size={36} className="text-[var(--good)]" />
+                <span className="mt-1 font-deva text-[13.5px] text-ink">माला पूर्ण</span>
               </div>
             ) : (
               <div className="flex flex-col items-center">
                 <span className="font-display text-6xl text-ink tabular-nums">{count}</span>
-                <span className="text-[13px] text-muted">/ {target}</span>
+                <span className="text-[11.5px] text-muted">/ {target}</span>
                 <span className="mt-1 eyebrow text-muted">tap to chant</span>
               </div>
             )}
@@ -166,7 +166,7 @@ export function MalaScreen() {
             <button
               key={t}
               onClick={() => { setTarget(t); reset(); }}
-              className={cx("rounded-full px-3 py-1.5 text-[12px]", t === target ? "btn-saffron" : "surface text-muted")}
+              className={cx("rounded-full px-3 py-1.5 text-[11px]", t === target ? "btn-saffron" : "surface text-muted")}
             >
               {t}
             </button>
@@ -177,19 +177,19 @@ export function MalaScreen() {
       {/* controls + stats */}
       <div className="gutter pb-6">
         <div className="mb-3 flex items-center justify-around rounded-2xl surface py-3 text-center">
-          <div><div className="font-display text-lg text-ink">{count}</div><div className="text-[11px] text-muted">This mala</div></div>
+          <div><div className="font-display text-lg text-ink">{count}</div><div className="text-[10px] text-muted">This mala</div></div>
           <div className="h-8 w-px" style={{ background: "var(--line)" }} />
-          <div><div className="font-display text-lg text-ink">{malas}</div><div className="text-[11px] text-muted">Malas today</div></div>
+          <div><div className="font-display text-lg text-ink">{malas}</div><div className="text-[10px] text-muted">Malas today</div></div>
           <div className="h-8 w-px" style={{ background: "var(--line)" }} />
-          <div><div className="font-display text-lg text-ink">{japaLifetime.toLocaleString("en-IN")}</div><div className="text-[11px] text-muted">Lifetime</div></div>
+          <div><div className="font-display text-lg text-ink">{japaLifetime.toLocaleString("en-IN")}</div><div className="text-[10px] text-muted">Lifetime</div></div>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] btn-saffron">
-            {auto ? <><Pause size={17} /> Pause auto-jaap</> : <><Play size={17} /> Hands-free auto-jaap</>}
+          <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
+            {auto ? <><Pause size={15} /> Pause auto-jaap</> : <><Play size={15} /> Hands-free auto-jaap</>}
           </button>
-          <button onClick={reset} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost"><ArrowCounterClockwise size={18} /></button>
+          <button onClick={reset} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost"><ArrowCounterClockwise size={16} /></button>
         </div>
-        <p className="mt-2 text-center text-[11px] text-muted">Audio continues with screen off · haptic at every 27</p>
+        <p className="mt-2 text-center text-[10px] text-muted">Audio continues with screen off · haptic at every 27</p>
       </div>
     </div>
   );

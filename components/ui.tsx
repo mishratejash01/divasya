@@ -26,7 +26,7 @@ export function Logomark({ size = 48, className }: { size?: number; className?: 
       <circle cx="48" cy="48" r="39" stroke="currentColor" strokeWidth="0.9" strokeDasharray="1.5 3.4" />
       {/* cardinal markers */}
       {[[48, 4], [92, 48], [48, 92], [4, 48]].map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r="3.4" fill="var(--bg-0, #FCF9E8)" stroke="currentColor" strokeWidth="1.2" />
+        <circle key={i} cx={x} cy={y} r="3.4" fill="var(--surface, #FFFFFF)" stroke="currentColor" strokeWidth="1.2" />
       ))}
       {/* inner ring with moon phases */}
       <circle cx="48" cy="48" r="29" stroke="currentColor" strokeWidth="1" />
@@ -52,7 +52,7 @@ export function Logomark({ size = 48, className }: { size?: number; className?: 
       {/* the intuitive eye */}
       <path d="M34 48c4.8-6.2 9.5-9.3 14-9.3S57.2 41.8 62 48c-4.8 6.2-9.5 9.3-14 9.3S38.8 54.2 34 48Z" stroke="currentColor" strokeWidth="1.4" />
       <circle cx="48" cy="48" r="4.6" fill="currentColor" />
-      <circle cx="49.6" cy="46.4" r="1.3" fill="var(--bg-0, #FCF9E8)" />
+      <circle cx="49.6" cy="46.4" r="1.3" fill="var(--surface, #FFFFFF)" />
     </svg>
   );
 }
@@ -161,7 +161,7 @@ export function SectionLabel({
 }) {
   return (
     <div className="mb-2.5 flex items-end justify-between">
-      <h3 className="eyebrow text-muted">{children}</h3>
+      <h3 className="section-title">{children}</h3>
       {action}
     </div>
   );
@@ -183,7 +183,7 @@ export function Pill({
   return (
     <span
       className={cx(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px]",
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px]",
         map[tone]
       )}
       style={{ background: "rgba(206,185,118,0.14)", border: "1px solid var(--line)" }}

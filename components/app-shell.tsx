@@ -23,7 +23,11 @@ import { PujaScreen, TempleScreen } from "./screens/devotion";
 import { LoginScreen } from "./screens/login";
 import { OnboardingScreen } from "./screens/onboarding";
 
-const SHOW_NAV: ScreenName[] = ["home", "consult", "menu", "panchang", "festivals", "library", "temple", "naamkaran"];
+// The tab bar persists everywhere except the two full-screen rituals, which
+// take over the viewport and carry their own exit. Previously this was an
+// allow-list, so most screens dropped the bar and stranded the user with only
+// a back button.
+const HIDE_NAV: ScreenName[] = ["mala", "mandir"];
 
 function Screen() {
   const { screen } = useApp();
@@ -81,7 +85,7 @@ function RoutedApp() {
               <Screen />
             </motion.div>
           </AnimatePresence>
-          {SHOW_NAV.includes(screen.name) && <BottomNav />}
+          {!HIDE_NAV.includes(screen.name) && <BottomNav />}
         </div>
         {/* reopen handle when the sidebar is hidden */}
         {!navOpen && (
@@ -90,7 +94,7 @@ function RoutedApp() {
             aria-label="Show sidebar"
             className="absolute left-4 top-4 z-40 hidden h-9 w-9 place-items-center rounded-full surface lg:grid"
           >
-            <SidebarSimple size={17} className="text-[var(--amber)]" />
+            <SidebarSimple size={15} className="text-[var(--amber)]" />
           </button>
         )}
       </main>
@@ -116,7 +120,7 @@ function Splash() {
         transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
         className="text-[var(--amber)]"
       >
-        <Logomark size={72} />
+        <Logomark size={65} />
       </motion.div>
     </div>
   );

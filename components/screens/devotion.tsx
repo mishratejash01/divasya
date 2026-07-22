@@ -30,11 +30,14 @@ function ItemMark({ item, size = 48 }: { item: Item; size?: number }) {
 
 /* ---------------- Puja + Chadhava ---------------- */
 export function PujaScreen() {
-  const { back, haptic, profile, user } = useApp();
+  const { back, haptic, profile, user, screen } = useApp();
   const pujas = useCatalog(getPujas, PUJAS);
   const chadhava = useCatalog(getChadhava, CHADHAVA.map((c) => ({ id: c.id, name: c.name, price: c.price, icon: "flower" })));
   const temples = useCatalog(getTemples, TEMPLES);
-  const [tab, setTab] = useState<"puja" | "chadhava">("puja");
+  // Home links straight to a tab, so honour the incoming param.
+  const [tab, setTab] = useState<"puja" | "chadhava">(
+    screen.params?.tab === "chadhava" ? "chadhava" : "puja"
+  );
   const [sel, setSel] = useState<Item | null>(null);
   const [step, setStep] = useState<"form" | "paying" | "done">("form");
   const [templeId, setTempleId] = useState(TEMPLES[0].id);
@@ -61,30 +64,30 @@ export function PujaScreen() {
   return (
     <div className="flex h-full flex-col screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Online Puja & Chadhava</span>
       </div>
 
       <div className="gutter-m grid grid-cols-2 gap-1 rounded-full p-1 surface">
         {(["puja", "chadhava"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={cx("rounded-full py-2 text-[12.5px]", tab === t ? "btn-saffron" : "text-muted")}>
+          <button key={t} onClick={() => setTab(t)} className={cx("rounded-full py-2 text-[11px]", tab === t ? "btn-saffron" : "text-muted")}>
             {t === "puja" ? "Pujas" : "e-Chadhava"}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto gutter py-4 no-scrollbar">
+      <div className="flex-1 overflow-y-auto gutter pt-4 screen-bottom no-scrollbar">
         {tab === "puja" ? (
           <div className="space-y-2.5">
             {pujas.map((p) => (
               <div key={p.id} className="flex items-center gap-3 rounded-2xl surface p-3.5">
                 <ItemMark item={{ kind: "puja", name: p.name, price: p.price }} />
                 <div className="flex-1">
-                  <div className="text-[14px] font-medium text-ink">{p.name}</div>
-                  <div className="text-[11.5px] text-muted">{p.benefit}</div>
+                  <div className="text-[12.5px] font-medium text-ink">{p.name}</div>
+                  <div className="text-[10.5px] text-muted">{p.benefit}</div>
                 </div>
                 <button onClick={() => open({ kind: "puja", id: p.id, name: p.name, price: p.price, benefit: p.benefit })}
-                  className="rounded-full px-3.5 py-2 text-[12px] btn-saffron">₹{p.price}</button>
+                  className="rounded-full px-3.5 py-2 text-[11px] btn-saffron">₹{p.price}</button>
               </div>
             ))}
           </div>
@@ -93,14 +96,14 @@ export function PujaScreen() {
             {chadhava.map((c) => (
               <button key={c.id} onClick={() => open({ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon })}
                 className="flex flex-col items-center gap-2 rounded-2xl surface px-1 py-4">
-                <ItemMark item={{ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon }} size={42} />
-                <span className="text-center text-[11px] leading-tight text-ink">{c.name}</span>
-                <span className="text-[12px] text-gold">₹{c.price}</span>
+                <ItemMark item={{ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon }} size={38} />
+                <span className="text-center text-[10px] leading-tight text-ink">{c.name}</span>
+                <span className="text-[11px] text-gold">₹{c.price}</span>
               </button>
             ))}
           </div>
         )}
-        <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-muted"><ShieldCheck size={13} className="text-[var(--good)]" /> Performed by verified pandits · video proof on WhatsApp</div>
+        <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-muted"><ShieldCheck size={12} className="text-[var(--good)]" /> Performed by verified pandits · video proof on WhatsApp</div>
       </div>
 
       {/* booking sheet */}
@@ -117,47 +120,47 @@ export function PujaScreen() {
                 <>
                   <div className="flex items-center gap-3">
                     <ItemMark item={sel} />
-                    <div className="flex-1"><div className="text-[15px] font-medium text-ink">{sel.name}</div>{sel.benefit && <div className="text-[11.5px] text-muted">{sel.benefit}</div>}</div>
+                    <div className="flex-1"><div className="text-[13.5px] font-medium text-ink">{sel.name}</div>{sel.benefit && <div className="text-[10.5px] text-muted">{sel.benefit}</div>}</div>
                     <div className="font-display text-xl text-gold">₹{sel.price}</div>
                   </div>
 
                   <div className="mt-4 space-y-2.5">
                     <Field label="Temple">
                       <select value={templeId} onChange={(e) => setTempleId(e.target.value)}
-                        className="w-full bg-transparent text-[14px] text-ink outline-none">
+                        className="w-full bg-transparent text-[12.5px] text-ink outline-none">
                         {temples.map((t) => <option key={t.id} value={t.id}>{t.name} · {t.location}</option>)}
                       </select>
                     </Field>
-                    <Field label="Your name (Sankalp)"><input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent text-[14px] text-ink outline-none" /></Field>
-                    <Field label="Gotra"><input value={gotra} onChange={(e) => setGotra(e.target.value)} className="w-full bg-transparent text-[14px] text-ink outline-none" /></Field>
-                    <Field label="Manokamna (your wish)"><input value={wish} onChange={(e) => setWish(e.target.value)} placeholder="e.g. health & success of family" className="w-full bg-transparent text-[14px] text-ink outline-none placeholder:text-muted" /></Field>
+                    <Field label="Your name (Sankalp)"><input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent text-[12.5px] text-ink outline-none" /></Field>
+                    <Field label="Gotra"><input value={gotra} onChange={(e) => setGotra(e.target.value)} className="w-full bg-transparent text-[12.5px] text-ink outline-none" /></Field>
+                    <Field label="Manokamna (your wish)"><input value={wish} onChange={(e) => setWish(e.target.value)} placeholder="e.g. health & success of family" className="w-full bg-transparent text-[12.5px] text-ink outline-none placeholder:text-muted" /></Field>
                   </div>
 
-                  <button onClick={pay} className="mt-4 w-full rounded-2xl py-3.5 text-[14px] btn-saffron">Proceed to Pay ₹{sel.price}</button>
-                  <div className="mt-2 text-center text-[11px] text-muted">UPI · Cards · Netbanking · 100% secure</div>
+                  <button onClick={pay} className="mt-4 w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron">Proceed to Pay ₹{sel.price}</button>
+                  <div className="mt-2 text-center text-[10px] text-muted">UPI · Cards · Netbanking · 100% secure</div>
                 </>
               )}
 
               {step === "paying" && (
                 <div className="flex flex-col items-center py-10">
                   <div className="h-10 w-10 animate-spin rounded-full" style={{ border: "3px solid var(--line)", borderTopColor: "var(--amber)" }} />
-                  <div className="mt-4 text-[14px] text-ink">Confirming your sankalp…</div>
-                  <div className="text-[12px] text-muted">Securing payment of ₹{sel.price}</div>
+                  <div className="mt-4 text-[12.5px] text-ink">Confirming your sankalp…</div>
+                  <div className="text-[11px] text-muted">Securing payment of ₹{sel.price}</div>
                 </div>
               )}
 
               {step === "done" && (
                 <div className="flex flex-col items-center py-6 text-center">
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="grid h-16 w-16 place-items-center rounded-full" style={{ background: "rgba(95,134,87,0.16)" }}>
-                    <Check size={34} className="text-[var(--good)]" />
+                    <Check size={31} className="text-[var(--good)]" />
                   </motion.div>
                   <div className="mt-3 font-display text-xl text-ink">Booking Confirmed</div>
-                  <div className="mt-1 text-[13px] leading-relaxed text-muted">
+                  <div className="mt-1 text-[11.5px] leading-relaxed text-muted">
                     {sel.name} will be performed in the name of <span className="text-ink">{name}</span> ({gotra} gotra) at {selTemple.name}.
                   </div>
-                  <div className="mt-3 flex items-center gap-2 rounded-full surface px-3 py-2 text-[12px] text-ink"><VideoCamera size={14} className="text-[var(--good)]" /> HD ritual video on WhatsApp within 48h</div>
-                  <div className="mt-2 text-[12px] text-muted">Booking ID · {bookingId}</div>
-                  <button onClick={() => setSel(null)} className="mt-4 w-full rounded-2xl py-3 text-[14px] btn-ghost">Done</button>
+                  <div className="mt-3 flex items-center gap-2 rounded-full surface px-3 py-2 text-[11px] text-ink"><VideoCamera size={13} className="text-[var(--good)]" /> HD ritual video on WhatsApp within 48h</div>
+                  <div className="mt-2 text-[11px] text-muted">Booking ID · {bookingId}</div>
+                  <button onClick={() => setSel(null)} className="mt-4 w-full rounded-2xl py-3 text-[12.5px] btn-ghost">Done</button>
                 </div>
               )}
             </motion.div>
@@ -189,38 +192,39 @@ export function TempleScreen() {
     return (
       <div className="flex h-full flex-col screen-top">
         <div className="flex items-center gap-3 gutter py-3">
-          <button onClick={() => { setOpen(null); setAarti(false); }} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+          <button onClick={() => { setOpen(null); setAarti(false); }} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
           <span className="font-display text-lg text-ink">{t.name}</span>
         </div>
 
         {/* live player */}
-        <div className="relative gutter-m overflow-hidden rounded-2xl" style={{ aspectRatio: "16/10", background: "linear-gradient(160deg,#FFE9D9,#F0E4C4)" }}>
+        <div className="relative gutter-m overflow-hidden rounded-2xl" style={{ aspectRatio: "16/10", background: "var(--surface-2)" }}>
           {t.youtubeId ? (
             <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${t.youtubeId}?autoplay=1&mute=1`} allow="autoplay; encrypted-media" />
           ) : (
+            // No stream yet — say so, rather than pulsing a decorative glyph.
             <div className="relative grid h-full w-full place-items-center">
-              <Bank size={62} weight="thin" className="animate-pulseGlow text-[var(--amber)]" />
-              <div className="absolute inset-0 shimmer opacity-30" />
+              <span className="text-[11.5px] text-muted">Darshan begins at {t.timing}</span>
+              <div className="absolute inset-0 shimmer opacity-25" />
             </div>
           )}
-          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-medium text-white">
-            <Broadcast size={12} className="animate-pulse text-[var(--good)]" /> LIVE
+          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-medium text-white">
+            <Broadcast size={12} className="animate-pulse text-[var(--good)]" /> Live
           </div>
-          <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] text-white"><Eye size={12} /> {(12480).toLocaleString("en-IN")} watching</div>
+          <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-white"><Eye size={12} /> {(12480).toLocaleString("en-IN")} watching</div>
           <button onClick={() => { setAarti((v) => !v); if (!aarti) { bell(540, 1.6, 0.18); } }}
-            className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-black/45 px-3 py-1.5 text-[12px] text-white">
-            <Play size={13} /> {aarti ? "Aarti playing" : "Play Aarti"}
+            className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-black/45 px-3 py-1.5 text-[11px] text-white">
+            <Play size={12} /> {aarti ? "Aarti playing" : "Play Aarti"}
           </button>
         </div>
 
         <div className="gutter pt-4">
-          <div className="flex items-center gap-1.5 text-[12px] text-muted"><MapPin size={13} /> {t.location} · {t.deity}</div>
-          <div className="mt-1 text-[12px] text-gold">{t.timing}</div>
-          <p className="mt-3 text-[13.5px] leading-relaxed text-muted">{t.about}</p>
-          <button onClick={() => go("puja")} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] btn-saffron">
-            <FlowerLotus size={16} /> Book Puja / Chadhava here
+          <div className="flex items-center gap-1.5 text-[11px] text-muted"><MapPin size={12} /> {t.location} · {t.deity}</div>
+          <div className="mt-1 text-[11px] text-gold">{t.timing}</div>
+          <p className="mt-3 text-[12px] leading-relaxed text-muted">{t.about}</p>
+          <button onClick={() => go("puja")} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
+            <FlowerLotus size={14} /> Book Puja / Chadhava here
           </button>
-          <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[13px] btn-ghost"><IconShankh size={15} /> Offer a virtual Shankhnaad</button>
+          <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[11.5px] btn-ghost"><IconShankh size={14} /> Offer a virtual Shankhnaad</button>
         </div>
       </div>
     );
@@ -229,20 +233,20 @@ export function TempleScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Live Temple Darshan</span>
       </div>
       <div className="space-y-2.5 gutter">
         {temples.map((t) => (
           <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
             <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)`, border: "1px solid var(--line)" }}>
-              <Bank size={26} className="text-[var(--amber-deep)]" />
-              <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-medium" style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}><Broadcast size={8} className="text-[var(--good)]" />LIVE</span>
+              <Bank size={23} className="text-[var(--amber-deep)]" />
+              <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}><Broadcast size={8} className="text-[var(--good)]" />Live</span>
             </div>
             <div className="flex-1">
-              <div className="text-[14px] font-medium text-ink">{t.name}</div>
-              <div className="text-[11.5px] text-muted">{t.location} · {t.deity}</div>
-              <div className="text-[11px] text-gold">{t.timing}</div>
+              <div className="text-[12.5px] font-medium text-ink">{t.name}</div>
+              <div className="text-[10.5px] text-muted">{t.location} · {t.deity}</div>
+              <div className="text-[10px] text-gold">{t.timing}</div>
             </div>
           </button>
         ))}

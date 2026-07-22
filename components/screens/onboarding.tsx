@@ -41,10 +41,10 @@ export function OnboardingScreen() {
   if (saving) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-5">
-        <Logomark size={56} className="text-[var(--amber)] animate-spinSlow" />
+        <Logomark size={50} className="text-[var(--amber)] animate-spinSlow" />
         <div className="text-center">
           <div className="font-display text-lg text-ink">Building your cosmic chart…</div>
-          <div className="mt-1 text-[12.5px] text-muted">Aligning the planets for {name.split(" ")[0]}</div>
+          <div className="mt-1 text-[11px] text-muted">Aligning the planets for {name.split(" ")[0]}</div>
         </div>
       </div>
     );
@@ -53,34 +53,34 @@ export function OnboardingScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar px-6 pb-8 pt-16">
       <div className="text-center">
-        <Logomark size={44} className="mx-auto text-[var(--amber)]" />
+        <Logomark size={40} className="mx-auto text-[var(--amber)]" />
         <h1 className="mt-3 font-display text-2xl text-ink">Create your spiritual profile</h1>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-muted">Your birth details personalise your Panchang, Kundli, horoscope & the AI Jyotishi. They stay private.</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-muted">Your birth details personalise your Panchang, Kundli, horoscope & the AI Jyotishi. They stay private.</p>
       </div>
 
       <div className="mt-6 space-y-3">
         <Field label="Full name">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name"
-            className="w-full bg-transparent text-[15px] text-ink outline-none placeholder:text-muted" />
+            className="w-full bg-transparent text-[13.5px] text-ink outline-none placeholder:text-muted" />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Date of birth">
             <input type="date" value={dob} onChange={(e) => setDob(e.target.value)}
-              className="w-full bg-transparent text-[14px] text-ink outline-none" />
+              className="w-full bg-transparent text-[12.5px] text-ink outline-none" />
           </Field>
           <Field label="Time of birth">
             <input type="time" value={tob} onChange={(e) => setTob(e.target.value)}
-              className="w-full bg-transparent text-[14px] text-ink outline-none" />
+              className="w-full bg-transparent text-[12.5px] text-ink outline-none" />
           </Field>
         </div>
-        {dob && <div className="-mt-1 px-1 text-[11.5px] text-gold">{ss.name} ({ss.indian}) rashi</div>}
+        {dob && <div className="-mt-1 px-1 text-[10.5px] text-gold">{ss.name} ({ss.indian}) rashi</div>}
         <Field label="Place of birth">
           <input value={birthplace} onChange={(e) => setBirthplace(e.target.value)} placeholder="City, State"
-            className="w-full bg-transparent text-[15px] text-ink outline-none placeholder:text-muted" />
+            className="w-full bg-transparent text-[13.5px] text-ink outline-none placeholder:text-muted" />
         </Field>
         <Field label="Current location">
           <input value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="City you live in"
-            className="w-full bg-transparent text-[15px] text-ink outline-none placeholder:text-muted" />
+            className="w-full bg-transparent text-[13.5px] text-ink outline-none placeholder:text-muted" />
         </Field>
 
         <div>
@@ -88,7 +88,7 @@ export function OnboardingScreen() {
           <div className="grid grid-cols-3 gap-2">
             {["Male", "Female", "Other"].map((g) => (
               <button key={g} onClick={() => setGender(g)}
-                className={cx("rounded-xl py-2.5 text-[13px]", gender === g ? "btn-saffron" : "surface text-muted")}>{g}</button>
+                className={cx("rounded-xl py-2.5 text-[11.5px]", gender === g ? "btn-saffron" : "surface text-muted")}>{g}</button>
             ))}
           </div>
         </div>
@@ -99,8 +99,8 @@ export function OnboardingScreen() {
             {deities.map((d) => (
               <button key={d.id} onClick={() => setDeity(d.id)}
                 className={cx("flex shrink-0 flex-col items-center gap-1.5 rounded-2xl px-3 py-2.5 transition-colors", d.id === deity ? "btn-saffron" : "surface")}>
-                <DeityGlyph deity={d} size={30} />
-                <span className={cx("text-[10.5px]", d.id === deity ? "" : "text-muted")}>{d.name.split(" ")[0]}</span>
+                <DeityGlyph deity={d} size={27} />
+                <span className={cx("text-[9.5px]", d.id === deity ? "" : "text-muted")}>{d.name.split(" ")[0]}</span>
               </button>
             ))}
           </div>
@@ -108,10 +108,10 @@ export function OnboardingScreen() {
       </div>
 
       <button onClick={submit} disabled={!valid}
-        className="mt-6 w-full rounded-2xl py-3.5 text-[15px] btn-saffron disabled:opacity-40">
+        className="mt-6 w-full rounded-2xl py-3.5 text-[13.5px] btn-saffron disabled:opacity-40">
         Begin my journey
       </button>
-      {!valid && <p className="mt-2 text-center text-[11px] text-muted">Name & date of birth are required</p>}
+      {!valid && <p className="mt-2 text-center text-[10px] text-muted">Name & date of birth are required</p>}
     </div>
   );
 }

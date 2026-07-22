@@ -37,15 +37,15 @@ export function PushToast() {
             className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px]"
             style={{ background: "rgba(200,129,49,0.10)", border: "1px solid var(--line-gold)" }}
           >
-            <Logomark size={20} className="text-[var(--amber)]" />
+            <Logomark size={18} className="text-[var(--amber)]" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">
               <Wordmark size={12} />
-              <span className="text-[10.5px] text-muted">now</span>
+              <span className="text-[9.5px] text-muted">now</span>
             </div>
-            <div className="mt-0.5 text-[13px] font-medium text-ink">{push.title}</div>
-            <div className="text-[12.5px] leading-snug text-muted">{push.body}</div>
+            <div className="mt-0.5 text-[11.5px] font-medium text-ink">{push.title}</div>
+            <div className="text-[11px] leading-snug text-muted">{push.body}</div>
           </div>
         </motion.button>
       )}

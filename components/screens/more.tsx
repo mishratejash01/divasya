@@ -55,20 +55,20 @@ export function MoreScreen() {
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-10 screen-top">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Menu</span>
       </div>
 
       {/* profile */}
       <button className="gutter-m flex gutter-w items-center gap-3 rounded-2xl card-temple p-4 text-left">
-        <Avatar name={name} size={52} tint="#C88131" />
+        <Avatar name={name} size={47} tint="#C88131" />
         <div className="flex-1">
-          <div className="font-display text-[17px] text-ink">{name}</div>
-          <div className="text-[12px] text-muted">{rashi}</div>
+          <div className="font-display text-[15.5px] text-ink">{name}</div>
+          <div className="text-[11px] text-muted">{rashi}</div>
         </div>
-        <CaretRight size={18} className="text-muted" />
+        <CaretRight size={16} className="text-muted" />
       </button>
 
       {SECTIONS.map((sec) => (
@@ -82,13 +82,13 @@ export function MoreScreen() {
                   onClick={() => it.to && go(it.to, it.params)}
                   className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                   style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                  <Icon size={18} className="text-[var(--amber)]" strokeWidth={1.7} />
-                  <span className="flex-1 text-[14px] text-ink">{it.label}</span>
+                  <Icon size={16} className="text-[var(--amber)]" strokeWidth={1.7} />
+                  <span className="flex-1 text-[12.5px] text-ink">{it.label}</span>
                   {it.live && (
-                    <span className="rounded-full px-2 py-0.5 text-[9.5px] font-medium tracking-wide"
-                      style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}>LIVE</span>
+                    <span className="rounded-full px-2 py-0.5 text-[9px] font-medium tracking-wide"
+                      style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}>Live</span>
                   )}
-                  <CaretRight size={16} className="text-muted" />
+                  <CaretRight size={14} className="text-muted" />
                 </button>
               );
             })}
@@ -105,16 +105,16 @@ export function MoreScreen() {
               <button key={it.label} onClick={() => { haptic(8); if (danger) logout(); }}
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                 style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                <Icon size={18} className={danger ? "text-[var(--avoid)]" : "text-muted"} strokeWidth={1.8} />
-                <span className={danger ? "flex-1 text-[14px] text-[var(--avoid)]" : "flex-1 text-[14px] text-ink"}>{it.label}</span>
+                <Icon size={16} className={danger ? "text-[var(--avoid)]" : "text-muted"} strokeWidth={1.8} />
+                <span className={danger ? "flex-1 text-[12.5px] text-[var(--avoid)]" : "flex-1 text-[12.5px] text-ink"}>{it.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-7 text-[11px] text-muted tracking-widest">
-        <Logomark size={14} className="text-[var(--amber)]" /> Divasya · Spiritual Journey
+      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-7 text-[10px] text-muted tracking-widest">
+        <Logomark size={13} className="text-[var(--amber)]" /> Divasya · Spiritual Journey
       </div>
     </div>
   );

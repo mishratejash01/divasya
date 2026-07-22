@@ -14,14 +14,16 @@ const TABS: { id: ScreenName; label: string; icon: IconComponent; match: ScreenN
 export function BottomNav() {
   const { screen, go, haptic } = useApp();
   return (
+    // Pinned to the viewport, not the scroll container — the bar stays put the
+    // way a native tab bar does, and never rides up with content.
     <div
-      className="absolute inset-x-0 bottom-0 z-30 flex items-stretch justify-around px-2 pt-2 lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around px-2 pt-2 lg:hidden"
       style={{
-        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)",
-        background: "linear-gradient(0deg, var(--bg-0) 78%, rgba(252,249,232,0.9) 92%, transparent)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+        background: "rgba(255,255,255,0.90)",
         borderTop: "1px solid var(--line)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        backdropFilter: "blur(14px) saturate(1.2)",
+        WebkitBackdropFilter: "blur(14px) saturate(1.2)",
       }}
     >
       {TABS.map((t) => {
@@ -34,13 +36,13 @@ export function BottomNav() {
             className="flex flex-1 flex-col items-center gap-1 py-1"
           >
             <Icon
-              size={22}
+              size={20}
               strokeWidth={active ? 2.3 : 1.8}
               className={cx("transition-colors", active ? "text-[var(--amber)]" : "text-muted")}
             />
             <span
               className={cx(
-                "text-[10.5px] transition-colors",
+                "text-[9.5px] transition-colors",
                 active ? "text-ink" : "text-muted"
               )}
             >

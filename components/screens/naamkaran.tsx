@@ -83,12 +83,12 @@ export function NaamkaranScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Naamkaran</div>
-          <div className="text-[11px] text-muted">Auspicious names by Janma Nakshatra</div>
+          <div className="text-[10px] text-muted">Auspicious names by Janma Nakshatra</div>
         </div>
-        <Baby size={20} className="ml-auto text-[var(--amber)]" />
+        <Baby size={18} className="ml-auto text-[var(--amber)]" />
       </div>
 
       {/* nakshatra */}
@@ -97,7 +97,7 @@ export function NaamkaranScreen() {
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 no-scrollbar">
           {nakshatras.map((n) => (
             <button key={n.name} onClick={() => { setNakName(n.name); haptic(8); }}
-              className={cx("shrink-0 rounded-full px-3.5 py-1.5 text-[12.5px]", n.name === nak?.name ? "btn-saffron" : "surface text-muted")}>
+              className={cx("shrink-0 rounded-full px-3.5 py-1.5 text-[11px]", n.name === nak?.name ? "btn-saffron" : "surface text-muted")}>
               {n.name}
             </button>
           ))}
@@ -106,18 +106,18 @@ export function NaamkaranScreen() {
 
       {/* prescribed syllables */}
       <div className="gutter-m mt-3 flex items-center gap-3 rounded-2xl card-temple p-4">
-        <Sparkle size={18} className="text-[var(--amber)]" />
+        <Sparkle size={16} className="text-[var(--amber)]" />
         <div className="flex-1">
-          <div className="text-[12px] text-muted">Prescribed starting sounds</div>
+          <div className="text-[11px] text-muted">Prescribed starting sounds</div>
           <div className="font-display text-lg text-gold">{syllables.join(" · ")}</div>
         </div>
-        <div className="text-right text-[11px] text-muted">{nak?.deity}<br />{nak?.planet}</div>
+        <div className="text-right text-[10px] text-muted">{nak?.deity}<br />{nak?.planet}</div>
       </div>
 
       {/* gender */}
       <div className="gutter-m mt-3 grid grid-cols-3 gap-1 rounded-full p-1 surface">
         {([["all", "All"], ["m", "Boy"], ["f", "Girl"]] as const).map(([g, l]) => (
-          <button key={g} onClick={() => setGender(g)} className={cx("rounded-full py-2 text-[12.5px]", gender === g ? "btn-saffron" : "text-muted")}>{l}</button>
+          <button key={g} onClick={() => setGender(g)} className={cx("rounded-full py-2 text-[11px]", gender === g ? "btn-saffron" : "text-muted")}>{l}</button>
         ))}
       </div>
 
@@ -126,17 +126,17 @@ export function NaamkaranScreen() {
         {list.map((x) => (
           <div key={x.n} className="rounded-2xl surface p-3.5">
             <div className="flex items-center justify-between">
-              <span className="font-display text-[17px] text-ink">{x.n}</span>
+              <span className="font-display text-[15.5px] text-ink">{x.n}</span>
               <span className="eyebrow text-muted">{x.g === "m" ? "Boy" : "Girl"}</span>
             </div>
-            <div className="mt-0.5 text-[11.5px] leading-snug text-muted">{x.m}</div>
-            <div className="mt-2 flex items-center justify-between text-[10.5px] text-muted">
+            <div className="mt-0.5 text-[10.5px] leading-snug text-muted">{x.m}</div>
+            <div className="mt-2 flex items-center justify-between text-[9.5px] text-muted">
               <span>Lucky no. <span className="text-gold">{luckyNo(x.n)}</span></span>
               <span>{x.syl}-</span>
             </div>
           </div>
         ))}
-        {list.length === 0 && <div className="col-span-2 py-8 text-center text-[13px] text-muted">No names for this filter.</div>}
+        {list.length === 0 && <div className="col-span-2 py-8 text-center text-[11.5px] text-muted">No names for this filter.</div>}
       </div>
     </div>
   );

@@ -60,10 +60,10 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
       {/* brand + collapse */}
       <div className="mb-7 flex items-center gap-3 px-2">
         <button onClick={() => go("home")} className="flex flex-1 items-center gap-3 text-left">
-          <Logomark size={36} className="shrink-0 text-[var(--amber)]" />
+          <Logomark size={32} className="shrink-0 text-[var(--amber)]" />
           <span>
-            <Wordmark size={19} />
-            <span className="block font-deva text-[10.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
+            <Wordmark size={17} />
+            <span className="block font-deva text-[9.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
           </span>
         </button>
         {onToggle && (
@@ -72,7 +72,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
             aria-label="Hide sidebar"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-[rgba(200,129,49,0.08)] hover:text-[var(--amber-deep)]"
           >
-            <SidebarSimple size={16} />
+            <SidebarSimple size={14} />
           </button>
         )}
       </div>
@@ -96,9 +96,9 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
                     )}
                     style={active ? { background: "rgba(200,129,49,0.10)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
                   >
-                    <Icon size={18} strokeWidth={active ? 2.1 : 1.7}
+                    <Icon size={16} strokeWidth={active ? 2.1 : 1.7}
                       className={cx("shrink-0 transition-colors", active ? "text-[var(--amber)]" : "text-[var(--muted)] group-hover:text-[var(--amber)]")} />
-                    <span className="text-[13.5px]">{it.label}</span>
+                    <span className="text-[12px]">{it.label}</span>
                   </button>
                 );
               })}
@@ -111,14 +111,14 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
       <button onClick={() => go("menu")}
         className="mt-4 flex items-center gap-3 rounded-2xl p-2.5 text-left transition-colors hover:bg-[rgba(200,129,49,0.06)]"
         style={{ border: "1px solid var(--line)" }}>
-        <Avatar name={name} size={38} tint="#C88131" />
+        <Avatar name={name} size={34} tint="#C88131" />
         <div className="min-w-0 flex-1">
-          <div className="truncate font-display text-[14px] text-ink">{name}</div>
-          <div className="truncate text-[11px] text-muted">{rashi}</div>
+          <div className="truncate font-display text-[12.5px] text-ink">{name}</div>
+          <div className="truncate text-[10px] text-muted">{rashi}</div>
         </div>
-        <SquaresFour size={15} className="shrink-0 text-muted" />
+        <SquaresFour size={14} className="shrink-0 text-muted" />
       </button>
-      <button onClick={logout} className="mt-1 px-3 py-1 text-left text-[11px] text-[var(--muted-2)] transition-colors hover:text-[var(--avoid)]">
+      <button onClick={logout} className="mt-1 px-3 py-1 text-left text-[10px] text-[var(--muted-2)] transition-colors hover:text-[var(--avoid)]">
         Sign out
       </button>
     </aside>

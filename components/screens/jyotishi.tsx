@@ -95,17 +95,17 @@ export function JyotishiScreen() {
   return (
     <div className="flex h-full flex-col screen-top">
       <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div className="flex-1">
-          <div className="font-display text-[17px] leading-tight text-ink">{mode === "jyotishi" ? "AI Jyotishi" : `Talk to ${deity.name}`}</div>
-          <div className="text-[11px] text-[var(--good)]">● Online · grounded in your kundli</div>
+          <div className="font-display text-[15.5px] leading-tight text-ink">{mode === "jyotishi" ? "AI Jyotishi" : `Talk to ${deity.name}`}</div>
+          <div className="text-[10px] text-[var(--good)]">● Online · grounded in your kundli</div>
         </div>
       </div>
 
       <div className="gutter-m mt-1 grid grid-cols-2 gap-1 rounded-full p-1 surface">
         {(["jyotishi", "deity"] as Mode[]).map((m) => (
           <button key={m} onClick={() => setMode(m)}
-            className={cx("rounded-full py-2 text-[12.5px] transition-colors", mode === m ? "btn-saffron" : "text-muted")}>
+            className={cx("rounded-full py-2 text-[11px] transition-colors", mode === m ? "btn-saffron" : "text-muted")}>
             {m === "jyotishi" ? "AI Jyotishi" : "Ishta Devta"}
           </button>
         ))}
@@ -115,9 +115,9 @@ export function JyotishiScreen() {
         <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto gutter no-scrollbar">
           {deities.map((d) => (
             <button key={d.id} onClick={() => setDeity(d.id)}
-              className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[12px]", d.id === deityId ? "ring-gold text-ink" : "surface text-muted")}
+              className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[11px]", d.id === deityId ? "ring-gold text-ink" : "surface text-muted")}
               style={d.id === deityId ? { background: "rgba(206,185,118,0.16)" } : undefined}>
-              <DeityGlyph deity={d} size={22} /> {d.name.split(" ")[0]}
+              <DeityGlyph deity={d} size={20} /> {d.name.split(" ")[0]}
             </button>
           ))}
         </div>
@@ -132,8 +132,8 @@ export function JyotishiScreen() {
         )}
         {mode === "deity" && (
           <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
-            className="mx-auto mt-1 flex items-center gap-2 rounded-full surface px-4 py-2 text-[12px] text-[var(--amber-deep)]">
-            <CircleDashed size={14} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
+            className="mx-auto mt-1 flex items-center gap-2 rounded-full surface px-4 py-2 text-[11px] text-[var(--amber-deep)]">
+            <CircleDashed size={13} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
           </button>
         )}
       </div>
@@ -141,18 +141,18 @@ export function JyotishiScreen() {
       {messages.length === 0 && (
         <div className="-mx-1 flex gap-2 overflow-x-auto gutter pb-2 no-scrollbar">
           {SUGGEST[mode].map((s) => (
-            <button key={s} onClick={() => send(s)} className="shrink-0 rounded-full surface px-3 py-1.5 text-[12px] text-ink-dim" style={{ border: "1px solid var(--line)" }}>{s}</button>
+            <button key={s} onClick={() => send(s)} className="shrink-0 rounded-full surface px-3 py-1.5 text-[11px] text-ink-dim" style={{ border: "1px solid var(--line)" }}>{s}</button>
           ))}
         </div>
       )}
 
-      <div className="flex items-center gap-2 px-4 pb-5 pt-1">
+      <div className="flex items-center gap-2 px-4 pt-1 above-tabbar">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder={mode === "jyotishi" ? "Apna prashn poochhiye…" : `${deity.name.split(" ")[0]} se baat karein…`}
-          className="flex-1 rounded-full px-4 py-3 text-[14px] text-ink outline-none placeholder:text-muted"
+          className="flex-1 rounded-full px-4 py-3 text-[12.5px] text-ink outline-none placeholder:text-muted"
           style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }} />
         <button onClick={() => send(input)} disabled={streaming}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full btn-saffron disabled:opacity-50"><PaperPlaneTilt size={17} /></button>
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full btn-saffron disabled:opacity-50"><PaperPlaneTilt size={15} /></button>
       </div>
     </div>
   );
@@ -162,18 +162,18 @@ function Bubble({ role, children, mode, deity }: {
   role: "user" | "assistant"; children: React.ReactNode; mode?: Mode; deity?: Deity;
 }) {
   if (role === "user")
-    return <div className="flex justify-end"><div className="max-w-[78%] rounded-2xl rounded-br-md px-3.5 py-2.5 text-[13.5px] leading-relaxed btn-saffron">{children}</div></div>;
+    return <div className="flex justify-end"><div className="max-w-[78%] rounded-2xl rounded-br-md px-3.5 py-2.5 text-[12px] leading-relaxed btn-saffron">{children}</div></div>;
   return (
     <div className="flex items-end gap-2">
       {mode === "deity" && deity ? (
-        <DeityGlyph deity={deity} size={28} />
+        <DeityGlyph deity={deity} size={25} />
       ) : (
         <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
           style={{ background: "rgba(200,129,49,0.12)", border: "1px solid var(--line)" }}>
-          <Sparkle size={13} className="text-[var(--amber)]" />
+          <Sparkle size={12} className="text-[var(--amber)]" />
         </div>
       )}
-      <div className="max-w-[80%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[13.5px] leading-relaxed text-ink surface">{children}</div>
+      <div className="max-w-[80%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[12px] leading-relaxed text-ink surface">{children}</div>
     </div>
   );
 }

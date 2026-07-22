@@ -1,10 +1,16 @@
 "use client";
 
 // ============================================================================
-//  DIVASYA icon set — hand-drawn celestial/devotional line icons matching the
-//  brand book's iconography (radiant eye, diya, mala, lotus, panchang wheel,
-//  temple, conch…). Fine 1.4 strokes, tiny star sparkles, warm and ornate —
-//  replaces generic icon-library glyphs on all primary actions.
+//  DIVASYA icon set — drawn for this app, not borrowed.
+//
+//  Construction rules, so the family reads as one hand:
+//   · 24×24 grid, 1.5 stroke, round caps and joins.
+//   · Duotone: a filled base at low opacity carries the silhouette, fine
+//     linework carries the detail. Pure hairlines go weightless at 20px, which
+//     is what made the earlier set look thin and generic.
+//   · Every mark is a real object from this tradition — a kundli diamond, a
+//     vastu mandala, a pothi, a marigold, a shankh — never a stock glyph
+//     standing in for the idea. No scattered sparkles.
 // ============================================================================
 
 import { ReactNode } from "react";
@@ -12,7 +18,7 @@ import { ReactNode } from "react";
 export type IconProps = { size?: number; className?: string; strokeWidth?: number };
 export type IconComponent = React.ComponentType<IconProps>;
 
-function Svg({ size = 24, className, strokeWidth = 1.4, children }: IconProps & { children: ReactNode }) {
+function Svg({ size = 24, className, strokeWidth = 1.5, children }: IconProps & { children: ReactNode }) {
   return (
     <svg
       width={size}
@@ -24,333 +30,382 @@ function Svg({ size = 24, className, strokeWidth = 1.4, children }: IconProps & 
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      aria-hidden="true"
     >
       {children}
     </svg>
   );
 }
 
-/** tiny 4-point sparkle, filled */
-const Spark = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => (
-  <path
-    d={`M${x} ${y - 1.6 * s}l${0.45 * s} ${1.15 * s} ${1.15 * s} ${0.45 * s} -${1.15 * s} ${0.45 * s} -${0.45 * s} ${1.15 * s} -${0.45 * s} -${1.15 * s} -${1.15 * s} -${0.45 * s} ${1.15 * s} -${0.45 * s}Z`}
-    fill="currentColor"
-    stroke="none"
-  />
+/** Solid base under the linework — gives the mark weight at small sizes. */
+const F = ({ d, o = 0.14 }: { d: string; o?: number }) => (
+  <path d={d} fill="currentColor" stroke="none" opacity={o} />
+);
+const Dot = ({ x, y, r = 0.8, o = 1 }: { x: number; y: number; r?: number; o?: number }) => (
+  <circle cx={x} cy={y} r={r} fill="currentColor" stroke="none" opacity={o} />
 );
 
-/** The intuitive eye with radiating light — AI Jyotishi. */
+/* ─────────────────────────── guidance ─────────────────────────── */
+
+/** Janma kundli — the North Indian chart: square, both diagonals, inner rhombus. */
+export function IconStar(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <F d="M12 3.9 20.1 12 12 20.1 3.9 12Z" o={0.15} />
+      <path d="M3.9 3.9h16.2v16.2H3.9Z" />
+      <path d="M3.9 3.9 20.1 20.1M20.1 3.9 3.9 20.1" strokeWidth={1.1} />
+      <path d="M12 3.9 20.1 12 12 20.1 3.9 12Z" />
+    </Svg>
+  );
+}
+
+/** The seeing eye — almond, iris, and three rays of insight above. */
 export function IconEye(p: IconProps) {
+  const almond = "M3.5 13.1c2.9-3.9 5.7-5.9 8.5-5.9s5.6 2 8.5 5.9c-2.9 3.9-5.7 5.9-8.5 5.9S6.4 17 3.5 13.1Z";
   return (
     <Svg {...p}>
-      <path d="M4 12.6c2.5-3.1 5.2-4.7 8-4.7s5.5 1.6 8 4.7c-2.5 3.1-5.2 4.7-8 4.7s-5.5-1.6-8-4.7Z" />
-      <circle cx="12" cy="12.6" r="2.3" />
-      <circle cx="12" cy="12.6" r="0.7" fill="currentColor" stroke="none" />
-      <path d="M12 5v-1.8M7.2 6.3 6.2 4.9M16.8 6.3l1-1.4M4.4 9.1l-1.6-.8M19.6 9.1l1.6-.8" />
-      <Spark x={20.4} y={17.6} s={0.9} />
+      <F d={almond} o={0.13} />
+      <path d={almond} />
+      <circle cx="12" cy="13.1" r="2.7" />
+      <Dot x={12} y={13.1} r={1.15} />
+      <path d="M12 4.9V3.1M6.6 6.1 5.5 4.6M17.4 6.1l1.1-1.5" strokeWidth={1.2} />
     </Svg>
   );
 }
 
-/** Lit diya — Talk to Devta / light the lamp. */
+/** Diya — flame, oil bowl with a lip, and a footed base. */
 export function IconDiya(p: IconProps) {
+  const flame = "M12 9.6c-1.6-1.2-2.1-2.4-1.5-3.8.4-.85 1-1.4 1.5-2.6.5 1.2 1.1 1.75 1.5 2.6.6 1.4.1 2.6-1.5 3.8Z";
+  const bowl = "M4.5 13.9h15c-.5 3-3.5 5-7.5 5s-7-2-7.5-5Z";
   return (
     <Svg {...p}>
-      <path d="M5.6 15.2h12.8c-.5 2.5-3.2 4.3-6.4 4.3s-5.9-1.8-6.4-4.3Z" />
-      <path d="M8.6 19.5h6.8" />
-      <path d="M12 13.2c-1.6-1.2-2.2-2.5-1.5-3.9.4-.9 1-1.4 1.5-2.7.5 1.3 1.1 1.8 1.5 2.7.7 1.4.1 2.7-1.5 3.9Z" />
-      <path d="M6.8 10.2 5.6 9M17.2 10.2 18.4 9" />
-      <Spark x={19.6} y={4.8} s={0.9} />
+      <F d={bowl} o={0.13} />
+      <F d={flame} o={0.22} />
+      <path d={bowl} />
+      <path d={flame} />
+      <path d="M12 13.9v-3.9" strokeWidth={1.1} />
+      <path d="M8.4 18.7h7.2M9.8 20.7h4.4" />
     </Svg>
   );
 }
 
-/** Flame alone — streaks / energy. */
+/** Steady flame — outer body with an inner blue-cone. */
 export function IconFlame(p: IconProps) {
+  const inner = "M12 20.4c-1.4-.85-2.1-2-2.1-3.2 0-1.1.5-2.1 1.4-2.85.4.95 1.15 1.55 2.1 1.8.7 1.6.2 3.1-1.4 4.25Z";
   return (
     <Svg {...p}>
-      <path d="M12 20.2c-3.2-1.5-4.9-3.8-4.9-6.5 0-1.9.9-3.7 2.3-5.2.3 1.1 1 2 1.9 2.5-.3-2.3.6-4.7 2.6-6.5.2 2.2 1.2 3.8 2.4 5.4 1 1.3 1.5 2.6 1.5 3.8 0 2.7-1.7 5-4.9 6.5" />
-      <path d="M12 20.2c-1.3-.8-2-1.9-2-3.1 0-1 .5-2 1.3-2.7.4.9 1.1 1.5 2 1.7.7 1.5.2 3-1.3 4.1" />
+      <F d="M12 20.4c-3.3-1.5-5-3.9-5-6.7 0-2 1-3.9 2.4-5.4.3 1.1 1 2 1.9 2.6-.3-2.4.6-4.9 2.7-6.8.2 2.3 1.2 3.9 2.5 5.6 1 1.4 1.5 2.7 1.5 4 0 2.8-1.8 5.2-5 6.7Z" o={0.12} />
+      <path d="M12 20.4c-3.3-1.5-5-3.9-5-6.7 0-2 1-3.9 2.4-5.4.3 1.1 1 2 1.9 2.6-.3-2.4.6-4.9 2.7-6.8.2 2.3 1.2 3.9 2.5 5.6 1 1.4 1.5 2.7 1.5 4 0 2.8-1.8 5.2-5 6.7Z" />
+      <F d={inner} o={0.22} />
+      <path d={inner} strokeWidth={1.2} />
     </Svg>
   );
 }
 
-/** Japa mala — ring of beads with meru and tassel. */
+/** Japa mala — bead ring, meru bead at the crown, tassel below. */
 export function IconMala(p: IconProps) {
-  const beads = Array.from({ length: 11 }, (_, i) => {
-    const a = ((i + 0.5) / 12) * Math.PI * 2 + Math.PI / 2;
-    return { x: 12 + 5.6 * Math.cos(a), y: 10.6 + 5.6 * Math.sin(a) };
+  const R = 5.9, CY = 11.9;
+  const beads = Array.from({ length: 16 }, (_, i) => {
+    const a = ((i + 0.5) / 16) * Math.PI * 2 + Math.PI / 2;
+    return { x: 12 + R * Math.cos(a), y: CY + R * Math.sin(a), r: i % 2 ? 0.62 : 0.82 };
   });
   return (
     <Svg {...p}>
+      <circle cx="12" cy={CY} r={R} strokeWidth={0.7} opacity={0.35} />
       {beads.map((b, i) => (
-        <circle key={i} cx={b.x} cy={b.y} r="0.85" fill="currentColor" stroke="none" />
+        <Dot key={i} x={b.x} y={b.y} r={b.r} o={0.9} />
       ))}
-      <circle cx="12" cy="4.6" r="1.3" />
-      <path d="M12 16.2v3M10.5 21.4l1.5-1.7 1.5 1.7" />
+      <F d="M12 3.05a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2Z" o={0.22} />
+      <circle cx="12" cy="4.65" r="1.6" />
+      <path d="M12 17.9v2.1" strokeWidth={1.2} />
+      <path d="M10.5 22.1 12 20l1.5 2.1" strokeWidth={1.2} />
     </Svg>
   );
 }
 
-/** Temple with kalash — My Mandir. */
+/* ─────────────────────────── devotion ─────────────────────────── */
+
+/** Mandir — curved shikhara, kalash finial, banded tower, arched doorway. */
 export function IconMandir(p: IconProps) {
+  const shikhara = "M8.5 11.3c0-3.7 1.4-6.2 3.5-8.2 2.1 2 3.5 4.5 3.5 8.2Z";
   return (
     <Svg {...p}>
-      <circle cx="12" cy="3" r="0.7" fill="currentColor" stroke="none" />
-      <path d="M12 3.7v1" />
-      <path d="M8.7 9.6 12 4.7l3.3 4.9" />
-      <path d="M9.5 7.8h5" />
-      <path d="M6.8 9.6h10.4M7.6 9.6v7.6M16.4 9.6v7.6" />
-      <path d="M10.4 17.2v-2a1.6 1.6 0 0 1 3.2 0v2" />
-      <path d="M5.4 17.2h13.2M6.4 19.8h11.2" />
+      <F d={shikhara} o={0.14} />
+      <F d="M7.1 11.3h9.8v7.2H7.1Z" o={0.08} />
+      <Dot x={12} y={2.2} r={0.75} />
+      <path d={shikhara} />
+      <path d="M9.3 8.4h5.4" strokeWidth={1} opacity={0.7} />
+      <path d="M6.3 11.3h11.4M7.4 11.3v7.2M16.6 11.3v7.2" />
+      <path d="M10.3 18.5v-2.9a1.7 1.7 0 0 1 3.4 0v2.9" />
+      <path d="M5.1 18.5h13.8M6.2 20.7h11.6" />
     </Svg>
   );
 }
 
-/** Conversation with a spark — Consult. */
-export function IconChat(p: IconProps) {
+/** Gopuram arch with the lamp burning inside — live darshan. */
+export function IconDarshan(p: IconProps) {
+  const arch = "M6.5 19.4v-6.6a5.5 5.5 0 0 1 11 0v6.6Z";
+  const flame = "M12 16.6c-1.15-.85-1.55-1.8-1.05-2.85.3-.63.75-1.05 1.05-2 .3.95.75 1.37 1.05 2 .5 1.05.1 2-1.05 2.85Z";
   return (
     <Svg {...p}>
-      <path d="M4.6 7A2.6 2.6 0 0 1 7.2 4.4h9.6A2.6 2.6 0 0 1 19.4 7v5.6a2.6 2.6 0 0 1-2.6 2.6h-6l-3.6 3.2v-3.2h-.1a2.6 2.6 0 0 1-2.5-2.6V7Z" />
-      <Spark x={12} y={10} s={1.15} />
-      <circle cx="7.9" cy="9.8" r="0.65" fill="currentColor" stroke="none" />
-      <circle cx="16.1" cy="9.8" r="0.65" fill="currentColor" stroke="none" />
+      <F d={arch} o={0.12} />
+      <path d={arch} />
+      <Dot x={12} y={4.2} r={0.75} />
+      <path d="M12 4.95v1.4" strokeWidth={1.1} />
+      <F d={flame} o={0.25} />
+      <path d={flame} strokeWidth={1.2} />
+      <path d="M4.7 19.4h14.6" />
     </Svg>
   );
 }
 
-/** Lotus — Online Puja / offerings. */
+/** Lotus — layered petals resting on water. */
 export function IconLotus(p: IconProps) {
+  const mid = "M12 4.9c1.6 2.1 2.4 4 2.4 5.8 0 2.2-.9 3.9-2.4 4.8-1.5-.9-2.4-2.6-2.4-4.8 0-1.8.8-3.7 2.4-5.8Z";
+  const l1 = "M6.2 8.4c2.2.6 3.9 1.9 4.8 3.7.5 1 .8 2.1.7 3.1-2.5-.3-4.4-1.6-5.3-3.5-.4-1-.5-2.2-.2-3.3Z";
+  const r1 = "M17.8 8.4c-2.2.6-3.9 1.9-4.8 3.7-.5 1-.8 2.1-.7 3.1 2.5-.3 4.4-1.6 5.3-3.5.4-1 .5-2.2.2-3.3Z";
   return (
     <Svg {...p}>
-      <path d="M12 5.2c1.5 1.9 2.3 3.7 2.3 5.4 0 2.1-.9 3.7-2.3 4.5-1.4-.8-2.3-2.4-2.3-4.5 0-1.7.8-3.5 2.3-5.4Z" />
-      <path d="M6.3 8.6c2.1.6 3.7 1.8 4.6 3.5.5 1 .8 2 .7 3-2.4-.3-4.3-1.5-5.2-3.3-.4-1-.5-2.1-.1-3.2Z" />
-      <path d="M17.7 8.6c-2.1.6-3.7 1.8-4.6 3.5-.5 1-.8 2-.7 3 2.4-.3 4.3-1.5 5.2-3.3.4-1 .5-2.1.1-3.2Z" />
-      <path d="M4.6 15.4c2 1.9 4.6 2.9 7.4 2.9s5.4-1 7.4-2.9" />
+      <F d={mid} o={0.18} />
+      <F d={l1} o={0.1} />
+      <F d={r1} o={0.1} />
+      <path d={l1} />
+      <path d={r1} />
+      <path d={mid} />
+      <path d="M4.3 16.4c2.1 2 4.8 3.1 7.7 3.1s5.6-1.1 7.7-3.1" strokeWidth={1.2} />
     </Svg>
   );
 }
 
-/** Panchang wheel — cosmic chart. */
+/** Marigold — the offering flower: two rings of round petals round a core. */
+export function IconFlower(p: IconProps) {
+  const petals = Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    return { x: 12 + 4.6 * Math.cos(a), y: 12 + 4.6 * Math.sin(a) };
+  });
+  return (
+    <Svg {...p}>
+      {petals.map((b, i) => (
+        <circle key={i} cx={b.x} cy={b.y} r="2.5" strokeWidth={1.15} opacity={i % 2 ? 0.6 : 1} />
+      ))}
+      <F d="M12 8.6a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8Z" o={0.2} />
+      <circle cx="12" cy="12" r="2.5" />
+    </Svg>
+  );
+}
+
+/** Shankh — fluted body with the inner whorl. */
+export function IconShankh(p: IconProps) {
+  const body = "M14.9 4.5a5.3 5.3 0 0 1 4.4 5.5c-.3 4.8-4.4 8.4-9.7 8.8l-4.4.35c-.8.06-1.3-.72-1-1.4l1.9-4.25c1.2-2.6 3-4.8 5.2-6.5 1.2-.9 2.4-1.5 3.6-2Z";
+  return (
+    <Svg {...p}>
+      <F d={body} o={0.13} />
+      <path d={body} />
+      <path d="M14.6 8.1a2.5 2.5 0 0 1 2.3 2.6c-.15 2.5-2.2 4.5-4.9 4.9" strokeWidth={1.2} />
+      <path d="M7.3 14.3 5.8 17.7M10.2 15.6l-1 2.4" strokeWidth={1} opacity={0.65} />
+    </Svg>
+  );
+}
+
+/** Aarti — the thali circling, lamp lit above it. */
+export function IconAarti(p: IconProps) {
+  const flame = "M12 12.4c-1.1-.8-1.5-1.7-1-2.7.3-.6.7-1 1-1.9.3.9.7 1.3 1 1.9.5 1 .1 1.9-1 2.7Z";
+  const thali = "M7.5 15.6a4.5 1.95 0 0 0 9 0Z";
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12.4" r="8" strokeDasharray="2.2 3" strokeWidth={1} opacity={0.6} />
+      <F d={flame} o={0.25} />
+      <path d={flame} strokeWidth={1.2} />
+      <F d={thali} o={0.16} />
+      <path d="M7.5 15.6h9" />
+      <path d={thali} />
+    </Svg>
+  );
+}
+
+/** Temple bell — crown, flared body, clapper, sound carrying out. */
+export function IconBell(p: IconProps) {
+  const body = "M12 5.2a5.4 5.4 0 0 1 5.4 5.4c0 2.6.6 4.1 1.5 5.2H5.1c.9-1.1 1.5-2.6 1.5-5.2A5.4 5.4 0 0 1 12 5.2Z";
+  return (
+    <Svg {...p}>
+      <F d={body} o={0.13} />
+      <circle cx="12" cy="3.5" r="1.05" />
+      <path d="M12 4.55v.65" strokeWidth={1.1} />
+      <path d={body} />
+      <Dot x={12} y={17.7} r={1} />
+      <path d="M20.5 8.1c.5 1 .8 2.1.9 3.2M3.5 8.1c-.5 1-.8 2.1-.9 3.2" strokeWidth={1.1} opacity={0.7} />
+    </Svg>
+  );
+}
+
+/* ─────────────────────────── daily & tools ─────────────────────────── */
+
+/** Dwelling with a kalash finial — home. */
+export function IconHome(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <F d="M6.4 11.2h11.2v8.3H6.4Z" o={0.12} />
+      <Dot x={12} y={3} r={0.7} />
+      <path d="M12 3.7v1.1" strokeWidth={1.1} />
+      <path d="M3.6 11.9 12 4.9l8.4 7" />
+      <path d="M6.4 10.6v8.9h11.2v-8.9" />
+      <path d="M10.2 19.5v-3.1a1.8 1.8 0 0 1 3.6 0v3.1" />
+    </Svg>
+  );
+}
+
+/** Dharma chakra — the panchang wheel. */
 export function IconWheel(p: IconProps) {
-  const spokes = Array.from({ length: 8 }, (_, i) => {
-    const a = (i / 8) * Math.PI * 2;
+  const spokes = Array.from({ length: 12 }, (_, i) => {
+    const a = (i / 12) * Math.PI * 2;
     return {
-      x1: 12 + 3.1 * Math.cos(a), y1: 12 + 3.1 * Math.sin(a),
-      x2: 12 + 8.2 * Math.cos(a), y2: 12 + 8.2 * Math.sin(a),
+      x1: 12 + 2.9 * Math.cos(a), y1: 12 + 2.9 * Math.sin(a),
+      x2: 12 + 7.1 * Math.cos(a), y2: 12 + 7.1 * Math.sin(a),
     };
   });
   return (
     <Svg {...p}>
-      <circle cx="12" cy="12" r="8.2" />
-      <circle cx="12" cy="12" r="3.1" />
+      <F d="M12 3.6a8.4 8.4 0 1 1 0 16.8 8.4 8.4 0 0 1 0-16.8Z" o={0.07} />
+      <circle cx="12" cy="12" r="8.4" />
+      <circle cx="12" cy="12" r="7.1" strokeWidth={0.8} opacity={0.55} />
       {spokes.map((s, i) => (
-        <path key={i} d={`M${s.x1} ${s.y1}L${s.x2} ${s.y2}`} strokeWidth={0.9} />
+        <path key={i} d={`M${s.x1} ${s.y1}L${s.x2} ${s.y2}`} strokeWidth={0.95} />
       ))}
-      <circle cx="12" cy="12" r="0.75" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="3.8" r="0.7" fill="currentColor" stroke="none" />
+      <F d="M12 9.1a2.9 2.9 0 1 1 0 5.8 2.9 2.9 0 0 1 0-5.8Z" o={0.2} />
+      <circle cx="12" cy="12" r="2.9" />
     </Svg>
   );
 }
 
-/** Compass rose — Vastu. */
+/** Vastu purusha mandala — the oriented square, not a compass rose. */
 export function IconCompass(p: IconProps) {
   return (
     <Svg {...p}>
-      <circle cx="12" cy="12" r="8.2" />
-      <path d="M12 6.2l1.5 4.3 4.3 1.5-4.3 1.5-1.5 4.3-1.5-4.3-4.3-1.5 4.3-1.5L12 6.2Z" />
-      <circle cx="12" cy="12" r="0.7" fill="currentColor" stroke="none" />
-      <path d="M12 3.8v-1M12 21.2v-1M3.8 12h-1M21.2 12h-1" strokeWidth={1.1} />
+      <F d="M12 3.4 20.6 12 12 20.6 3.4 12Z" o={0.1} />
+      <path d="M12 3.4 20.6 12 12 20.6 3.4 12Z" />
+      <path d="M12 3.4v17.2M3.4 12h17.2" strokeWidth={0.85} opacity={0.6} />
+      <path d="M12 7.6 16.4 12 12 16.4 7.6 12Z" strokeWidth={1.15} />
+      <Dot x={12} y={12} r={0.85} />
+      <path d="M10.8 5.5 12 3.4l1.2 2.1Z" fill="currentColor" strokeWidth={0.9} />
     </Svg>
   );
 }
 
-/** Home with finial — grounded dwelling. */
-export function IconHome(p: IconProps) {
-  return (
-    <Svg {...p}>
-      <circle cx="12" cy="3.2" r="0.65" fill="currentColor" stroke="none" />
-      <path d="M4.6 11.6 12 5l7.4 6.6" />
-      <path d="M6.6 10.2v9.3h10.8v-9.3" />
-      <path d="M10.3 19.5v-3a1.7 1.7 0 0 1 3.4 0v3" />
-    </Svg>
-  );
-}
-
-/** Four diamonds — More. */
-export function IconMore(p: IconProps) {
-  const d = (cx: number, cy: number) => `M${cx} ${cy - 2.6}l2.6 2.6-2.6 2.6-2.6-2.6 2.6-2.6Z`;
-  return (
-    <Svg {...p}>
-      <path d={d(7.2, 7.2)} />
-      <path d={d(16.8, 7.2)} />
-      <path d={d(7.2, 16.8)} />
-      <path d={d(16.8, 16.8)} />
-    </Svg>
-  );
-}
-
-/** Temple arch with inner flame — Live Darshan. */
-export function IconDarshan(p: IconProps) {
-  return (
-    <Svg {...p}>
-      <path d="M6.6 19.6v-7a5.4 5.4 0 0 1 10.8 0v7" />
-      <path d="M4.8 19.6h14.4" />
-      <circle cx="12" cy="4.4" r="0.65" fill="currentColor" stroke="none" />
-      <path d="M12 16.4c-1.1-.8-1.5-1.7-1-2.7.3-.6.7-1 1-1.9.3.9.7 1.3 1 1.9.5 1 .1 1.9-1 2.7Z" />
-    </Svg>
-  );
-}
-
-/** Ornate bell with sound arcs. */
-export function IconBell(p: IconProps) {
-  return (
-    <Svg {...p}>
-      <circle cx="12" cy="3.6" r="0.9" />
-      <path d="M12 4.5a5.3 5.3 0 0 1 5.3 5.3c0 2.7.7 4.2 1.6 5.2H5.1c.9-1 1.6-2.5 1.6-5.2A5.3 5.3 0 0 1 12 4.5Z" />
-      <circle cx="12" cy="17.6" r="0.9" fill="currentColor" stroke="none" />
-      <path d="M20.6 7.6c.4.9.7 1.9.8 2.9M3.4 7.6c-.4.9-.7 1.9-.8 2.9" strokeWidth={1.1} />
-    </Svg>
-  );
-}
-
-/** Five-petal pushpa — offer flower. */
-export function IconFlower(p: IconProps) {
-  return (
-    <Svg {...p}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <path
-          key={i}
-          d="M12 10.3c-1.4-1.6-1.4-3.4 0-4.9 1.4 1.5 1.4 3.3 0 4.9Z"
-          transform={`rotate(${i * 72} 12 12)`}
-        />
-      ))}
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    </Svg>
-  );
-}
-
-/** Shankh — blow the conch. */
-export function IconShankh(p: IconProps) {
-  return (
-    <Svg {...p}>
-      <path d="M14.2 5.2a4.9 4.9 0 0 1 4.5 5.1c-.2 4.6-4 8-8.9 8.4l-4.6.4c-.7.1-1.2-.6-1-1.2l1.6-4.1c1-2.7 2.7-5 5-6.8 1.1-.8 2.2-1.4 3.4-1.8Z" />
-      <path d="M14.1 8.1a2.4 2.4 0 0 1 2.2 2.5c-.1 2.4-2.1 4.4-4.7 4.8" />
-      <path d="M7.2 14.4l-1.6 3.4" strokeWidth={1.1} />
-      <Spark x={20.2} y={4.4} s={0.9} />
-    </Svg>
-  );
-}
-
-/** Circling diya — aarti. */
-export function IconAarti(p: IconProps) {
-  return (
-    <Svg {...p}>
-      <circle cx="12" cy="13" r="7" strokeDasharray="2.4 3.2" />
-      <path d="M12 8.4c-1.1-.8-1.5-1.7-1-2.7.3-.6.7-1 1-1.9.3.9.7 1.3 1 1.9.5 1 .1 1.9-1 2.7Z" />
-      <circle cx="12" cy="13" r="0.75" fill="currentColor" stroke="none" />
-    </Svg>
-  );
-}
-
-/** Radiant star cluster — blessings, festivals. */
-export function IconStar(p: IconProps) {
-  return (
-    <Svg {...p}>
-      <path d="M12 4.6l1.6 4.9 4.9 1.6-4.9 1.6-1.6 4.9-1.6-4.9-4.9-1.6 4.9-1.6L12 4.6Z" />
-      <Spark x={19.4} y={5} s={1} />
-      <Spark x={5.4} y={18.6} s={0.85} />
-    </Svg>
-  );
-}
-
-/** Open granth with crescent — Spiritual Library. */
+/** Pothi — palm-leaf manuscript bound through the centre. */
 export function IconJournal(p: IconProps) {
   return (
     <Svg {...p}>
-      <path d="M12 7c-1.8-1.4-4-2-6.4-1.8v12.6c2.4-.2 4.6.4 6.4 1.8 1.8-1.4 4-2 6.4-1.8V5.2C16 5 13.8 5.6 12 7Z" />
-      <path d="M12 7v12.4" />
-      <path d="M17.9 2.4a2 2 0 1 0 2 3.3 2.5 2.5 0 0 1-2-3.3Z" strokeWidth={1.1} />
+      <F d="M3.7 6.3h16.6v2.8H3.7ZM3.7 10.6h16.6v2.8H3.7ZM3.7 14.9h16.6v2.8H3.7Z" o={0.11} />
+      <rect x="3.7" y="6.3" width="16.6" height="2.8" rx="1.4" />
+      <rect x="3.7" y="10.6" width="16.6" height="2.8" rx="1.4" />
+      <rect x="3.7" y="14.9" width="16.6" height="2.8" rx="1.4" />
+      <path d="M12 4.4v15.2" strokeWidth={0.9} opacity={0.65} />
+      <Dot x={12} y={4.1} r={0.85} o={0.85} />
     </Svg>
   );
 }
 
-/** Naamkaran — swaddled little one. */
+/** Swaddled infant — naamkaran. */
 export function IconBaby(p: IconProps) {
+  const wrap = "M6.8 18.1a5.5 5.5 0 0 1 10.4 0c-1.5 1.05-3.35 1.55-5.2 1.55s-3.7-.5-5.2-1.55Z";
   return (
     <Svg {...p}>
-      <circle cx="12" cy="8.2" r="3.6" />
-      <path d="M10.6 7.9h.01M13.4 7.9h.01" strokeWidth={1.8} />
-      <path d="M10.8 9.6c.7.5 1.7.5 2.4 0" />
-      <path d="M6.9 17.9a5.4 5.4 0 0 1 10.2 0c-1.5 1-3.3 1.5-5.1 1.5s-3.6-.5-5.1-1.5Z" />
-      <Spark x={19.6} y={4.6} s={0.9} />
+      <F d="M12 4.5a3.7 3.7 0 1 1 0 7.4 3.7 3.7 0 0 1 0-7.4Z" o={0.12} />
+      <circle cx="12" cy="8.2" r="3.7" />
+      <Dot x={10.7} y={7.8} r={0.5} />
+      <Dot x={13.3} y={7.8} r={0.5} />
+      <path d="M10.9 9.7c.7.55 1.5.55 2.2 0" strokeWidth={1.15} />
+      <F d={wrap} o={0.12} />
+      <path d={wrap} />
+      <path d="M9.4 14.6c1.7.6 3.5.6 5.2 0" strokeWidth={1} opacity={0.6} />
     </Svg>
   );
 }
 
-/** Sandesh card — share the day's message. */
+/** Patra — a folded letter closed with a seal. */
 export function IconSandesh(p: IconProps) {
   return (
     <Svg {...p}>
-      <rect x="4.6" y="5.4" width="14.8" height="13.2" rx="2.2" />
-      <path d="M4.6 8.4 12 13l7.4-4.6" />
-      <Spark x={12} y={4} s={0.85} />
+      <F d="M4 5.7h16v12.6H4Z" o={0.1} />
+      <rect x="4" y="5.7" width="16" height="12.6" rx="1.7" />
+      <path d="M4.4 8.5 12 13.3l7.6-4.8" />
+      <F d="M17.1 14.9a1.7 1.7 0 1 1 0 3.4 1.7 1.7 0 0 1 0-3.4Z" o={0.3} />
+      <circle cx="17.1" cy="16.6" r="1.7" strokeWidth={1.2} />
     </Svg>
   );
 }
 
-/**
- * Suryodaya — a half-sun above the horizon line, rays fanning up, arrow rising.
- * Sunrise and sunset sit side by side in the panchang strip at 15px, so the
- * two must differ in silhouette, not just in the direction of a small arrow.
- */
+/** Conversation — one voice answering another. */
+export function IconChat(p: IconProps) {
+  const bubble = "M3.7 7.1A2.7 2.7 0 0 1 6.4 4.4h11.2a2.7 2.7 0 0 1 2.7 2.7v5.5a2.7 2.7 0 0 1-2.7 2.7H9.5l-3.8 3.3v-3.3h-.3a2.7 2.7 0 0 1-1.7-2.7Z";
+  return (
+    <Svg {...p}>
+      <F d={bubble} o={0.12} />
+      <path d={bubble} />
+      <Dot x={8.4} y={9.9} r={0.78} />
+      <Dot x={12} y={9.9} r={0.78} />
+      <Dot x={15.6} y={9.9} r={0.78} />
+    </Svg>
+  );
+}
+
+/** Four rhombi, echoing the kundli grid — the menu. */
+export function IconMore(p: IconProps) {
+  const d = (cx: number, cy: number) => `M${cx} ${cy - 2.9}l2.9 2.9-2.9 2.9-2.9-2.9Z`;
+  return (
+    <Svg {...p}>
+      <F d={d(7.1, 7.1)} o={0.16} />
+      <F d={d(16.9, 16.9)} o={0.16} />
+      <path d={d(7.1, 7.1)} />
+      <path d={d(16.9, 7.1)} />
+      <path d={d(7.1, 16.9)} />
+      <path d={d(16.9, 16.9)} />
+    </Svg>
+  );
+}
+
+/* ─────────────────────────── sun ─────────────────────────── */
+
+/** Suryodaya — the disc resting on the horizon, rays up, arrow rising. */
 export function IconSunrise(p: IconProps) {
+  const dome = "M7.5 17.3a4.5 4.5 0 0 1 9 0Z";
   return (
     <Svg {...p}>
-      {/* horizon */}
-      <path d="M2.6 17.4h18.8" />
-      {/* half disc sitting on the line */}
-      <path d="M7.6 17.4a4.4 4.4 0 0 1 8.8 0" />
-      {/* rays, fanning upward */}
-      <path d="M12 6.4V4.6M6.4 9.1 5.2 7.9M17.6 9.1l1.2-1.2M3.4 13.9H5M19 13.9h1.6" strokeWidth={1.1} />
-      {/* rising arrow */}
-      <path d="m10.2 20.4 1.8-1.9 1.8 1.9" />
+      <F d={dome} o={0.2} />
+      <path d={dome} />
+      <path d="M2.6 17.3h18.8" />
+      <path d="M12 6.3V4.5M6.3 9 5.1 7.8M17.7 9l1.2-1.2M3.3 13.8H5M19 13.8h1.7" strokeWidth={1.1} />
+      <path d="m10.2 20.4 1.8-1.9 1.8 1.9" strokeWidth={1.2} />
     </Svg>
   );
 }
 
-/**
- * Suryast — the disc dropping below the horizon: a fuller circle cut by the
- * line, rays shortened, arrow falling. Reads distinctly from IconSunrise even
- * at 15px because the disc breaks the line instead of resting on it.
- */
+/** Suryast — the disc cut by the horizon, arrow falling. */
 export function IconSunset(p: IconProps) {
+  const dome = "M7.5 17.3a4.5 4.5 0 0 1 9 0Z";
   return (
     <Svg {...p}>
-      <path d="M2.6 17.4h18.8" />
-      {/* disc dipping through the horizon */}
-      <path d="M7.6 17.4a4.4 4.4 0 0 1 8.8 0" />
-      <path d="M8.9 17.4a3.1 3.1 0 0 0 6.2 0" strokeWidth={0.9} opacity={0.5} />
-      <path d="M12 6.4V4.6M6.4 9.1 5.2 7.9M17.6 9.1l1.2-1.2M3.4 13.9H5M19 13.9h1.6" strokeWidth={1.1} />
-      {/* falling arrow */}
-      <path d="m10.2 18.6 1.8 1.9 1.8-1.9" />
+      <F d={dome} o={0.12} />
+      <path d={dome} />
+      <path d="M8.9 17.3a3.1 3.1 0 0 0 6.2 0" strokeWidth={0.9} opacity={0.5} />
+      <path d="M2.6 17.3h18.8" />
+      <path d="M12 6.3V4.5M6.3 9 5.1 7.8M17.7 9l1.2-1.2M3.3 13.8H5M19 13.8h1.7" strokeWidth={1.1} />
+      <path d="m10.2 18.6 1.8 1.9 1.8-1.9" strokeWidth={1.2} />
     </Svg>
   );
 }
 
 /**
- * Section ornament — a hairline broken by a small diamond and two dots, the
- * kind of rule that separates verses in a printed granth. Used instead of a
- * plain border to break long screens into passages.
+ * Section ornament — a hairline broken by a rhombus and two dots, the rule
+ * that separates verses in a printed granth.
  */
 export function Ornament({ className }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2 ${className ?? ""}`} aria-hidden="true">
       <span className="h-px flex-1" style={{ background: "currentColor", opacity: 0.3 }} />
-      {/* fixed-width centre mark — never scales with the rule */}
       <svg width="30" height="7" viewBox="0 0 30 7" fill="none" className="shrink-0">
         <circle cx="2" cy="3.5" r="0.9" fill="currentColor" opacity="0.55" />
-        <path d="M15 0.6 17.9 3.5 15 6.4 12.1 3.5 15 0.6Z" stroke="currentColor" strokeWidth="0.8" />
+        <path d="M15 0.6 17.9 3.5 15 6.4 12.1 3.5Z" stroke="currentColor" strokeWidth="0.8" />
         <circle cx="28" cy="3.5" r="0.9" fill="currentColor" opacity="0.55" />
       </svg>
       <span className="h-px flex-1" style={{ background: "currentColor", opacity: 0.3 }} />

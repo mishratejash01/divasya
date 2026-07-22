@@ -6,7 +6,12 @@
      Warm Light · Amber Earth · Soft Ochre · Blush Sand
      Light, luminous, grounded. Never dark, never neon.
      ───────────────────────────────────────────────────────────── */
-  --amber: #C88131;          /* Amber Earth — the accent */
+  /* Bhagwa — a true saffron orange. The previous value sat too close to brown
+     once it was put next to the cream surfaces. */
+  --bhagwa: #F26B0F;
+  --bhagwa-deep: #D65403;
+  --bhagwa-soft: #FF8A33;
+  --amber: #C88131;          /* Amber Earth — the steady accent */
   --amber-deep: #A5661F;
   --amber-soft: #D9954C;
   --saffron: var(--amber);   /* legacy alias */
@@ -19,35 +24,45 @@
   --blush: #FFD9CC;          /* Blush Sand — soft tint */
   --maroon: #7A4A2C;
 
-  --bg-0: #FCF9E8;           /* Warm Light — page */
-  --bg-1: #F7F1DC;
-  --surface: #FFFEF7;
-  --surface-2: #FBF5E2;
-  --surface-3: #F5EED6;
+  /* page → white, section → white, block → bhagwa tint.
+     With page and section the same white, the black card outline is what
+     separates them; grey is left to type and internal dividers. */
+  --bg-0: #FFFFFF;           /* page */
+  --bg-1: #FAFAF9;
+  --surface: #FFFFFF;        /* section panels */
+  --surface-2: #FFF1E3;      /* blocks inside a panel — bhagwa tint */
+  --surface-3: #FFE7D0;
 
-  --ink: #2A2113;
-  --ink-dim: #473D2C;
-  --muted: #6E6350;
-  --muted-2: #8B7F6A;
+  /* Near-black text on warm cream. Previously brown-tinted, which made every
+     word look faded; the warmth belongs in the background and the accent. */
+  --ink: #171613;
+  --ink-dim: #3A3833;
+  --muted: #6A6760;
+  --muted-2: #8C8880;
 
-  --line: rgba(42, 33, 19, 0.12);
-  --line-strong: rgba(42, 33, 19, 0.20);
-  --line-gold: rgba(156, 133, 68, 0.38);
+  /* Section outline is a warm bhagwa hairline, not black. A black rule around
+     every panel turned the screen into a set of boxes; this separates the
+     panel from the page while belonging to the palette. */
+  --line-card: rgba(242, 107, 15, 0.30);
+  --line: rgba(0, 0, 0, 0.11);
+  --line-strong: rgba(0, 0, 0, 0.20);
+  --line-gold: rgba(0, 0, 0, 0.14);
 
   --good: #5F8657;
   --avoid: #B4564B;
 
   --radius: 8px;
-  --shadow-card: 0 1px 2px rgba(122, 94, 49, 0.06), 0 6px 20px -12px rgba(122, 94, 49, 0.18);
-  --shadow-pop: 0 24px 60px -24px rgba(90, 66, 30, 0.35);
+  /* No shadows anywhere. Cards are separated by hairlines only. */
+  --shadow-card: none;
+  --shadow-pop: none;
 
   /* Single screen gutter for the whole app. Every screen edge reads from this,
      so density is one value to tune rather than sixty hardcoded classes. */
-  --gutter: 14px;
+  --gutter: 10px;
 }
 
-@media (min-width: 640px)  { :root { --gutter: 16px; } }
-@media (min-width: 1024px) { :root { --gutter: 18px; } }
+@media (min-width: 640px)  { :root { --gutter: 12px; } }
+@media (min-width: 1024px) { :root { --gutter: 14px; } }
 
 /* padding / margin / width helpers bound to the gutter */
 .gutter    { padding-left: var(--gutter); padding-right: var(--gutter); }
@@ -61,6 +76,11 @@
    so desktop reclaims that space instead of scrolling past 90px of nothing. */
 .screen-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); }
 @media (min-width: 1024px) { .screen-bottom { padding-bottom: 28px; } }
+
+/* For a composer or action row that must sit directly above the fixed tab bar
+   rather than scroll under it. */
+.above-tabbar { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 74px); }
+@media (min-width: 1024px) { .above-tabbar { padding-bottom: 18px; } }
 
 @theme inline {
   --color-saffron: var(--amber);
@@ -96,12 +116,9 @@ html, body { margin: 0; padding: 0; }
 html { height: 100%; }
 
 body {
-  /* luminous warm-light field with a faint amber dawn */
-  background:
-    radial-gradient(1200px 700px at 50% -25%, rgba(200, 129, 49, 0.10), transparent 62%),
-    radial-gradient(900px 600px at 92% 6%, rgba(255, 217, 204, 0.35), transparent 55%),
-    linear-gradient(180deg, var(--bg-0) 0%, #FAF5DF 100%);
-  background-attachment: fixed;
+  /* Plain white. The warm dawn wash now belongs only to the login screen,
+     which opts into it with .stage-warm. */
+  background: var(--bg-0);
   color: var(--ink);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   font-weight: 400;
@@ -113,11 +130,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* whisper of paper grain */
-body::after {
-  content: "";
-  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.02;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+/* The warm dawn field, kept for the login screen only. */
+.stage-warm {
+  background:
+    radial-gradient(1200px 700px at 50% -25%, rgba(222, 107, 31, 0.13), transparent 62%),
+    radial-gradient(900px 600px at 92% 6%, rgba(255, 217, 204, 0.42), transparent 55%),
+    linear-gradient(180deg, #FCF9E8 0%, #FAF5DF 100%);
 }
 
 ::selection { background: rgba(200, 129, 49, 0.22); color: var(--ink); }
@@ -136,13 +154,21 @@ body::after {
   font-family: var(--font-deva), ui-sans-serif, sans-serif;
   letter-spacing: 0;          /* Devanagari must never be tracked */
 }
-/* Uppercase eyebrows are the one place Inter wants opening up. */
+/* Small meta label above a value — sentence case, never shouted. */
 .eyebrow {
-  font-size: 10.5px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+/* Section heading. Black, normal case, one step up from body — rank comes from
+   colour and size, not from capitals. */
+.section-title {
+  font-size: 14px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  line-height: 1;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
+  color: var(--ink);
 }
 /* Numerals in tables, timings and charts should never shift width. */
 .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
@@ -156,8 +182,7 @@ strong { font-weight: 500; }
 /* ---------- surfaces ---------- */
 .surface {
   background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--line-card);
 }
 .surface-2 {
   background: var(--surface-2);
@@ -167,14 +192,30 @@ strong { font-weight: 500; }
 .divider { border-top: 1px solid var(--line); }
 .ring-gold { border: 1px solid var(--line-gold); }
 
-/* hero card — blush & ochre dawn on cream, gold hairline */
+/* Aaj ka Sandesh — the one solid-colour panel on the screen. Deep bhagwa
+   ground, everything on it set light. It is the only card that inverts, which
+   is exactly why the verse reads first. */
+.card-sandesh {
+  background: linear-gradient(158deg, #FB7D22 0%, #E45D04 100%);
+  border: 1px solid rgba(214, 84, 3, 0.5);
+  color: #FFFFFF;
+}
+.card-sandesh .on-bhagwa      { color: rgba(255, 255, 255, 0.72); }
+.card-sandesh .on-bhagwa-mid  { color: rgba(255, 255, 255, 0.88); }
+.btn-on-bhagwa {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  color: #FFFFFF;
+  transition: background 0.15s ease;
+}
+.btn-on-bhagwa:hover { background: rgba(255, 255, 255, 0.14); }
+
+/* Hero card — the one place a warm wash survives, and only faintly. */
 .card-temple {
   background:
-    linear-gradient(160deg, rgba(255, 217, 204, 0.55), rgba(255, 254, 247, 0) 55%),
-    linear-gradient(20deg, rgba(206, 185, 118, 0.22), rgba(255, 254, 247, 0) 50%),
+    linear-gradient(160deg, rgba(255, 217, 204, 0.34), rgba(255, 255, 255, 0) 58%),
+    linear-gradient(20deg, rgba(222, 107, 31, 0.07), rgba(255, 255, 255, 0) 52%),
     var(--surface);
-  border: 1px solid var(--line-gold);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--line-card);
 }
 
 /* ---------- text accents ---------- */
@@ -185,14 +226,14 @@ strong { font-weight: 500; }
 }
 
 /* ---------- buttons ---------- */
+/* Flat bhagwa. No gradient, no glow — one solid colour doing one job. */
 .btn-saffron {
-  background: linear-gradient(180deg, var(--amber-soft), var(--amber));
-  color: #FFFDF2;
+  background: var(--bhagwa);
+  color: #FFFFFF;
   font-weight: 500;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 8px 20px -10px rgba(200, 129, 49, 0.55);
-  transition: filter 0.15s ease, transform 0.1s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
-.btn-saffron:hover { filter: brightness(1.05); }
+.btn-saffron:hover { background: var(--bhagwa-deep); }
 .btn-saffron:active { transform: scale(0.98); }
 
 .btn-gold {

@@ -67,13 +67,13 @@ export function VastuScreen() {
   return (
     <div className="flex h-full flex-col screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Vastu Compass</div>
-          <div className="text-[11px] text-muted">Align your home with the directions</div>
+          <div className="text-[10px] text-muted">Align your home with the directions</div>
         </div>
-        <button onClick={toggleAR} className={cx("ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px]", ar ? "btn-saffron" : "surface text-ink")}>
-          {ar ? <X size={13} /> : <Camera size={13} />} {ar ? "Close" : "AR"}
+        <button onClick={toggleAR} className={cx("ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px]", ar ? "btn-saffron" : "surface text-ink")}>
+          {ar ? <X size={12} /> : <Camera size={12} />} {ar ? "Close" : "AR"}
         </button>
       </div>
 
@@ -82,10 +82,10 @@ export function VastuScreen() {
         <div className="relative gutter-m mb-3 overflow-hidden rounded-2xl" style={{ aspectRatio: "3/4", background: "#000" }}>
           <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[12px] text-white">Facing {facing}</div>
+            <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-[11px] text-white">Facing {facing}</div>
             <div className="absolute inset-x-3 bottom-3 rounded-xl bg-black/55 px-3 py-2">
-              <div className="text-[12px] font-medium text-white">{z.zone} · {z.use}</div>
-              <div className="text-[11px] text-white/80">{z.tip}</div>
+              <div className="text-[11px] font-medium text-white">{z.zone} · {z.use}</div>
+              <div className="text-[10px] text-white/80">{z.tip}</div>
             </div>
             <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/40" />
           </div>
@@ -105,7 +105,7 @@ export function VastuScreen() {
                 const cardinal = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"].includes(d);
                 return (
                   <div key={d} className="absolute left-1/2 top-1/2" style={{ transform: `rotate(${a}deg) translateY(-118px) rotate(${-a}deg)` }}>
-                    <span className={cx("text-[12px]", d === "N" ? "text-[var(--avoid)] font-medium" : main ? "text-ink font-medium" : cardinal ? "text-gold" : "text-muted")}
+                    <span className={cx("text-[11px]", d === "N" ? "text-[var(--avoid)] font-medium" : main ? "text-ink font-medium" : cardinal ? "text-gold" : "text-muted")}
                       style={{ transform: `rotate(${heading}deg)`, display: "inline-block" }}>{d}</span>
                   </div>
                 );
@@ -117,37 +117,37 @@ export function VastuScreen() {
             <div className="absolute inset-0 grid place-items-center">
               <div className="text-center">
                 <div className="font-display text-4xl text-ink">{Math.round(heading)}°</div>
-                <div className="text-[12px] text-gold">{facing}</div>
+                <div className="text-[11px] text-gold">{facing}</div>
               </div>
             </div>
           </div>
 
           {!live && (
-            <button onClick={enableCompass} className="mt-5 flex items-center gap-2 rounded-2xl px-4 py-3 text-[13px] btn-saffron">
-              <Compass size={16} /> Enable live compass
+            <button onClick={enableCompass} className="mt-5 flex items-center gap-2 rounded-2xl px-4 py-3 text-[11.5px] btn-saffron">
+              <Compass size={14} /> Enable live compass
             </button>
           )}
 
           <div className="mt-5 w-full rounded-2xl card-temple p-4">
             <div className="eyebrow text-gold">Facing {z.zone}</div>
-            <div className="mt-1 text-[15px] text-ink">{z.use}</div>
-            <div className="mt-1 text-[12.5px] leading-relaxed text-muted">{z.tip}</div>
+            <div className="mt-1 text-[13.5px] text-ink">{z.use}</div>
+            <div className="mt-1 text-[11px] leading-relaxed text-muted">{z.tip}</div>
           </div>
         </div>
       )}
 
       {/* zone guide */}
-      <div className="mt-4 flex-1 overflow-y-auto gutter pb-6 no-scrollbar">
+      <div className="mt-4 flex-1 overflow-y-auto gutter screen-bottom no-scrollbar">
         <h3 className="mb-2 eyebrow text-muted">Direction Guide</h3>
         <div className="overflow-hidden rounded-2xl surface">
           {(["NE", "E", "SE", "S", "SW", "W", "NW", "N"] as const).map((d, i) => {
             const zd = zoneFor(d);
             return (
               <div key={d} className="flex items-start gap-3 px-4 py-3" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                <span className="mt-0.5 w-8 text-[13px] font-medium text-gold">{d}</span>
+                <span className="mt-0.5 w-8 text-[11.5px] font-medium text-gold">{d}</span>
                 <div>
-                  <div className="text-[13px] text-ink">{zd.zone} · {zd.use}</div>
-                  <div className="text-[11.5px] leading-snug text-muted">{zd.tip}</div>
+                  <div className="text-[11.5px] text-ink">{zd.zone} · {zd.use}</div>
+                  <div className="text-[10.5px] leading-snug text-muted">{zd.tip}</div>
                 </div>
               </div>
             );

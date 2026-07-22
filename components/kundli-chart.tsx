@@ -40,8 +40,8 @@ export function KundliChart({
       <svg viewBox={`0 0 ${S} ${S}`} width={size} height={size} className="select-none">
         <defs>
           <linearGradient id="kfield" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FFFEF7" />
-            <stop offset="100%" stopColor="#FBF5E2" />
+            <stop offset="0%" stopColor="var(--surface)" />
+            <stop offset="100%" stopColor="var(--surface-2)" />
           </linearGradient>
         </defs>
         {/* field */}

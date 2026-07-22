@@ -60,10 +60,10 @@ export function MandirScreen() {
   return (
     <div className="flex h-full flex-col screen-top">
       <div className="flex items-center gap-3 gutter py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">My Mandir</div>
-          <div className="text-[11px] text-muted">{deity.name} · {deity.aarti}</div>
+          <div className="text-[10px] text-muted">{deity.name} · {deity.aarti}</div>
         </div>
       </div>
 
@@ -73,11 +73,11 @@ export function MandirScreen() {
           <button
             key={d.id}
             onClick={() => { setDeity(d.id); setBlessing(false); haptic(8); }}
-            className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[12px]",
+            className={cx("flex shrink-0 items-center gap-1.5 rounded-full py-1 pl-1 pr-3.5 text-[11px]",
               d.id === deityId ? "ring-gold text-ink" : "surface text-muted")}
             style={d.id === deityId ? { background: "rgba(206,185,118,0.16)" } : undefined}
           >
-            <DeityGlyph deity={d} size={22} /> {d.name.split(" ")[0]}
+            <DeityGlyph deity={d} size={20} /> {d.name.split(" ")[0]}
           </button>
         ))}
       </div>
@@ -97,15 +97,15 @@ export function MandirScreen() {
         {/* niche + deity */}
         <div className="absolute inset-x-0 top-10 flex flex-col items-center">
           <div className="relative grid h-44 w-40 place-items-center rounded-t-full"
-            style={{ background: "radial-gradient(circle at 50% 65%, rgba(200,129,49,0.16), transparent 70%)", border: "1px solid rgba(156,133,68,0.45)", borderBottom: "none" }}>
+            style={{ background: "radial-gradient(circle at 50% 65%, rgba(200,129,49,0.16), transparent 70%)", border: "1px solid var(--line-strong)", borderBottom: "none" }}>
             <motion.div
               animate={{ y: [0, -5, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               style={{ filter: lit ? "drop-shadow(0 0 22px rgba(200,129,49,0.45))" : "none" }}>
-              <DeityGlyph deity={deity} size={104} />
+              <DeityGlyph deity={deity} size={94} />
             </motion.div>
           </div>
-          <div className="mt-2 font-deva text-[18px] text-gold">{deity.deva}</div>
-          <div className="text-[11px] text-muted">{deity.tagline}</div>
+          <div className="mt-2 font-deva text-[16px] text-gold">{deity.deva}</div>
+          <div className="text-[10px] text-muted">{deity.tagline}</div>
         </div>
 
         {/* diyas */}
@@ -130,7 +130,7 @@ export function MandirScreen() {
         <motion.div
           key={bellKey}
           animate={{ rotate: [0, 16, -14, 10, -7, 0] }} transition={{ duration: 0.7 }}
-          className="absolute right-5 top-11"><IconBell size={26} className="text-[var(--ochre-deep)]" /></motion.div>
+          className="absolute right-5 top-11"><IconBell size={23} className="text-[var(--ochre-deep)]" /></motion.div>
 
         {/* falling petals */}
         <AnimatePresence>
@@ -163,8 +163,8 @@ export function MandirScreen() {
           {blessing && (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
               className="absolute inset-x-4 bottom-3 rounded-2xl px-4 py-2.5 text-center surface ring-gold">
-              <div className="font-deva text-[14px] text-ink">दर्शन सम्पूर्ण</div>
-              <div className="text-[11.5px] text-muted">{deity.name} blesses you · +21 Punya</div>
+              <div className="font-deva text-[12.5px] text-ink">दर्शन सम्पूर्ण</div>
+              <div className="text-[10.5px] text-muted">{deity.name} blesses you · +21 Punya</div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -177,8 +177,8 @@ export function MandirScreen() {
           return (
             <button key={a.label} onClick={a.run}
               className={cx("flex flex-col items-center gap-1.5 rounded-2xl py-3", a.on ? "btn-saffron" : "surface")}>
-              <Icon size={19} className={a.on ? "" : "text-[var(--amber)]"} strokeWidth={1.8} />
-              <span className={cx("text-center text-[9.5px] leading-tight", a.on ? "" : "text-muted")}>{a.label}</span>
+              <Icon size={17} className={a.on ? "" : "text-[var(--amber)]"} strokeWidth={1.8} />
+              <span className={cx("text-center text-[9px] leading-tight", a.on ? "" : "text-muted")}>{a.label}</span>
             </button>
           );
         })}

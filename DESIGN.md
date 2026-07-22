@@ -3,27 +3,40 @@
 Source of truth: the official **Divasya Brand Guidelines** (Sanatani Vibes).
 The app is **light, warm, luminous** — never dark, never neon. Grounded. Luminous. Reassuring.
 
-## Palette (CSS variables — ALWAYS use tokens, never raw dark hexes)
+## Palette (CSS variables — ALWAYS use tokens, never raw hexes)
+
+Three tones carry the whole interface, one job each:
+**page → white · section → white · block → bhagwa tint.** With shadows removed,
+a warm bhagwa hairline is what separates a panel from the page.
 
 | Token | Value | Use |
 |---|---|---|
-| `--bg-0` | `#FCF9E8` | Warm Light — page background |
-| `--bg-1` | `#F7F1DC` | deeper wash / section bands |
-| `--surface` | `#FFFEF7` | cards (class `surface`) |
-| `--surface-2` | `#FBF5E2` | raised / nested cards |
-| `--ink` | `#33291A` | primary text (class `text-ink`) |
-| `--ink-dim` | `#5C5140` | secondary text |
-| `--muted` | `#8A7D64` | tertiary text (class `text-muted`) |
-| `--amber` / `--saffron` | `#C88131` | Amber Earth — THE accent. Primary buttons, active states, icons |
-| `--amber-deep` | `#A5661F` | hover / pressed |
-| `--ochre` | `#CEB976` | Soft Ochre — decorative fills, rings |
-| `--ochre-deep` | `#9C8544` | ochre text that must be legible (class `text-gold`) |
-| `--blush` | `#FFD9CC` | Blush Sand — soft tint surfaces, highlights |
-| `--line` | `rgba(51,41,26,.10)` | hairlines |
-| `--line-strong` | `rgba(51,41,26,.16)` | stronger borders |
-| `--line-gold` | `rgba(156,133,68,.38)` | gold hairline (class `ring-gold`) |
+| `--bhagwa` | `#F26B0F` | Bhagwa — THE accent. Buttons, icons, active states |
+| `--bhagwa-deep` | `#D65403` | hover / pressed |
+| `--bhagwa-soft` | `#FF8A33` | light accent |
+| `--bg-0` | `#FFFFFF` | page background |
+| `--surface` | `#FFFFFF` | section panels (class `surface`) |
+| `--surface-2` | `#FFF1E3` | blocks sitting inside a panel |
+| `--surface-3` | `#FFE7D0` | deeper block tint |
+| `--ink` | `#171613` | primary text (class `text-ink`) — near-black, not brown |
+| `--ink-dim` | `#3A3833` | secondary text |
+| `--muted` | `#6A6760` | tertiary text (class `text-muted`) |
+| `--line-card` | `rgba(242,107,15,.30)` | **section outline** — warm hairline, never black |
+| `--line` | `rgba(0,0,0,.11)` | internal dividers |
+| `--line-strong` | `rgba(0,0,0,.20)` | inputs, stronger rules |
 | `--good` | `#5F8657` | shubh (muted sage) |
 | `--avoid` | `#B4564B` | avoid (muted clay) |
+| `--amber`, `--ochre`, `--blush` | — | legacy warm tones, still used for data tints |
+
+**No shadows anywhere.** `--shadow-card` and `--shadow-pop` are `none`.
+Separation comes from the hairline and the tint, never from a drop shadow.
+
+`.stage-warm` holds the old cream dawn wash and is used by the **login screen
+only**. Every other screen is white.
+
+`.card-sandesh` is the single inverted panel in the app: solid bhagwa ground,
+white type, `.on-bhagwa` / `.on-bhagwa-mid` for the muted steps on it. Nothing
+else inverts — that is what makes the day's verse read first.
 
 ## Type
 **Inter, at two weights only.** 400 carries the entire interface; 500 is spent
@@ -34,20 +47,42 @@ on titles and the few labels that must outrank their neighbours. Only 400 and
 - Body: Inter 400, `letter-spacing: -0.006em` — set globally on `body`.
 - Titles (`font-display`): Inter 500, `letter-spacing: -0.021em`. Inter needs
   tightening as it grows; without it, headings read as a browser default.
-- Eyebrows (`eyebrow`): 10.5px / 500 / uppercase / `0.15em`. Uppercase is the
-  one place Inter wants opening up. Use this class — never hand-roll a
-  `text-[11px] uppercase tracking-[0.2em]` triplet.
+- **Never set anything in capitals.** No `uppercase`, no all-caps string
+  literals, no letter-spaced eyebrows. Rank comes from size, colour and weight.
+- Section headings (`section-title`): 14px / 500 / black, sentence case.
+- Small meta labels (`eyebrow`): 11px / 400, sentence case. Use this class —
+  never hand-roll a `text-[11px] uppercase tracking-[0.2em]` triplet.
 - Devanagari (`font-deva`): Noto Sans Devanagari, never tracked. Sans, so it
   sits on the same axis as Inter rather than clashing serif against sans.
 - Numerals in any table, timing or chart: add `tnum` so digits don't shift.
 - Running prose: add `measure` (66ch) so sentences don't span a 1200px card.
 - Hierarchy via SIZE + SPACING + COLOUR, never weight. Max weight 500.
 
+## Home structure
+Home carries the whole app. Every group is **one white panel holding its own
+title and its own blocks** — a heading floating above loose cards left it
+ambiguous which tiles belonged to which heading.
+
+- `layout: "stack"` — mark above the name, 3-up. The two big sections.
+- `layout: "row"` — mark beside the name, 2-up. The short utility section.
+- Not everything is a row and not everything is a stack; the mix is deliberate.
+- Block counts are multiples of the column count, so no tile is ever stranded
+  alone on a final row.
+
+## Mobile shell
+The fixed bottom tab bar is the navigation — **there is no top bar on mobile.**
+The header in `home.tsx` is `hidden lg:flex`. The bar is `position: fixed` and
+persists on every screen except the two full-screen rituals (`mala`, `mandir`),
+which take over the viewport and carry their own exit. Screens under it use
+`screen-bottom`; a composer above it uses `above-tabbar`.
+
 ## Density
-One token drives every screen edge: `--gutter` (14px → 16px ≥640 → 18px ≥1024).
+One token drives every screen edge: `--gutter` (10px → 12px ≥640 → 14px ≥1024).
 
 - `gutter` / `gutter-m` / `gutter-w` — screen padding, margin, and the width
   calc for full-bleed cards. Never hardcode `px-5` on a screen edge again.
+- Radii are tight: cards 8px, sheets 10px (set on Tailwind's `--radius-*`).
+  Circles keep `rounded-full`.
 - `screen-top` / `screen-bottom` — safe-area-aware insets. `screen-bottom`
   clears the tab bar on mobile and collapses to 28px on desktop, where the bar
   is hidden.
@@ -82,8 +117,13 @@ One token drives every screen edge: `--gutter` (14px → 16px ≥640 → 18px �
      (it has no such prop; use `weight`).
    - If a concept is central to jyotish and Phosphor's glyph is a poor stand-in,
      draw it instead of settling. That is how IconSunrise/IconSunset exist.
-   - Amber (`text-[var(--amber)]`) or muted; never coloured circles behind icons
-     except soft `--blush`/`rgba(200,129,49,.10)` tints.
+   - Bhagwa (`text-[var(--bhagwa)]`) or muted.
+   - **No decorative icons.** A glyph centred in a coloured frame, standing in
+     for an image that is never coming, reads as a stock placeholder. Use a
+     flat faded field instead, or say what is missing in words. Icons earn
+     their place by labelling an action, not by filling a box.
+   - Don't put a tinted disc behind a mark just to contain it — set the mark
+     larger and let it breathe.
 4. Overlays/sheets: `rgba(51,41,26,0.28)` scrim + `surface` panel.
 5. LIVE badges: `--good` tint, not neon. Ratings: `--ochre-deep`.
 6. NO emoji in UI. No em dashes in copy.

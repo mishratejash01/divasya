@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+// Login keeps the warm dawn field; every other screen is plain white.
 import { motion } from "framer-motion";
 import { ShieldWarning } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
@@ -23,16 +24,10 @@ export function LoginScreen() {
   }
 
   return (
-    <div
-      className="relative flex h-full flex-col items-center justify-between overflow-hidden px-7 pb-10 pt-24"
-      style={{
-        background:
-          "radial-gradient(120% 70% at 50% 0%, rgba(255,217,204,0.55), transparent 55%), radial-gradient(90% 60% at 50% 100%, rgba(206,185,118,0.28), transparent 60%)",
-      }}
-    >
+    <div className="stage-warm relative flex h-full flex-col items-center justify-between overflow-hidden px-7 pb-10 pt-24">
       {/* slow celestial ring */}
       <div className="animate-spinSlow pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 text-[var(--ochre)] opacity-25">
-        <Logomark size={340} />
+        <Logomark size={306} />
       </div>
 
       <div className="flex flex-col items-center text-center">
@@ -42,11 +37,11 @@ export function LoginScreen() {
           transition={{ duration: 0.8 }}
           className="text-[var(--amber)]"
         >
-          <Logomark size={92} />
+          <Logomark size={83} />
         </motion.div>
-        <h1 className="mt-6 font-display text-[44px] leading-none tracking-[0.06em] text-[var(--amber)]">Divasya</h1>
-        <p className="mt-3 font-deva text-[15px] text-gold">आपकी आध्यात्मिक यात्रा</p>
-        <p className="mt-1.5 text-[13px] text-muted">Understand your time. Move with it.</p>
+        <h1 className="mt-6 font-display text-[39.5px] leading-none tracking-[0.06em] text-[var(--amber)]">Divasya</h1>
+        <p className="mt-3 font-deva text-[13.5px] text-gold">आपकी आध्यात्मिक यात्रा</p>
+        <p className="mt-1.5 text-[11.5px] text-muted">Understand your time. Move with it.</p>
       </div>
 
       <div className="w-full max-w-[360px]">
@@ -55,10 +50,10 @@ export function LoginScreen() {
             className="mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-left"
             style={{ background: "rgba(180,86,75,0.08)", border: "1px solid rgba(180,86,75,0.28)" }}
           >
-            <ShieldWarning size={18} className="mt-0.5 shrink-0 text-[var(--avoid)]" />
+            <ShieldWarning size={16} className="mt-0.5 shrink-0 text-[var(--avoid)]" />
             <div>
-              <div className="text-[13px] font-medium text-ink">Access is invite-only</div>
-              <div className="text-[12px] leading-snug text-muted">
+              <div className="text-[11.5px] font-medium text-ink">Access is invite-only</div>
+              <div className="text-[11px] leading-snug text-muted">
                 This Google account isn't on the approved list. Please sign in with an authorised email, or contact the admin.
               </div>
             </div>
@@ -68,14 +63,14 @@ export function LoginScreen() {
         <button
           onClick={google}
           disabled={busy}
-          className="flex w-full items-center justify-center gap-3 rounded-2xl py-3.5 text-[15px] font-medium text-ink surface disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-3 rounded-2xl py-3.5 text-[13.5px] font-medium text-ink surface disabled:opacity-60"
           style={{ borderColor: "var(--line-strong)" }}
         >
           <GoogleMark /> {busy ? "Connecting…" : "Continue with Google"}
         </button>
 
-        {note && <p className="mt-3 text-center text-[12px] text-[var(--avoid)]">{note}</p>}
-        <p className="mt-5 text-center text-[11px] leading-relaxed text-muted">
+        {note && <p className="mt-3 text-center text-[11px] text-[var(--avoid)]">{note}</p>}
+        <p className="mt-5 text-center text-[10px] leading-relaxed text-muted">
           Sign-in is by Google only, for approved members.<br />
           Your birth details stay private and secure.
         </p>
