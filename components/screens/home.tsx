@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { CaretRight, List, MagnifyingGlass } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
@@ -12,9 +12,10 @@ import { useApp, type ScreenName } from "../app-context";
 import { DeityPortrait, Logomark, cx } from "../ui";
 import { usePanchang } from "@/lib/use-panchang";
 import {
-  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
+  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope, getTemples,
   Festival, Article, Shloka,
 } from "@/lib/catalog";
+import { TEMPLES } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 
 let firedOnce = false;
@@ -87,6 +88,17 @@ const TABS: { id: string; label: string; to?: ScreenName }[] = [
   { id: "library", label: "Library" },
 ];
 
+// Deep jewel grounds for the darshan cards. Saturated rather than merely dark:
+// the temple records carry near-black greys that turn to mud at card size.
+const DARSHAN_TINTS: [string, string][] = [
+  ["#4A2472", "#241141"],  // deep violet
+  ["#7E1D2E", "#430D19"],  // deep maroon
+  ["#0F4F49", "#062B27"],  // deep teal
+  ["#8A3B08", "#4E1F03"],  // burnt saffron
+  ["#153C6B", "#081F3B"],  // deep indigo
+  ["#5B2160", "#2E0F32"],  // deep plum
+];
+
 export function HomeScreen() {
   const { go, sendPush, streak, japaToday, profile } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
@@ -120,6 +132,7 @@ export function HomeScreen() {
   // backend content
   const festivals = useCatalog<Festival[]>(() => getUpcomingFestivals(3), []);
   const library = useCatalog<Article[]>(getLibrary, []);
+  const temples = useCatalog(getTemples, TEMPLES);
   const [shloka, setShloka] = useState<Shloka | null>(null);
   const [horoscope, setHoroscope] = useState<string | null>(null);
   // Track settled-ness separately: an empty reading is a real answer, and
@@ -409,7 +422,8 @@ export function HomeScreen() {
           together. The panel is the unit — a heading floating above loose
           cards left it ambiguous which tiles belonged to which heading. */}
       {SECTIONS.map((sec) => (
-        <div key={sec.title} data-section={sec.tab} className="gutter pt-1.5">
+        <Fragment key={sec.title}>
+        <div data-section={sec.tab} className="gutter pt-1.5">
           <section className="rounded-2xl surface p-2.5">
             <h3 className="section-title mb-2.5">{sec.title}</h3>
             <div
@@ -447,6 +461,57 @@ export function HomeScreen() {
             </div>
           </section>
         </div>
+
+        {/* Live darshan carousel, directly under Devotion. Deep jewel grounds
+            with white type — the one dark run on an otherwise white screen, so
+            it reads as a window into a temple rather than another card. The
+            palette is set here rather than taken from the temple records:
+            those tints are near-black greys and go muddy at this size. */}
+        {sec.tab === "devotion" && temples.length > 0 && (
+          <div className="gutter pt-1.5">
+            <section className="rounded-2xl surface p-2.5">
+              <div className="mb-2.5 flex items-end justify-between">
+                <h3 className="section-title">Live Darshan</h3>
+                <button
+                  onClick={() => go("temple")}
+                  className="flex items-center gap-1 text-[11px] text-ink"
+                >
+                  See all <CaretRight size={12} className="shrink-0" />
+                </button>
+              </div>
+              <div className="-mx-1 flex gap-2.5 overflow-x-auto px-1 no-scrollbar">
+                {temples.slice(0, 6).map((t, i) => {
+                  const [from, to] = DARSHAN_TINTS[i % DARSHAN_TINTS.length];
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => go("temple")}
+                      className="relative h-[112px] w-[172px] shrink-0 overflow-hidden rounded-xl text-left"
+                      style={{ background: `linear-gradient(152deg, ${from}, ${to})` }}
+                    >
+                      {/* scrim so the name holds against the lighter top stop */}
+                      <span
+                        className="pointer-events-none absolute inset-0"
+                        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 58%)" }}
+                      />
+                      <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[4px] px-1.5 py-[2px] text-[9px] text-white" style={{ background: "rgba(255,255,255,0.18)" }}>
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#6FD08C" }} />
+                        Live
+                      </span>
+                      <span className="absolute inset-x-0 bottom-0 p-2.5">
+                        <span className="block truncate text-[12.5px] font-medium text-white">{t.name}</span>
+                        <span className="mt-0.5 block truncate text-[10px] text-white/75">
+                          {t.deity} · {t.location}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+        )}
+        </Fragment>
       ))}
 
       {/* next festival — real dates from backend */}
