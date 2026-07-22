@@ -238,6 +238,41 @@ export function IconBell(p: IconProps) {
   );
 }
 
+/**
+ * Ganesh ji — Vighnaharta, who is invoked before anything begins, so he opens
+ * the profile block. Stylised to the same construction as the rest of the set:
+ * crown and finial, the dome of the head, fanned ears, the trunk curling to
+ * one side, and the single whole tusk.
+ */
+export function IconGanesha(p: IconProps) {
+  const crown = "M9 6.5c0-2.1 1.3-3.7 3-4.2 1.7.5 3 2.1 3 4.2Z";
+  const head =
+    "M9 6.5h6c1 0 1.8.9 1.7 1.9l-.4 3.2c-.26 2.1-2.05 3.7-4.3 3.7s-4.04-1.6-4.3-3.7l-.4-3.2C7.2 7.4 8 6.5 9 6.5Z";
+  const earL = "M8.9 7.7c-2.8-.7-5.3.6-5.9 2.9-.6 2.3 1 4.6 3.6 5.2.9.2 1.8.15 2.5-.15Z";
+  const earR = "M15.1 7.7c2.8-.7 5.3.6 5.9 2.9.6 2.3-1 4.6-3.6 5.2-.9.2-1.8.15-2.5-.15Z";
+  return (
+    <Svg {...p}>
+      <F d={earL} o={0.1} />
+      <F d={earR} o={0.1} />
+      <F d={head} o={0.14} />
+      <F d={crown} o={0.22} />
+      <path d={earL} />
+      <path d={earR} />
+      <path d={head} />
+      <path d={crown} />
+      <Dot x={12} y={1.85} r={0.72} />
+      {/* tilak */}
+      <path d="M12 7.5v1.5" strokeWidth={1.1} opacity={0.75} />
+      <Dot x={10.4} y={10.7} r={0.52} />
+      <Dot x={13.6} y={10.7} r={0.52} />
+      {/* tusks */}
+      <path d="M10.4 15.1c-.45.85-.5 1.7-.15 2.4M13.6 15.1c.45.85.5 1.7.15 2.4" strokeWidth={1.05} opacity={0.8} />
+      {/* trunk, curling left */}
+      <path d="M12 13.9c0 2.3-.4 4-1.35 5.1-.95 1.1-2.4 1.35-3.4.7-.85-.55-.95-1.65-.25-2.3.55-.5 1.35-.5 1.85 0" />
+    </Svg>
+  );
+}
+
 /* ─────────────────────────── daily & tools ─────────────────────────── */
 
 /** Dwelling with a kalash finial — home. */

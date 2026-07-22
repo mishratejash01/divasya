@@ -5,11 +5,11 @@ import { CaretRight } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
   IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
-  IconSandesh, IconShare, IconStar, IconWheel,
+  IconGanesha, IconSandesh, IconShare, IconStar, IconWheel,
   type IconComponent,
 } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
-import { initialsOf, Logomark, cx } from "../ui";
+import { DeityPortrait, Logomark, cx } from "../ui";
 import { usePanchang } from "@/lib/use-panchang";
 import {
   useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
@@ -223,12 +223,12 @@ export function HomeScreen() {
       <div className="gutter pt-1.5">
         <div className="flex items-stretch gap-3 rounded-2xl surface p-2.5">
           <div
-            className="grid w-[68px] shrink-0 place-items-center self-stretch rounded-xl"
+            className="grid w-[68px] shrink-0 place-items-center self-stretch overflow-hidden rounded-xl p-0.5"
             style={{ background: "var(--surface-2)", border: "1px solid var(--line-card)" }}
           >
-            <span className="font-display text-[24px] text-[var(--bhagwa-deep)]">
-              {initialsOf(name)}
-            </span>
+            <DeityPortrait
+              fallback={<IconGanesha size={46} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
+            />
           </div>
 
           <div className="min-w-0 flex-1 py-0.5">

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 export function cx(...a: (string | false | null | undefined)[]) {
   return a.filter(Boolean).join(" ");
@@ -156,6 +156,37 @@ export function DeityGlyph({
     >
       ॐ
     </span>
+  );
+}
+
+/**
+ * Deity portrait for the profile frame.
+ *
+ * Shows a real image from /public when one is present, and falls back to the
+ * drawn mark if it is missing or fails to load — so the frame is never empty
+ * and never a broken-image icon. Drop the artwork at the path below (any of
+ * .png / .jpg / .webp, square, ideally 256px or larger) and it appears with no
+ * code change. Use artwork you hold the rights to.
+ */
+export function DeityPortrait({
+  src = "/deity/ganesha.jpg",
+  alt = "Ganesh ji",
+  fallback,
+}: {
+  src?: string;
+  alt?: string;
+  fallback: ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <>{fallback}</>;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={alt}
+      className="h-full w-full rounded-[5px] object-cover"
+      onError={() => setFailed(true)}
+    />
   );
 }
 
