@@ -191,12 +191,7 @@ export function DeityPortrait({
   // The frame is the limit; the artwork scales to fill it and is cropped to
   // fit. Letting the image set the frame's size instead meant a large file
   // sized the layout — a 508x727 painting rendered a 508px-wide frame.
-  const style = {
-    width,
-    height,
-    border: "2px solid var(--ink)",
-    background: "var(--surface-2)",
-  };
+  const style = { width, height, background: "var(--surface-2)" };
   const frame = "grid shrink-0 place-items-center overflow-hidden rounded-xl";
 
   if (failed) return <div className={frame} style={style}>{fallback}</div>;

@@ -105,22 +105,25 @@ export function HomeScreen() {
 
   const nextFestival = festivals[0];
 
-  // Rows beside the mark, in three steps: the name is the title, the sign sits
-  // a step under it, and the birth and day details run smaller beneath. Birth
-  // details only appear when the profile actually carries them.
-  const userRows: { text: string; lead?: boolean }[] = [
-    { text: rashi, lead: true },
-    profile?.dob
-      ? {
-          text: `Born ${new Date(profile.dob + "T00:00:00").toLocaleDateString("en-IN", {
-            day: "numeric", month: "short", year: "numeric",
-          })}${profile.tob ? ` · ${profile.tob}` : ""}`,
-        }
-      : null,
-    profile?.birthplace ? { text: profile.birthplace } : null,
-    pg ? { text: `${pg.weekday} · ${pg.dateLabel}` } : null,
-    pg ? { text: `${pg.tithiDisplay} · ${pg.nakshatra}` } : null,
-  ].filter(Boolean) as { text: string; lead?: boolean }[];
+  // The birth record, as labelled fields rather than a run of sentences. A
+  // date and a place mean nothing on their own — "14 Aug 1995" could be
+  // anything until something says Born above it. Only fields the profile
+  // actually carries are rendered.
+  const birthFields = [
+    profile?.dob && {
+      label: "Born",
+      value: new Date(profile.dob + "T00:00:00").toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", year: "numeric",
+      }),
+    },
+    profile?.tob && { label: "Time", value: profile.tob },
+    profile?.birthplace && {
+      label: "Place",
+      // just the town in the field; the full string stays in the tooltip
+      value: profile.birthplace.split(",")[0].trim(),
+      title: profile.birthplace,
+    },
+  ].filter(Boolean) as { label: string; value: string; title?: string }[];
 
   useEffect(() => {
     if (firedOnce || !chog) return;
@@ -171,17 +174,23 @@ export function HomeScreen() {
             style={{ background: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)" }}
           />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[12.5px] text-ink">
-              {chog ? (
-                <>
-                  <span className="font-medium">{chog.name}</span>
-                  <span className="text-muted">
-                    {" "}· {chog.good ? "Shubh" : "Avoid"} till {chog.to}
-                  </span>
-                </>
-              ) : (
-                pg?.tithiDisplay ?? "…"
-              )}
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="truncate text-[12.5px] text-ink">
+                {chog ? (
+                  <>
+                    <span className="font-medium">{chog.name}</span>
+                    <span className="text-muted">
+                      {" "}· {chog.good ? "Shubh" : "Avoid"} till {chog.to}
+                    </span>
+                  </>
+                ) : (
+                  pg?.tithiDisplay ?? "…"
+                )}
+              </span>
+              {/* The date belongs with today, not in the profile block. */}
+              <span className="shrink-0 text-[10.5px] tnum text-muted">
+                {pg ? `${pg.weekdayShort} · ${pg.dateLabel}` : ""}
+              </span>
             </div>
             <div className="mt-0.5 truncate text-[10.5px] tnum text-muted">
               Sunrise {pg?.sunrise ?? "…"} · Sunset {pg?.sunset ?? "…"} · Rahu {pg?.rahuKaal ?? "—"}
@@ -217,43 +226,55 @@ export function HomeScreen() {
         </div>
       </div>
 
-      {/* Who this chart belongs to. The mark is framed on all four sides and
-          stretches the full height of the block; the details run beside it as
-          rows, stepping down in size from the name. */}
+      {/* The birth record. Two tiers rather than one stack of look-alike rows:
+          who this is on top — portrait, name, sign — then the birth details
+          beneath a rule as labelled fields. It reads as a record because that
+          is what it is, and it opens the chart it belongs to. */}
       <div className="gutter pt-1.5">
-        <div className="flex items-stretch gap-3 rounded-2xl surface p-2.5">
-          {/* The portrait owns its own frame — its width follows the artwork. */}
-          <DeityPortrait
-            fallback={<IconGanesha size={44} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
-          />
-
-          <div className="min-w-0 flex-1 py-0.5">
-            <div className="flex items-center gap-1.5">
-              <span className="truncate font-display text-[19px] leading-tight text-ink">{name}</span>
-              {/* A vrat is the one thing that changes what someone does today,
-                  so it keeps the accent instead of joining the run of rows. */}
-              {pg?.vrat && (
-                <span
-                  className="shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10px] text-white"
-                  style={{ background: "var(--bhagwa)" }}
-                >
-                  {pg.vrat}
-                </span>
+        <button
+          onClick={() => go("kundli")}
+          className="w-full rounded-2xl surface p-2.5 text-left transition-colors hover:bg-[rgba(242,107,15,0.04)]"
+        >
+          <div className="flex items-center gap-3">
+            <DeityPortrait
+              fallback={<IconGanesha size={44} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="truncate font-display text-[19px] leading-tight text-ink">{name}</span>
+                {/* A vrat changes what someone does today, so it keeps the
+                    accent instead of joining the muted run. */}
+                {pg?.vrat && (
+                  <span
+                    className="shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10px] text-white"
+                    style={{ background: "var(--bhagwa)" }}
+                  >
+                    {pg.vrat}
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 truncate text-[12.5px] text-ink">{rashi}</div>
+              {profile?.nakshatra && (
+                <div className="mt-0.5 truncate text-[11px] text-muted">{profile.nakshatra} nakshatra</div>
               )}
             </div>
-            {userRows.map((r) => (
-              <div
-                key={r.text}
-                className={cx(
-                  "truncate tnum leading-snug text-ink",
-                  r.lead ? "mt-1 text-[12.5px]" : "mt-0.5 text-[11px]"
-                )}
-              >
-                {r.text}
-              </div>
-            ))}
+            <CaretRight size={16} className="shrink-0 text-muted" />
           </div>
-        </div>
+
+          {birthFields.length > 0 && (
+            <div
+              className="mt-2.5 grid gap-2 border-t pt-2.5"
+              style={{ borderColor: "var(--line)", gridTemplateColumns: `repeat(${birthFields.length}, minmax(0, 1fr))` }}
+            >
+              {birthFields.map((f) => (
+                <div key={f.label} className="min-w-0" title={f.title}>
+                  <div className="eyebrow text-muted">{f.label}</div>
+                  <div className="mt-0.5 truncate text-[12px] tnum text-ink">{f.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </button>
       </div>
 
       {/* japa streak */}
