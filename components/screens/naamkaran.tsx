@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { IconBaby } from "../icons";
 import { Baby, CaretLeft, Sparkle } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { ScreenHeader, cx } from "../ui";
 import { useCatalog, getNakshatraSyllables, getBabyNames } from "@/lib/catalog";
 
 type G = "m" | "f";
@@ -81,15 +82,13 @@ export function NaamkaranScreen() {
   const list = names.filter((x) => syllables.includes(x.syl) && (gender === "all" || x.g === gender));
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <div>
-          <div className="font-display text-lg leading-tight text-ink">Naamkaran</div>
-          <div className="text-[10px] text-muted">Auspicious names by Janma Nakshatra</div>
-        </div>
-        <Baby size={18} className="ml-auto text-[var(--bhagwa)]" />
-      </div>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+      <ScreenHeader
+        title="Naamkaran"
+        sub="Auspicious names by Janma Nakshatra"
+        onBack={back}
+        right={<IconBaby size={20} className="shrink-0 text-ink" />}
+      />
 
       {/* nakshatra */}
       <div className="gutter">

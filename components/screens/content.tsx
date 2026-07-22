@@ -5,7 +5,7 @@ import { IconShare, IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
 import { Bank, CaretLeft, Check, Clock, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { cx, DeityGlyph, Pill, Wordmark } from "../ui";
+import { DeityGlyph, Pill, ScreenHeader, Wordmark, cx } from "../ui";
 import { deityById } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 import {
@@ -17,13 +17,7 @@ import { useFullPanchang, usePanchang, type ChoghadiyaSlot } from "@/lib/use-pan
 function Header({ title, sub }: { title: string; sub?: string }) {
   const { back } = useApp();
   return (
-    <div className="flex items-center gap-3 gutter py-2.5">
-      <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-      <div>
-        <div className="font-display text-lg leading-tight text-ink">{title}</div>
-        {sub && <div className="text-[10px] text-muted">{sub}</div>}
-      </div>
-    </div>
+    <ScreenHeader title={title} sub={sub} onBack={back} />
   );
 }
 
@@ -56,7 +50,7 @@ export function PanchangScreen() {
     ["Masa", `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`],
   ];
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <Header title="Panchang" sub={`${p.vaara.name_en} · ${p.home.dateLabel}`} />
       <div className="flex items-center justify-between gap-3 gutter pb-3">
         <div className="text-[10px] tnum text-muted">
@@ -147,7 +141,7 @@ export function FestivalsScreen() {
   const samagri = hero?.samagri?.length ? hero.samagri : SAMAGRI;
   const HeroIcon = festivalIcon(hero?.icon);
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <Header title="Festivals & Pooja" />
       {/* Festival dates come from the database and have no local seed — they
           are lunar and cannot be guessed, and a wrong date in a jyotish app is
@@ -245,7 +239,7 @@ export function LibraryScreen() {
   const article = open ? items.find((x) => x.id === open) : undefined;
   if (article) {
     return (
-      <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+      <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
         <Header title="Spiritual Library" />
         <div className="h-40 w-full" style={{ background: `linear-gradient(160deg, ${article.tint}33, ${article.tint}11)` }} />
         <div className="gutter pt-4">
@@ -260,7 +254,7 @@ export function LibraryScreen() {
     );
   }
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <Header title="Spiritual Library" />
       <div className="grid grid-cols-2 gap-3 gutter">
         {items.map((l) => (
@@ -307,7 +301,7 @@ export function SandeshScreen() {
   }
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <Header title="Aaj ka Sandesh" />
       <div className="gutter">
         <div ref={card} className="card-temple overflow-hidden rounded-3xl p-6">

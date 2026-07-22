@@ -5,7 +5,7 @@ import { IconShankh } from "../icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bank, Broadcast, CaretLeft, Check, Drop, Eye, Fire, FlowerLotus, ForkKnife, Leaf, MapPin, Orange, Play, ShieldCheck, VideoCamera } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { ScreenHeader, cx } from "../ui";
 import { PUJAS, CHADHAVA, TEMPLES } from "@/lib/demo";
 import { useCatalog, getPujas, getChadhava, getTemples } from "@/lib/catalog";
 import { logEvent } from "@/lib/chat";
@@ -81,11 +81,8 @@ export function PujaScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <span className="font-display text-lg text-ink">Online Puja & Chadhava</span>
-      </div>
+    <div className="flex h-full flex-col">
+      <ScreenHeader title="Online Puja & Chadhava" onBack={back} />
 
       <div className="gutter-m grid grid-cols-2 gap-1 rounded-full p-1 surface">
         {(["puja", "chadhava"] as const).map((t) => (
@@ -209,11 +206,12 @@ export function TempleScreen() {
   if (open) {
     const t = temples.find((x) => x.id === open) ?? temples[0];
     return (
-      <div className="flex h-full flex-col screen-top">
-        <div className="flex items-center gap-3 gutter py-2.5">
-          <button onClick={() => { setOpen(null); setAarti(false); }} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-          <span className="font-display text-lg text-ink">{t.name}</span>
-        </div>
+      <div className="flex h-full flex-col">
+        <ScreenHeader
+          title={t.name}
+          sub={`${t.deity} · ${t.location}`}
+          onBack={() => { setOpen(null); setAarti(false); }}
+        />
 
         {/* live player */}
         <div className="relative gutter-m overflow-hidden rounded-2xl" style={{ aspectRatio: "16/10", background: "var(--surface-2)" }}>
@@ -259,11 +257,8 @@ export function TempleScreen() {
   }
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <span className="font-display text-lg text-ink">Live Temple Darshan</span>
-      </div>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+      <ScreenHeader title="Live Temple Darshan" onBack={back} />
       <div className="space-y-2.5 gutter">
         {temples.map((t) => (
           <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">

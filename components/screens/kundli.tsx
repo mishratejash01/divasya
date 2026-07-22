@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CaretLeft } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { ScreenHeader, cx } from "../ui";
 import { KundliChart, Placement } from "../kundli-chart";
 
 interface KundliData {
@@ -41,14 +41,12 @@ export function KundliScreen() {
   const d9: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.navamsaSign, retro: p.retro, combust: p.combust })) ?? [];
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <div>
-          <div className="font-display text-lg leading-tight text-ink">Janma Kundli</div>
-          <div className="text-[10px] text-muted">{profile?.name ? `${profile.name}'s birth chart` : "Your birth chart"}</div>
-        </div>
-      </div>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+      <ScreenHeader
+        title="Janma Kundli"
+        sub={profile?.name ? `${profile.name}'s birth chart` : "Your birth chart"}
+        onBack={back}
+      />
 
       {err && <div className="gutter-m mt-2 rounded-2xl surface p-3 text-center text-[11.5px] text-muted">{err}</div>}
       {!k && !err && <div className="mt-24 text-center text-muted">Casting your chart…</div>}

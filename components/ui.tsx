@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import { CaretLeft } from "@phosphor-icons/react";
 
 export function cx(...a: (string | false | null | undefined)[]) {
   return a.filter(Boolean).join(" ");
@@ -147,18 +148,27 @@ export function Avatar({
   );
 }
 
-// Deity medallion — soft radial tint, bhagwa ॐ. No emoji.
+/**
+ * Deity medallion.
+ *
+ * Shows the deity's own portrait from /public/deity/<id>.jpg, falling back to
+ * the ॐ on a soft tint when there is no artwork for that id — so a deity added
+ * without a picture still renders, it just renders quietly. Every image in that
+ * folder is public domain with its source recorded in public/deity/SOURCES.md.
+ */
 export function DeityGlyph({
   deity,
   size = 44,
 }: {
-  deity: { color?: string };
+  deity: { id?: string; color?: string };
   size?: number;
 }) {
   const tint = deity.color || "#C88131";
+  const [failed, setFailed] = useState(false);
+  const showPhoto = !!deity.id && !failed;
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-full font-deva"
+      className="grid shrink-0 place-items-center overflow-hidden rounded-full font-deva"
       style={{
         width: size,
         height: size,
@@ -169,7 +179,17 @@ export function DeityGlyph({
         lineHeight: 1,
       }}
     >
-      ॐ
+      {showPhoto ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`/deity/${deity.id}.jpg`}
+          alt=""
+          className="h-full w-full object-cover"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        "ॐ"
+      )}
     </span>
   );
 }
@@ -222,6 +242,47 @@ export function DeityPortrait({
         className="h-full w-full rounded-[5px] object-cover"
         onError={() => setFailed(true)}
       />
+    </div>
+  );
+}
+
+/**
+ * The header every sub-screen wears: haldi ground, bare caret, title, and an
+ * optional slot on the right.
+ *
+ * It owns the safe-area inset, so screens using it must not also apply
+ * screen-top — the bar is the top of the screen. Extracted because thirteen
+ * screens were each carrying their own copy, which is how they drifted apart
+ * in the first place.
+ */
+export function ScreenHeader({
+  title,
+  sub,
+  onBack,
+  right,
+}: {
+  title: string;
+  sub?: string;
+  onBack: () => void;
+  right?: ReactNode;
+}) {
+  return (
+    <div
+      className="flex shrink-0 items-center gap-2.5 gutter"
+      style={{
+        background: "var(--bar-yellow)",
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
+        paddingBottom: 11,
+      }}
+    >
+      <button onClick={onBack} aria-label="Back" className="shrink-0">
+        <CaretLeft size={20} weight="regular" className="text-ink" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="truncate font-display text-[17px] leading-tight text-ink">{title}</div>
+        {sub && <div className="truncate text-[10.5px] leading-tight text-ink/65">{sub}</div>}
+      </div>
+      {right}
     </div>
   );
 }

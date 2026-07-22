@@ -1,10 +1,7 @@
 "use client";
 
 import { SidebarSimple, SquaresFour } from "@phosphor-icons/react";
-import {
-  IconHome, IconEye, IconDiya, IconChat, IconMandir, IconMala,
-  IconWheel, IconLotus, IconDarshan, IconCompass, IconStar, IconComponent,
-} from "./icons";
+import { IconHome, IconEye, IconChat, IconComponent } from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
 import { rashiLabel } from "@/lib/astro";
@@ -18,33 +15,21 @@ type NavItem = {
   match: ScreenName[];
 };
 
-const GROUPS: { title: string; items: NavItem[] }[] = [
-  {
-    title: "Daily",
-    items: [
-      { id: "home", label: "Home", icon: IconHome, to: "home", match: ["home"] },
-      { id: "panchang", label: "Panchang", icon: IconWheel, to: "panchang", match: ["panchang", "festivals"] },
-      { id: "mala", label: "Mala Jaap", icon: IconMala, to: "mala", match: ["mala"] },
-    ],
-  },
-  {
-    title: "Guidance",
-    items: [
-      { id: "kundli", label: "My Kundli", icon: IconStar, to: "kundli", match: ["kundli"] },
-      { id: "ai", label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
-      { id: "deity", label: "Talk to Devta", icon: IconDiya, to: "ai", params: { mode: "deity" }, match: [] },
-      { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
-    ],
-  },
-  {
-    title: "Devotion",
-    items: [
-      { id: "mandir", label: "My Mandir", icon: IconMandir, to: "mandir", match: ["mandir"] },
-      { id: "puja", label: "Online Puja", icon: IconLotus, to: "puja", match: ["puja"] },
-      { id: "temple", label: "Live Darshan", icon: IconDarshan, to: "temple", match: ["temple"] },
-      { id: "vastu", label: "Vastu Compass", icon: IconCompass, to: "vastu", match: ["vastu", "naamkaran", "library", "sandesh"] },
-    ],
-  },
+/**
+ * The sidebar carries the primary destinations only — the same four the tab bar
+ * carries on mobile, since the bar is hidden at this width and this stands in
+ * for it.
+ *
+ * It used to list eleven entries across three groups, every one of which now
+ * appears on the home screen in its own titled section. That made the sidebar a
+ * second copy of the homepage: two places to maintain, and no answer to "which
+ * one am I supposed to use". Everything not below is one tap away on Home.
+ */
+const ITEMS: NavItem[] = [
+  { id: "home", label: "Home", icon: IconHome, to: "home", match: ["home"] },
+  { id: "ai", label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" }, match: ["ai"] },
+  { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
+  { id: "menu", label: "All features", icon: SquaresFour as unknown as IconComponent, to: "menu", match: ["menu"] },
 ];
 
 export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: () => void }) {
@@ -77,34 +62,29 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
         )}
       </div>
 
-      {/* groups */}
-      <nav className="flex-1 space-y-5 overflow-y-auto no-scrollbar">
-        {GROUPS.map((grp) => (
-          <div key={grp.title}>
-            <div className="mb-1.5 px-3 eyebrow text-[var(--muted-2)]">{grp.title}</div>
-            <div className="space-y-0.5">
-              {grp.items.map((it) => {
-                const Icon = it.icon;
-                const active = it.match.includes(screen.name);
-                return (
-                  <button
-                    key={it.id}
-                    onClick={() => { haptic(6); go(it.to, it.params); }}
-                    className={cx(
-                      "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                      active ? "text-ink" : "text-muted hover:text-ink"
-                    )}
-                    style={active ? { background: "var(--surface-2)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
-                  >
-                    <Icon size={16} strokeWidth={active ? 2.1 : 1.7}
-                      className={cx("shrink-0 transition-colors", active ? "text-[var(--bhagwa)]" : "text-[var(--muted)] group-hover:text-[var(--bhagwa)]")} />
-                    <span className="text-[12px]">{it.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      <nav className="flex-1 space-y-0.5 overflow-y-auto no-scrollbar">
+        {ITEMS.map((it) => {
+          const Icon = it.icon;
+          const active = it.match.includes(screen.name);
+          return (
+            <button
+              key={it.id}
+              onClick={() => { haptic(6); go(it.to, it.params); }}
+              className={cx(
+                "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
+                active ? "text-ink" : "text-muted hover:text-ink"
+              )}
+              style={active ? { background: "var(--surface-2)", border: "1px solid var(--line)" } : { border: "1px solid transparent" }}
+            >
+              <Icon size={17} strokeWidth={active ? 2.1 : 1.7}
+                className={cx("shrink-0 transition-colors", active ? "text-[var(--bhagwa)]" : "text-[var(--muted)] group-hover:text-[var(--bhagwa)]")} />
+              <span className="text-[12.5px]">{it.label}</span>
+            </button>
+          );
+        })}
+        <p className="px-3 pt-3 text-[10.5px] leading-relaxed text-[var(--muted-2)]">
+          Kundli, Panchang, Devotion and every tool live on Home.
+        </p>
       </nav>
 
       {/* profile */}

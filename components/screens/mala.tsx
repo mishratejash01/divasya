@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowCounterClockwise, CaretLeft, Check, Fire, Pause, Play } from "@phosphor-icons/react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { ScreenHeader, cx } from "../ui";
 import { MANTRAS, TARGETS } from "@/lib/demo";
 import { useCatalog, getMantras } from "@/lib/catalog";
 import { bell, ting } from "@/lib/sound";
@@ -74,15 +74,16 @@ export function MalaScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <span className="font-display text-lg text-ink">Mala Jaap</span>
-        <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Fire size={12} className="text-[var(--bhagwa)]" />
-          <span className="text-[11px] text-ink">{streak}</span>
-        </div>
-      </div>
+    <div className="flex h-full flex-col">
+      <ScreenHeader
+        title="Mala Jaap"
+        onBack={back}
+        right={
+          <span className="flex shrink-0 items-center gap-1 text-[12.5px] tnum font-medium text-ink">
+            <Fire size={14} weight="fill" /> {streak}
+          </span>
+        }
+      />
 
       {/* mantra selector */}
       <div className="-mx-1 flex gap-2 overflow-x-auto gutter no-scrollbar">

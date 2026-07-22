@@ -6,7 +6,7 @@ import {
   IconMala, IconStar, IconCompass, IconBaby, IconJournal, IconSandesh, IconShare, IconComponent,
 } from "../icons";
 import { useApp, ScreenName } from "../app-context";
-import { Avatar, Logomark } from "../ui";
+import { Avatar, Logomark, ScreenHeader } from "../ui";
 import { rashiLabel } from "@/lib/astro";
 
 type Item = { label: string; icon: IconComponent; to?: ScreenName; params?: Record<string, unknown>; live?: boolean };
@@ -55,11 +55,8 @@ export function MoreScreen() {
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <span className="font-display text-lg text-ink">Menu</span>
-      </div>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+      <ScreenHeader title="Menu" onBack={back} />
 
       {/* profile */}
       <button className="gutter-m flex gutter-w items-center gap-3 rounded-2xl card-temple p-3 text-left">

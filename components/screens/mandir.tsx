@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CaretLeft } from "@phosphor-icons/react";
 import { IconDiya, IconBell, IconFlower, IconShankh, IconAarti } from "../icons";
 import { useApp } from "../app-context";
-import { cx, DeityGlyph } from "../ui";
+import { DeityGlyph, ScreenHeader, cx } from "../ui";
 import { DEITIES } from "@/lib/demo";
 import { useCatalog, getDeities } from "@/lib/catalog";
 import { bell, conch, ting } from "@/lib/sound";
@@ -58,14 +58,8 @@ export function MandirScreen() {
   ];
 
   return (
-    <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <div>
-          <div className="font-display text-lg leading-tight text-ink">My Mandir</div>
-          <div className="text-[10px] text-muted">{deity.name} · {deity.aarti}</div>
-        </div>
-      </div>
+    <div className="flex h-full flex-col">
+      <ScreenHeader title="My Mandir" sub={`${deity.name} · ${deity.aarti}`} onBack={back} />
 
       {/* deity selector */}
       <div className="-mx-1 flex gap-2 overflow-x-auto gutter pb-1 no-scrollbar">

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, CaretLeft, Compass, X } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { ScreenHeader, cx } from "../ui";
 import { ZONES16, zone16 } from "@/lib/vastu";
 
 const DIRS16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
@@ -65,17 +65,21 @@ export function VastuScreen() {
   }, []);
 
   return (
-    <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <div>
-          <div className="font-display text-lg leading-tight text-ink">Vastu Compass</div>
-          <div className="text-[10px] text-muted">Align your home with the directions</div>
-        </div>
-        <button onClick={toggleAR} className={cx("ml-auto flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px]", ar ? "btn-saffron" : "surface text-ink")}>
-          {ar ? <X size={12} /> : <Camera size={12} />} {ar ? "Close" : "AR"}
-        </button>
-      </div>
+    <div className="flex h-full flex-col">
+      <ScreenHeader
+        title="Vastu Compass"
+        sub="Align your home with the directions"
+        onBack={back}
+        right={
+          <button
+            onClick={toggleAR}
+            className="flex shrink-0 items-center gap-1 rounded-[5px] px-2 py-1 text-[11px] text-ink"
+            style={{ background: "rgba(0,0,0,0.10)" }}
+          >
+            {ar ? <X size={12} weight="bold" /> : <Camera size={12} weight="bold" />} {ar ? "Close" : "AR"}
+          </button>
+        }
+      />
 
       {/* AR camera */}
       {ar && (
