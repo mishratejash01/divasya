@@ -149,6 +149,24 @@ export function FestivalsScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <Header title="Festivals & Pooja" />
+      {/* Festival dates come from the database and have no local seed — they
+          are lunar and cannot be guessed, and a wrong date in a jyotish app is
+          worse than none. Say so rather than showing a blank screen. */}
+      {!list.length && (
+        <div className="gutter-m rounded-2xl surface p-4 text-center">
+          <div className="text-[12.5px] text-ink">No festival dates loaded</div>
+          <p className="mx-auto mt-1 measure text-[11px] leading-relaxed text-muted">
+            The calendar is served from the backend. Check your connection, or open Panchang
+            for today&apos;s tithi and muhurat in the meantime.
+          </p>
+          <button
+            onClick={() => go("panchang")}
+            className="mt-3 rounded-[5px] px-4 py-2 text-[11.5px] btn-saffron"
+          >
+            Open Panchang
+          </button>
+        </div>
+      )}
       {hero && (
         <div className="gutter-m overflow-hidden rounded-2xl surface">
           {/* Flat faded band. A large glyph centred in a box read as a stock

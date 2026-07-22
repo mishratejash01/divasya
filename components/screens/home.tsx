@@ -59,7 +59,7 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
     ],
   },
   {
-    title: "Tools",
+    title: "Guides & Tools",
     tab: "tools",
     layout: "row",
     blocks: [
@@ -71,23 +71,27 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
   },
 ];
 
-// A tab earns its place by addressing a section worth jumping to. Sandesh,
-// Japa and Rashi are each a single card — a tab for them is a control nobody
-// would reach for. The strip fills its width by spreading these, not by
-// padding the list out with filler.
-const TABS = [
-  { id: "today", label: "Today" },
+// A tab earns its place by addressing a section worth jumping to — Sandesh,
+// Japa and Rashi are each a single card, and a tab that scrolls you to one card
+// is a control nobody reaches for.
+//
+// Most tabs jump to a section of this page. Festivals have no section here —
+// that card only renders when one is upcoming — so it opens the festivals
+// screen instead of scrolling to something that may not exist.
+const TABS: { id: string; label: string; to?: ScreenName }[] = [
+  { id: "kundli", label: "My Kundli" },
   { id: "astro", label: "Astro" },
   { id: "devotion", label: "Devotion" },
-  { id: "tools", label: "Tools" },
+  { id: "festival", label: "Festival", to: "festivals" },
+  { id: "tools", label: "Guides" },
   { id: "library", label: "Library" },
-] as const;
+];
 
 export function HomeScreen() {
   const { go, sendPush, streak, japaToday, profile } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<string>("today");
+  const [activeTab, setActiveTab] = useState<string>("kundli");
 
   // Tabs jump to a section, and the selected one follows the scroll so the
   // strip keeps telling the truth about where you are.
@@ -159,6 +163,7 @@ export function HomeScreen() {
     const sc = scrollRef.current;
     if (!sc) return;
     const els = TABS
+      .filter((t) => !t.to)
       .map((t) => sc.querySelector<HTMLElement>(`[data-section="${t.id}"]`))
       .filter((el): el is HTMLElement => el !== null);
     if (!els.length) return;
@@ -167,7 +172,7 @@ export function HomeScreen() {
         const top = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (top) setActiveTab((top.target as HTMLElement).dataset.section || "today");
+        if (top) setActiveTab((top.target as HTMLElement).dataset.section || "kundli");
       },
       { root: sc, rootMargin: "-104px 0px -60% 0px" }
     );
@@ -239,7 +244,7 @@ export function HomeScreen() {
             return (
               <button
                 key={t.id}
-                onClick={() => scrollToSection(t.id)}
+                onClick={() => (t.to ? go(t.to) : scrollToSection(t.id))}
                 className={cx(
                   "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] transition-colors",
                   on ? "font-medium text-ink" : "text-[rgba(23,22,19,0.55)]"
@@ -272,7 +277,7 @@ export function HomeScreen() {
 
       {/* What is running now — the one time-sensitive thing on the screen, so
           it gets a status dot and reads in a single glance. */}
-      <div data-section="today" className="gutter pt-2">
+      <div className="gutter pt-2">
         <button
           onClick={() => go("panchang")}
           className="flex w-full items-center gap-2.5 rounded-2xl surface px-3 py-2.5 text-left"
@@ -338,7 +343,7 @@ export function HomeScreen() {
           who this is on top — portrait, name, sign — then the birth details
           beneath a rule as labelled fields. It reads as a record because that
           is what it is, and it opens the chart it belongs to. */}
-      <div className="gutter pt-1.5">
+      <div data-section="kundli" className="gutter pt-1.5">
         <button
           onClick={() => go("kundli")}
           className="w-full rounded-2xl surface p-2.5 text-left transition-colors hover:bg-[rgba(242,107,15,0.04)]"
