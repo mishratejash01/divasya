@@ -225,7 +225,7 @@ export function HomeScreen() {
               </span>
               <button
                 onClick={() => go("sandesh")}
-                className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] btn-white"
+                className="flex shrink-0 items-center gap-1.5 rounded-[5px] px-3.5 py-2 text-[11.5px] btn-white"
               >
                 <IconShare size={13} /> Share
               </button>
@@ -246,7 +246,7 @@ export function HomeScreen() {
           <div className="text-[12.5px] font-medium text-ink">{streak}-day japa streak</div>
           <div className="text-[11px] text-muted">{japaToday} chants today · keep it alive</div>
         </div>
-        <span className="rounded-full px-3 py-1.5 text-[11px] btn-saffron">Chant</span>
+        <span className="rounded-[5px] px-4.5 py-2.5 text-[12.5px] btn-saffron">Chant</span>
       </button>
 
       {/* One white panel per section, holding its title and its blocks
@@ -334,7 +334,7 @@ export function HomeScreen() {
           )}
           <button
             onClick={() => go("ai", { mode: "jyotishi" })}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[11px] btn-saffron"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-[5px] px-4 py-2.5 text-[12px] btn-saffron"
           >
             <IconEye size={14} /> Ask the AI Jyotishi
           </button>
