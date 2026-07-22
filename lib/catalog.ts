@@ -80,6 +80,7 @@ export const getAstrologers = () =>
       exp: a["exp"], rating: Number(a["rating"]), orders: a["orders_label"], langs: a["langs"],
       rate: a["rate"], status: a["status"] as "online" | "busy", wait: a["wait_label"],
       grad: [a["tint"], shade(a["tint"])] as [string, string],
+      photo: a["photo_url"] ?? undefined,
     }));
   }, ASTROLOGERS);
 

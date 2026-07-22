@@ -25,6 +25,17 @@ const STAR_GOLD = "#E9A800";
 export function ConsultScreen() {
   const { back, go, wallet } = useApp();
   const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
+  const [tag, setTag] = useState("All");
+
+  // Filters are built from the practitioners actually listed, so the row never
+  // offers a skill nobody here has. Six busiest tags — beyond that the strip
+  // is longer than the list it filters.
+  const counts = new Map<string, number>();
+  astrologers.forEach((a) => a.tags?.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)));
+  const tags = ["All", ...[...counts.entries()].sort((x, y) => y[1] - x[1]).slice(0, 6).map(([t]) => t)];
+  const shown = tag === "All" ? astrologers : astrologers.filter((a) => a.tags?.includes(tag));
+  const onlineCount = astrologers.filter((a) => a.status === "online").length;
+
   return (
     <div className="flex h-full flex-col">
       {/* Yellow header, matching the bar on home. Wallet reads as plain text
@@ -65,8 +76,40 @@ export function ConsultScreen() {
           </div>
         </div>
 
-        <div className="gutter space-y-2 pt-2">
-          {astrologers.map((a) => (
+        {/* Skill filter. Nine near-identical rows with no way in was the real
+            gap — this is how someone actually finds the right person. */}
+        <div className="flex gap-1.5 gutter overflow-x-auto pt-2 no-scrollbar">
+          {tags.map((t) => {
+            const on = t === tag;
+            return (
+              <button
+                key={t}
+                onClick={() => setTag(t)}
+                className={cx(
+                  "shrink-0 whitespace-nowrap rounded-[5px] px-2.5 py-1.5 text-[11px] transition-colors",
+                  on ? "text-white" : "surface text-ink"
+                )}
+                style={on ? { background: "var(--bhagwa)" } : undefined}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-between gutter pt-2 text-[10.5px] text-muted">
+          <span>
+            {shown.length} {shown.length === 1 ? "astrologer" : "astrologers"}
+            {tag !== "All" ? ` in ${tag}` : ""}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--good)" }} />
+            {onlineCount} online now
+          </span>
+        </div>
+
+        <div className="gutter space-y-2 pt-1.5">
+          {shown.map((a) => (
             // One tap target for the whole card; the Chat block is the visible
             // affordance, not a nested button.
             <button
@@ -75,46 +118,56 @@ export function ConsultScreen() {
               className="w-full rounded-2xl surface p-2.5 text-left"
             >
               <div className="flex gap-2.5">
-                {/* Photo, then its own credentials directly beneath it — the
-                    rating belongs to the person, so it sits under their face
-                    rather than in the run of text beside it. */}
-                <div className="flex w-[54px] shrink-0 flex-col items-center gap-1">
-                  <span className="relative">
-                    <Avatar name={a.name} size={44} tint={a.grad[0]} />
-                    <span
-                      className="absolute -bottom-0.5 -right-0.5 grid h-[15px] w-[15px] place-items-center rounded-full"
-                      style={{ background: VERIFIED_BLUE, border: "2px solid var(--surface)" }}
-                    >
-                      <Check size={8} weight="bold" className="text-white" />
-                    </span>
+                <span className="relative shrink-0">
+                  {/* status prop draws the online/busy dot */}
+                  <Avatar name={a.name} size={46} tint={a.grad[0]} photo={a.photo} status={a.status} />
+                  <span
+                    className="absolute -bottom-0.5 -left-0.5 grid h-[15px] w-[15px] place-items-center rounded-full"
+                    style={{ background: VERIFIED_BLUE, border: "2px solid var(--surface)" }}
+                  >
+                    <Check size={8} weight="bold" className="text-white" />
                   </span>
-                  <span className="flex items-center gap-0.5 text-[10.5px] tnum text-ink">
-                    <Star size={11} weight="fill" style={{ color: STAR_GOLD }} />
-                    {a.rating}
-                  </span>
-                  <span className="text-[9px] tnum leading-none text-muted">{a.orders} orders</span>
-                </div>
+                </span>
 
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[12.5px] font-medium text-ink">{a.name}</div>
                   <div className="truncate text-[10.5px] text-muted">{a.specialty}</div>
-                  {/* second row, right side — experience and what it costs */}
-                  <div className="mt-1 flex items-center justify-end gap-2">
-                    <span className="shrink-0 text-[10.5px] tnum text-ink">
-                      {a.exp}y ·{" "}
-                      {a.status === "online" ? (
-                        <span className="font-medium text-[var(--good)]">Free</span>
-                      ) : (
-                        <span>₹{a.rate}/min</span>
-                      )}
-                    </span>
+                  {/* Languages matter more than anything else here when you are
+                      choosing who to talk to, and were sitting unused in the
+                      data. */}
+                  <div className="mt-0.5 truncate text-[10px] tnum text-muted">
+                    {a.langs} · {a.exp}y exp
                   </div>
+                </div>
+
+                <div className="flex shrink-0 flex-col items-end gap-0.5">
+                  <span className="flex items-center gap-1 text-[10.5px] tnum">
+                    <Star size={11} weight="fill" style={{ color: STAR_GOLD }} />
+                    <span className="font-medium text-ink">{a.rating}</span>
+                  </span>
+                  <span className="text-[9.5px] tnum text-muted">{a.orders} orders</span>
                 </div>
               </div>
 
-              <div className="mt-2 flex justify-end">
+              {/* Price and availability against the action, divided from the
+                  identity above it — the card now says who, then what it
+                  costs, rather than one flat run of grey. */}
+              <div
+                className="mt-2 flex items-center justify-between gap-2 border-t pt-2"
+                style={{ borderColor: "var(--line)" }}
+              >
+                <span className="flex min-w-0 items-center gap-2 text-[11px] tnum">
+                  {a.status === "online" ? (
+                    <span className="font-medium text-[var(--good)]">Free first chat</span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-muted">
+                      <Clock size={11} /> {a.wait}
+                    </span>
+                  )}
+                  <span className="truncate text-muted">· ₹{a.rate}/min</span>
+                </span>
                 <span
-                  className="flex items-center gap-1.5 rounded-[5px] px-3.5 py-1.5 text-[11.5px] text-white"
+                  className="flex shrink-0 items-center gap-1.5 rounded-[5px] px-3.5 py-1.5 text-[11.5px] text-white"
                   style={{ background: CHAT_BLUE }}
                 >
                   <IconChat size={14} strokeWidth={1.7} /> Chat

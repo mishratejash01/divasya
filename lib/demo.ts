@@ -39,6 +39,11 @@ export type Astrologer = {
   status: "online" | "busy";
   wait: string;
   grad: [string, string];
+  // Headshot URL. Left unset in the seed data on purpose: these are placeholder
+  // practitioners, and attaching a stock photo of a real person to a made-up
+  // astrologer presents that person as someone they are not. Set photo_url on
+  // the row once you have a picture the practitioner has agreed to.
+  photo?: string;
 };
 
 export type Temple = {

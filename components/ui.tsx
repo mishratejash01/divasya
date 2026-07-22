@@ -97,17 +97,22 @@ export function Avatar({
   size = 44,
   tint,
   status,
+  photo,
 }: {
   name: string;
   size?: number;
   tint?: string;
   status?: "online" | "busy";
+  /** Headshot URL. Falls back to the monogram when absent or broken. */
+  photo?: string;
 }) {
   const initials = initialsOf(name);
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = !!photo && !photoFailed;
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <div
-        className="grid h-full w-full place-items-center rounded-full font-display"
+        className="grid h-full w-full place-items-center overflow-hidden rounded-full font-display"
         style={{
           background: tint
             ? `linear-gradient(160deg, ${tint}26, var(--surface-2))`
@@ -117,7 +122,17 @@ export function Avatar({
           fontSize: size * 0.34,
         }}
       >
-        {initials}
+        {showPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photo}
+            alt={name}
+            className="h-full w-full object-cover"
+            onError={() => setPhotoFailed(true)}
+          />
+        ) : (
+          initials
+        )}
       </div>
       {status && (
         <span
