@@ -86,19 +86,25 @@ export function MalaScreen() {
       />
 
       {/* mantra selector */}
-      <div className="-mx-1 flex gap-2 overflow-x-auto gutter no-scrollbar">
-        {mantras.slice(0, 6).map((m) => (
-          <button
-            key={m.id}
-            onClick={() => { setMantraId(m.id); reset(); }}
-            className={cx(
-              "shrink-0 rounded-full px-3.5 py-1.5 text-[11px] transition-colors",
-              m.id === mantraId ? "btn-saffron" : "surface text-muted"
-            )}
-          >
-            {m.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")}
-          </button>
-        ))}
+      <div className="gutter pt-2">
+        <section className="rounded-2xl surface p-2.5">
+          <h3 className="section-title mb-2">Mantra</h3>
+          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 no-scrollbar">
+            {mantras.slice(0, 6).map((m) => (
+              <button
+                key={m.id}
+                onClick={() => { setMantraId(m.id); reset(); }}
+                className={cx(
+                  "shrink-0 rounded-[5px] px-2.5 py-1.5 text-[11px] transition-colors",
+                  m.id === mantraId ? "btn-saffron" : "text-ink"
+                )}
+                style={m.id === mantraId ? undefined : { background: "var(--surface-2)" }}
+              >
+                {m.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")}
+              </button>
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* the mala */}
@@ -162,12 +168,13 @@ export function MalaScreen() {
         </button>
 
         {/* target chips */}
-        <div className="mt-5 flex gap-2">
+        <div className="mt-4 flex gap-1.5">
           {TARGETS.map((t) => (
             <button
               key={t}
               onClick={() => { setTarget(t); reset(); }}
-              className={cx("rounded-full px-3 py-1.5 text-[11px]", t === target ? "btn-saffron" : "surface text-muted")}
+              className={cx("rounded-[5px] px-3 py-1.5 text-[11px] tnum", t === target ? "btn-saffron" : "text-ink")}
+              style={t === target ? undefined : { background: "var(--surface-2)" }}
             >
               {t}
             </button>
@@ -176,14 +183,18 @@ export function MalaScreen() {
       </div>
 
       {/* controls + stats */}
-      <div className="gutter pb-6">
-        <div className="mb-3 flex items-center justify-around rounded-2xl surface py-3 text-center">
-          <div><div className="font-display text-lg text-ink">{count}</div><div className="text-[10px] text-muted">This mala</div></div>
-          <div className="h-8 w-px" style={{ background: "var(--line)" }} />
-          <div><div className="font-display text-lg text-ink">{malas}</div><div className="text-[10px] text-muted">Malas today</div></div>
-          <div className="h-8 w-px" style={{ background: "var(--line)" }} />
-          <div><div className="font-display text-lg text-ink">{japaLifetime.toLocaleString("en-IN")}</div><div className="text-[10px] text-muted">Lifetime</div></div>
-        </div>
+      <div className="gutter pb-5">
+        <section className="mb-2 rounded-2xl surface p-2.5">
+          <h3 className="section-title mb-2">Your japa</h3>
+          <div className="grid grid-cols-3 gap-1.5 text-center">
+            {[["This mala", String(count)], ["Malas today", String(malas)], ["Lifetime", japaLifetime.toLocaleString("en-IN")]].map(([l, v]) => (
+              <div key={l} className="rounded-[6px] py-2" style={{ background: "var(--surface-2)" }}>
+                <div className="font-display text-[16px] tnum text-ink">{v}</div>
+                <div className="mt-0.5 text-[9.5px] text-muted">{l}</div>
+              </div>
+            ))}
+          </div>
+        </section>
         <div className="flex gap-3">
           <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
             {auto ? <><Pause size={15} /> Pause auto-jaap</> : <><Play size={15} /> Hands-free auto-jaap</>}

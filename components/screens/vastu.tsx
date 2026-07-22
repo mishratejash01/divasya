@@ -68,7 +68,6 @@ export function VastuScreen() {
     <div className="flex h-full flex-col">
       <ScreenHeader
         title="Vastu Compass"
-        sub="Align your home with the directions"
         onBack={back}
         right={
           <button

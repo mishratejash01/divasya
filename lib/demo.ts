@@ -393,6 +393,98 @@ export const SHLOKA = {
   meaning: "You have the right to action alone, never to its fruits. — Bhagavad Gita 2.47",
 };
 
+/**
+ * The 27 nakshatras with their four pada syllables, presiding deity and lord.
+ *
+ * Safe to hold locally, unlike festival dates: this mapping is canonical and
+ * fixed — it is the same in every panchang and does not move with the year.
+ * Without it the Naamkaran screen had nothing to pick from at all, since
+ * getNakshatraSyllables falls back to an empty list.
+ */
+export const NAKSHATRA_SYLLABLES: { name: string; syl: string[]; deity: string; planet: string }[] = [
+  { name: "Ashwini", syl: ["Chu", "Che", "Cho", "La"], deity: "Ashwini Kumaras", planet: "Ketu" },
+  { name: "Bharani", syl: ["Li", "Lu", "Le", "Lo"], deity: "Yama", planet: "Venus" },
+  { name: "Krittika", syl: ["A", "I", "U", "E"], deity: "Agni", planet: "Sun" },
+  { name: "Rohini", syl: ["O", "Va", "Vi", "Vu"], deity: "Brahma", planet: "Moon" },
+  { name: "Mrigashira", syl: ["Ve", "Vo", "Ka", "Ki"], deity: "Soma", planet: "Mars" },
+  { name: "Ardra", syl: ["Ku", "Gha", "Nga", "Chha"], deity: "Rudra", planet: "Rahu" },
+  { name: "Punarvasu", syl: ["Ke", "Ko", "Ha", "Hi"], deity: "Aditi", planet: "Jupiter" },
+  { name: "Pushya", syl: ["Hu", "He", "Ho", "Da"], deity: "Brihaspati", planet: "Saturn" },
+  { name: "Ashlesha", syl: ["Di", "Du", "De", "Do"], deity: "Nagas", planet: "Mercury" },
+  { name: "Magha", syl: ["Ma", "Mi", "Mu", "Me"], deity: "Pitrs", planet: "Ketu" },
+  { name: "Purva Phalguni", syl: ["Mo", "Ta", "Ti", "Tu"], deity: "Bhaga", planet: "Venus" },
+  { name: "Uttara Phalguni", syl: ["Te", "To", "Pa", "Pi"], deity: "Aryaman", planet: "Sun" },
+  { name: "Hasta", syl: ["Pu", "Sha", "Na", "Tha"], deity: "Savitr", planet: "Moon" },
+  { name: "Chitra", syl: ["Pe", "Po", "Ra", "Ri"], deity: "Tvashtar", planet: "Mars" },
+  { name: "Swati", syl: ["Ru", "Re", "Ro", "Ta"], deity: "Vayu", planet: "Rahu" },
+  { name: "Vishakha", syl: ["Ti", "Tu", "Te", "To"], deity: "Indra-Agni", planet: "Jupiter" },
+  { name: "Anuradha", syl: ["Na", "Ni", "Nu", "Ne"], deity: "Mitra", planet: "Saturn" },
+  { name: "Jyeshtha", syl: ["No", "Ya", "Yi", "Yu"], deity: "Indra", planet: "Mercury" },
+  { name: "Mula", syl: ["Ye", "Yo", "Bha", "Bhi"], deity: "Nirriti", planet: "Ketu" },
+  { name: "Purva Ashadha", syl: ["Bhu", "Dha", "Pha", "Dha"], deity: "Apas", planet: "Venus" },
+  { name: "Uttara Ashadha", syl: ["Bhe", "Bho", "Ja", "Ji"], deity: "Vishvedevas", planet: "Sun" },
+  { name: "Shravana", syl: ["Ju", "Je", "Jo", "Gha"], deity: "Vishnu", planet: "Moon" },
+  { name: "Dhanishta", syl: ["Ga", "Gi", "Gu", "Ge"], deity: "Vasus", planet: "Mars" },
+  { name: "Shatabhisha", syl: ["Go", "Sa", "Si", "Su"], deity: "Varuna", planet: "Rahu" },
+  { name: "Purva Bhadrapada", syl: ["Se", "So", "Da", "Di"], deity: "Aja Ekapada", planet: "Jupiter" },
+  { name: "Uttara Bhadrapada", syl: ["Du", "Tha", "Jha", "Da"], deity: "Ahir Budhnya", planet: "Saturn" },
+  { name: "Revati", syl: ["De", "Do", "Cha", "Chi"], deity: "Pushan", planet: "Mercury" },
+];
+
+/**
+ * Seed names, keyed to the pada syllable they begin with so the nakshatra
+ * filter has something to match. Meanings are the common, well-attested ones;
+ * the real catalogue lives in the baby_names table.
+ */
+export const BABY_NAMES: { n: string; deva?: string; g: "m" | "f"; m: string; syl: string }[] = [
+  { n: "Chetan", deva: "चेतन", g: "m", m: "Consciousness", syl: "Che" },
+  { n: "Lakshya", deva: "लक्ष्य", g: "m", m: "Aim, goal", syl: "La" },
+  { n: "Lavanya", deva: "लावण्य", g: "f", m: "Grace", syl: "La" },
+  { n: "Aarav", deva: "आरव", g: "m", m: "Peaceful", syl: "A" },
+  { n: "Aditya", deva: "आदित्य", g: "m", m: "The sun", syl: "A" },
+  { n: "Ananya", deva: "अनन्या", g: "f", m: "Unique", syl: "A" },
+  { n: "Ishaan", deva: "ईशान", g: "m", m: "Lord of the north-east", syl: "I" },
+  { n: "Ira", deva: "इरा", g: "f", m: "Earth, speech", syl: "I" },
+  { n: "Uma", deva: "उमा", g: "f", m: "Parvati", syl: "U" },
+  { n: "Om", deva: "ओम्", g: "m", m: "The primordial sound", syl: "O" },
+  { n: "Vihaan", deva: "विहान", g: "m", m: "Dawn", syl: "Vi" },
+  { n: "Vedant", deva: "वेदान्त", g: "m", m: "End of the Vedas", syl: "Ve" },
+  { n: "Kavya", deva: "काव्या", g: "f", m: "Poetry", syl: "Ka" },
+  { n: "Krishna", deva: "कृष्ण", g: "m", m: "The dark one", syl: "Ka" },
+  { n: "Kiara", g: "f", m: "Light", syl: "Ki" },
+  { n: "Hansika", deva: "हंसिका", g: "f", m: "Swan", syl: "Ha" },
+  { n: "Hemant", deva: "हेमन्त", g: "m", m: "Early winter", syl: "He" },
+  { n: "Divya", deva: "दिव्या", g: "f", m: "Divine", syl: "Di" },
+  { n: "Diya", deva: "दीया", g: "f", m: "Lamp", syl: "Di" },
+  { n: "Dev", deva: "देव", g: "m", m: "God", syl: "De" },
+  { n: "Manav", deva: "मानव", g: "m", m: "Human", syl: "Ma" },
+  { n: "Meera", deva: "मीरा", g: "f", m: "Devotee of Krishna", syl: "Mi" },
+  { n: "Mukul", deva: "मुकुल", g: "m", m: "Bud, blossom", syl: "Mu" },
+  { n: "Tanvi", deva: "तन्वी", g: "f", m: "Slender, beautiful", syl: "Ta" },
+  { n: "Tejas", deva: "तेजस", g: "m", m: "Radiance", syl: "Te" },
+  { n: "Pranav", deva: "प्रणव", g: "m", m: "The syllable Om", syl: "Pa" },
+  { n: "Priya", deva: "प्रिया", g: "f", m: "Beloved", syl: "Pi" },
+  { n: "Naina", deva: "नैना", g: "f", m: "Eyes", syl: "Na" },
+  { n: "Nitya", deva: "नित्या", g: "f", m: "Eternal", syl: "Ni" },
+  { n: "Rudra", deva: "रुद्र", g: "m", m: "A form of Shiva", syl: "Ru" },
+  { n: "Riya", deva: "रिया", g: "f", m: "Singer", syl: "Ri" },
+  { n: "Rohan", deva: "रोहन", g: "m", m: "Ascending", syl: "Ro" },
+  { n: "Yash", deva: "यश", g: "m", m: "Glory", syl: "Ya" },
+  { n: "Yug", deva: "युग", g: "m", m: "An age", syl: "Yu" },
+  { n: "Bhavya", deva: "भव्या", g: "f", m: "Grand, splendid", syl: "Bha" },
+  { n: "Gauri", deva: "गौरी", g: "f", m: "Parvati, fair one", syl: "Ga" },
+  { n: "Girish", deva: "गिरीश", g: "m", m: "Lord of the mountain", syl: "Gi" },
+  { n: "Sanvi", deva: "सान्वी", g: "f", m: "Lakshmi", syl: "Sa" },
+  { n: "Siddharth", deva: "सिद्धार्थ", g: "m", m: "One who attains", syl: "Si" },
+  { n: "Surya", deva: "सूर्य", g: "m", m: "The sun", syl: "Su" },
+  { n: "Charvi", deva: "चार्वी", g: "f", m: "Beautiful", syl: "Cha" },
+  { n: "Chinmay", deva: "चिन्मय", g: "m", m: "Full of consciousness", syl: "Chi" },
+  { n: "Jaya", deva: "जया", g: "f", m: "Victory", syl: "Ja" },
+  { n: "Janhvi", deva: "जान्हवी", g: "f", m: "The Ganga", syl: "Ja" },
+  { n: "Tara", deva: "तारा", g: "f", m: "Star", syl: "Ta" },
+  { n: "Vasu", deva: "वसु", g: "m", m: "Wealth, a Vasu", syl: "Va" },
+];
+
 // Warm tints from the brand palette. These were dark hexes left over from an
 // earlier theme, which rendered as grey slabs on the cream cards.
 export const LIBRARY = [

@@ -44,7 +44,6 @@ export function KundliScreen() {
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader
         title="Janma Kundli"
-        sub={profile?.name ? `${profile.name}'s birth chart` : "Your birth chart"}
         onBack={back}
       />
 
@@ -54,38 +53,46 @@ export function KundliScreen() {
       {k && (
         <>
           {/* summary strip */}
-          <div className="gutter-m mt-1 grid grid-cols-3 gap-2.5">
-            {[["Lagna", k.lagna.sign], ["Rashi", k.moon.sign], ["Nakshatra", k.moon.nakshatra]].map(([a, b]) => (
-              <div key={a} className="rounded-2xl surface p-3">
-                <div className="eyebrow text-muted">{a}</div>
-                <div className="mt-0.5 text-[12.5px] text-ink">{b}</div>
+          <div className="gutter pt-2">
+            <section className="rounded-2xl surface p-2.5">
+              <div className="grid grid-cols-3 gap-2">
+                {[["Lagna", k.lagna.sign], ["Rashi", k.moon.sign], ["Nakshatra", k.moon.nakshatra]].map(([a, b]) => (
+                  <div key={a} className="min-w-0 rounded-[6px] px-2 py-2" style={{ background: "var(--surface-2)" }}>
+                    <div className="eyebrow text-muted">{a}</div>
+                    <div className="mt-0.5 truncate text-[12px] text-ink">{b}</div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </section>
           </div>
           {(k.approximate) && (
             <div className="gutter-m mt-2 text-center text-[10px] text-muted">Birth time unknown : houses & lagna are approximate (noon assumed).</div>
           )}
 
           {/* the two charts */}
-          <div className="mt-2 flex flex-col items-center gap-4 px-3 lg:flex-row lg:justify-center">
-            <div className="rounded-2xl card-temple p-3">
-              <KundliChart lagnaIndex={k.chart.lagnaIndex} placements={d1} title="Rasi · D1" size={270} />
-            </div>
-            <div className="rounded-2xl card-temple p-3">
-              <KundliChart lagnaIndex={k.chart.navamsaLagnaIndex} placements={d9} title="Navamsa · D9" size={270} />
-            </div>
+          <div className="gutter pt-1.5">
+            <section className="rounded-2xl surface p-2.5">
+              <h3 className="section-title mb-2">Birth chart</h3>
+              <div className="flex flex-col items-center gap-4 lg:flex-row lg:justify-center">
+                <KundliChart lagnaIndex={k.chart.lagnaIndex} placements={d1} title="Rasi · D1" size={262} />
+                <KundliChart lagnaIndex={k.chart.navamsaLagnaIndex} placements={d9} title="Navamsa · D9" size={262} />
+              </div>
+            </section>
           </div>
 
           {/* current dasha */}
-          <div className="gutter-m mt-2 rounded-2xl card-temple p-3">
-            <div className="eyebrow text-gold">Current Mahadasha</div>
-            <div className="mt-1 font-display text-[15.5px] text-ink">{k.currentDasha}</div>
+          <div className="gutter pt-1.5">
+            <section className="rounded-2xl surface p-2.5">
+              <h3 className="section-title">Current Mahadasha</h3>
+              <div className="mt-1 text-[13px] text-ink">{k.currentDasha}</div>
+            </section>
           </div>
 
           {/* planet table */}
-          <div className="gutter pt-2">
-            <h3 className="mb-2 section-title">Grahas</h3>
-            <div className="overflow-hidden rounded-2xl surface">
+          <div className="gutter pt-1.5">
+            <section className="rounded-2xl surface p-2.5">
+              <h3 className="section-title mb-1.5">Grahas</h3>
+              <div className="overflow-hidden rounded-[6px]" style={{ background: "var(--surface-2)" }}>
               {GRAHA_ORDER.map((id, i) => {
                 const g = k.grahas[id];
                 if (!g) return null;
@@ -102,36 +109,42 @@ export function KundliScreen() {
                   </div>
                 );
               })}
-            </div>
+              </div>
+            </section>
           </div>
 
           {/* yogas */}
           {k.yogas.length > 0 && (
-            <div className="gutter pt-2">
-              <h3 className="mb-2 section-title">Yogas in your chart</h3>
-              <div className="flex flex-wrap gap-2">
-                {k.yogas.map((y) => (
-                  <span key={y} className="rounded-full px-3 py-1.5 text-[11px] ring-gold text-ink" style={{ background: "var(--surface-2)" }}>{y}</span>
-                ))}
-              </div>
+            <div className="gutter pt-1.5">
+              <section className="rounded-2xl surface p-2.5">
+                <h3 className="section-title mb-2">Yogas in your chart</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {k.yogas.map((y) => (
+                    <span key={y} className="rounded-[5px] px-2.5 py-1.5 text-[11px] text-ink" style={{ background: "var(--surface-2)" }}>{y}</span>
+                  ))}
+                </div>
+              </section>
             </div>
           )}
 
           {/* chara karakas + arudha */}
-          <div className="gutter pt-2">
-            <h3 className="mb-2 section-title">Jaimini Karakas</h3>
-            <div className="rounded-2xl surface p-3 text-[11px] text-muted">
+          <div className="gutter pt-1.5">
+            <section className="rounded-2xl surface p-2.5">
+              <h3 className="section-title mb-1.5">Jaimini Karakas</h3>
+              <div className="rounded-[6px] p-2.5 text-[11px] text-muted" style={{ background: "var(--surface-2)" }}>
               <div>Atmakaraka (soul): <span className="text-ink">{cap(k.charaKarakas.AK || "")}</span></div>
               <div className="mt-1">Amatyakaraka (career): <span className="text-ink">{cap(k.charaKarakas.AmK || "")}</span></div>
               <div className="mt-1">Darakaraka (spouse): <span className="text-ink">{cap(k.charaKarakas.DK || "")}</span></div>
               <div className="mt-1">Arudha Lagna (image): <span className="text-ink">{k.arudhaLagna}</span></div>
-            </div>
+              </div>
+            </section>
           </div>
 
           {/* dasha timeline */}
-          <div className="gutter pt-2">
-            <h3 className="mb-2 section-title">Vimshottari Mahadasha</h3>
-            <div className="overflow-hidden rounded-2xl surface">
+          <div className="gutter pt-1.5">
+            <section className="rounded-2xl surface p-2.5">
+              <h3 className="section-title mb-1.5">Vimshottari Mahadasha</h3>
+              <div className="overflow-hidden rounded-[6px]" style={{ background: "var(--surface-2)" }}>
               {k.mahadashas.slice(0, 9).map((m, i) => {
                 const now = new Date().toISOString().slice(0, 10);
                 const active = m.from <= now && now < m.to;
@@ -144,7 +157,8 @@ export function KundliScreen() {
                   </div>
                 );
               })}
-            </div>
+              </div>
+            </section>
           </div>
 
           <div className="gutter pt-5 text-center text-[9px] text-muted">

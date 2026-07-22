@@ -96,7 +96,7 @@ export function JyotishiScreen() {
     <div className="flex h-full flex-col">
       <ScreenHeader
         title={mode === "jyotishi" ? "AI Jyotishi" : `Talk to ${deity.name}`}
-        sub={streaming ? "typing…" : "Grounded in your kundli"}
+        sub={streaming ? "typing…" : undefined}
         onBack={back}
       />
 

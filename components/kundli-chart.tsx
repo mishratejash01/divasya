@@ -11,20 +11,24 @@ export interface Placement {
   combust?: boolean;
 }
 
-// House centroid positions for a 320-box (square inset 10..310, centre 160).
+// True centroids of the twelve regions a North-Indian chart makes, for a
+// 320 box inset to 10..310 with its centre at 160. The corner triangles are
+// the average of their three vertices, not an eyeballed offset — text drifting
+// out of its house is the first thing that makes a chart look drawn rather
+// than cast.
 const HOUSE_POS: [number, number][] = [
-  [160, 84],   // 1  top diamond
-  [86, 42],    // 2  top-left triangle
-  [42, 86],    // 3  left-upper triangle
-  [86, 160],   // 4  left diamond
-  [42, 234],   // 5  left-lower triangle
-  [86, 278],   // 6  bottom-left triangle
-  [160, 236],  // 7  bottom diamond
-  [234, 278],  // 8  bottom-right triangle
-  [278, 234],  // 9  right-lower triangle
-  [234, 160],  // 10 right diamond
-  [278, 86],   // 11 right-upper triangle
-  [234, 42],   // 12 top-right triangle
+  [160, 85],   // 1  top diamond          (lagna)
+  [85, 35],    // 2  top-left triangle
+  [35, 85],    // 3  left-upper triangle
+  [85, 160],   // 4  left diamond
+  [35, 235],   // 5  left-lower triangle
+  [85, 285],   // 6  bottom-left triangle
+  [160, 235],  // 7  bottom diamond
+  [235, 285],  // 8  bottom-right triangle
+  [285, 235],  // 9  right-lower triangle
+  [235, 160],  // 10 right diamond
+  [285, 85],   // 11 right-upper triangle
+  [235, 35],   // 12 top-right triangle
 ];
 
 export function KundliChart({
@@ -37,54 +41,54 @@ export function KundliChart({
   return (
     <div className="flex flex-col items-center">
       {title && <div className="mb-1.5 eyebrow text-gold">{title}</div>}
+      {/* A cast chart is a hard square ruled in ink: no rounded corners, no
+          gradient field, no gold. Those three were what made this read as a
+          decorative graphic rather than a kundli. */}
       <svg viewBox={`0 0 ${S} ${S}`} width={size} height={size} className="select-none">
-        <defs>
-          <linearGradient id="kfield" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--surface)" />
-            <stop offset="100%" stopColor="var(--surface-2)" />
-          </linearGradient>
-        </defs>
-        {/* field */}
-        <rect x={inset} y={inset} width={span} height={span} rx="10"
-          fill="url(#kfield)" stroke="var(--line-gold)" strokeWidth="1.5" />
-        {/* diagonals + inner diamond */}
-        <g stroke="var(--line-gold)" strokeWidth="1" fill="none" opacity="0.85">
+        <rect x={inset} y={inset} width={span} height={span}
+          fill="#FFFFFF" stroke="var(--ink)" strokeWidth="1.6" />
+        <g stroke="var(--ink)" strokeWidth="1" fill="none">
           <line x1={inset} y1={inset} x2={S - inset} y2={S - inset} />
           <line x1={S - inset} y1={inset} x2={inset} y2={S - inset} />
           <polygon points={`${mid},${inset} ${S - inset},${mid} ${mid},${S - inset} ${inset},${mid}`} />
         </g>
 
-        {/* houses */}
         {HOUSE_POS.map(([cx, cy], i) => {
           const house = i + 1;
           const signIndex = (lagnaIndex + house - 1) % 12;
           const here = placements.filter((p) => p.sign === signIndex);
-          const isLagna = house === 1;
+          const rowH = 14;
+          // Planets sit centred in the house; the rashi number is tucked above
+          // the stack, which is where it is written on a paper chart.
+          const startY = cy - ((here.length - 1) * rowH) / 2 + 4;
           return (
             <g key={house}>
-              {/* sign number (small, toward centre) */}
-              <text x={cx} y={cy - (here.length > 2 ? 22 : 16)} textAnchor="middle"
-                fontSize="9.5" fill="var(--muted-2)" fontFamily="var(--font-body), serif">
+              <text
+                x={cx}
+                y={startY - rowH * 0.5 - 6}
+                textAnchor="middle"
+                fontSize="10"
+                fill="var(--muted)"
+                fontFamily="var(--font-body), sans-serif"
+              >
                 {signIndex + 1}
+                {house === 1 ? " · La" : ""}
               </text>
-              {/* lagna marker */}
-              {isLagna && (
-                <text x={cx} y={cy - 30} textAnchor="middle" fontSize="8" fill="var(--bhagwa)"
-                  fontFamily="var(--font-body), serif" letterSpacing="1">La</text>
-              )}
-              {/* planets — stacked */}
-              {here.map((p, j) => {
-                const rowH = 13;
-                const startY = cy - ((here.length - 1) * rowH) / 2 + 3;
-                return (
-                  <text key={p.abbr} x={cx} y={startY + j * rowH} textAnchor="middle"
-                    fontSize="12" fontFamily="var(--font-body), serif"
-                    fill={p.combust ? "var(--muted)" : "var(--amber-deep)"}
-                    fontWeight={500}>
-                    {p.abbr}{p.retro ? <tspan fontSize="8" dy="-3" fill="var(--maroon)"> ℞</tspan> : null}
-                  </text>
-                );
-              })}
+              {here.map((p, j) => (
+                <text
+                  key={p.abbr}
+                  x={cx}
+                  y={startY + j * rowH}
+                  textAnchor="middle"
+                  fontSize="12.5"
+                  fontFamily="var(--font-body), sans-serif"
+                  fontWeight={500}
+                  fill={p.combust ? "var(--muted)" : "var(--ink)"}
+                >
+                  {p.abbr}
+                  {p.retro ? <tspan fontSize="9" dy="-3" fill="var(--avoid)"> ℞</tspan> : null}
+                </text>
+              ))}
             </g>
           );
         })}

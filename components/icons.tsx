@@ -340,6 +340,45 @@ export function IconJournal(p: IconProps) {
   );
 }
 
+/**
+ * Chromosome pair. Two crossed bodies for XX, one crossed and one shorter
+ * single-armed for XY — the actual shapes, not a gender symbol, since the
+ * naamkaran filter is about which set of names the child takes.
+ */
+function ChromosomePair({ y, ...p }: IconProps & { y?: boolean }) {
+  // One chromosome: two arms pinched at a centromere, so it reads as an X
+  // rather than a cross. Drawn as two mirrored curves through a waist.
+  const X = (cx: number) =>
+    `M${cx - 3.2} 4.6C${cx - 1.4} 7.6 ${cx - 1.2} 10 ${cx} 11.8` +
+    `C${cx + 1.2} 13.6 ${cx + 1.4} 16 ${cx + 3.2} 19.4` +
+    `M${cx + 3.2} 4.6C${cx + 1.4} 7.6 ${cx + 1.2} 10 ${cx} 11.8` +
+    `C${cx - 1.2} 13.6 ${cx - 1.4} 16 ${cx - 3.2} 19.4`;
+  return (
+    <Svg {...p}>
+      <path d={X(7.4)} />
+      {y ? (
+        // Y is the short one: two arms above the waist, a single stem below
+        <>
+          <path d="M13.4 4.6 16.6 11.4M19.8 4.6 16.6 11.4" />
+          <path d="M16.6 11.4v8" />
+        </>
+      ) : (
+        <path d={X(16.6)} />
+      )}
+    </Svg>
+  );
+}
+
+/** XY — boy. */
+export function IconChromosomeXY(p: IconProps) {
+  return <ChromosomePair {...p} y />;
+}
+
+/** XX — girl. */
+export function IconChromosomeXX(p: IconProps) {
+  return <ChromosomePair {...p} />;
+}
+
 /** Swaddled infant — naamkaran. */
 export function IconBaby(p: IconProps) {
   const wrap = "M6.8 18.1a5.5 5.5 0 0 1 10.4 0c-1.5 1.05-3.35 1.55-5.2 1.55s-3.7-.5-5.2-1.55Z";
