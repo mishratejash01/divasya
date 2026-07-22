@@ -194,16 +194,18 @@ export function HomeScreen() {
           tabs beneath that jump to the sections below. The tabs are content,
           not destinations, so they don't repeat what the bottom bar does. */}
       <div className="sticky top-0 z-30 lg:hidden" style={{ background: "var(--bar-yellow)" }}>
+        {/* The wordmark row sits taller than the tab strip beneath it, so the
+            two rows read as a header and its index rather than as equals. */}
         <div
           className="flex items-center gap-3 gutter"
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 8px)", paddingBottom: 8 }}
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)", paddingBottom: 11 }}
         >
           {/* The bar's marks carry more weight than the app default — at this
               size the global "light" stroke went spindly on the yellow. */}
           <button onClick={() => go("menu")} aria-label="Menu" className="shrink-0">
             <List size={23} weight="regular" className="text-ink" />
           </button>
-          <span className="font-display text-[17px] tracking-[-0.01em] text-ink">Divasya</span>
+          <span className="font-display text-[19px] tracking-[-0.01em] text-ink">Divasya</span>
           <div className="ml-auto flex shrink-0 items-center gap-3.5">
             <button
               ref={bellRef}
@@ -233,7 +235,7 @@ export function HomeScreen() {
                 key={t.id}
                 onClick={() => scrollToSection(t.id)}
                 className={cx(
-                  "shrink-0 whitespace-nowrap pb-2 pt-1 text-[12.5px] transition-colors",
+                  "shrink-0 whitespace-nowrap pb-1.5 pt-0 text-[11.5px] transition-colors",
                   on ? "font-medium text-ink" : "text-[rgba(23,22,19,0.55)]"
                 )}
                 style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
