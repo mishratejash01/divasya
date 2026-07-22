@@ -390,8 +390,11 @@ export function HomeScreen() {
           <section className="rounded-2xl surface p-2.5">
             <div className="mb-2.5 flex items-end justify-between">
               <h3 className="section-title">Spiritual Library</h3>
-              <button onClick={() => go("library")} className="text-[11px] text-ink">
-                Explore all
+              <button
+                onClick={() => go("library")}
+                className="flex items-center gap-1 text-[11px] text-ink"
+              >
+                Explore all <CaretRight size={12} className="shrink-0" />
               </button>
             </div>
             <div className="-mx-1 flex gap-2.5 overflow-x-auto px-1 no-scrollbar">
