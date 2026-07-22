@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PanelLeftOpen } from "lucide-react";
+import { IconContext, SidebarSimple } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
@@ -65,8 +65,10 @@ function RoutedApp() {
     <div className="flex h-full w-full">
       <SideNav open={navOpen} onToggle={toggleNav} />
       <main className="relative h-full min-w-0 flex-1 overflow-hidden">
-        {/* content fills the viewport beside the sidebar */}
-        <div className="relative mx-auto h-full w-full overflow-hidden lg:px-6 xl:px-12">
+        {/* Content column. Screens own their own gutter (--gutter), so this
+            wrapper adds none — it only caps the line length on very wide
+            displays. Below 1200px it simply fills the space beside the nav. */}
+        <div className="relative mx-auto h-full w-full max-w-[1200px] overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={screen.name + JSON.stringify(screen.params || {})}
@@ -74,7 +76,7 @@ function RoutedApp() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 lg:px-6 xl:px-12"
+              className="absolute inset-0"
             >
               <Screen />
             </motion.div>
@@ -88,7 +90,7 @@ function RoutedApp() {
             aria-label="Show sidebar"
             className="absolute left-4 top-4 z-40 hidden h-9 w-9 place-items-center rounded-full surface lg:grid"
           >
-            <PanelLeftOpen size={17} className="text-[var(--amber)]" />
+            <SidebarSimple size={17} className="text-[var(--amber)]" />
           </button>
         )}
       </main>
@@ -140,10 +142,15 @@ function Inner() {
 
 export function AppShell() {
   return (
-    <AppProvider>
-      <div className="relative h-[100dvh] w-full overflow-hidden">
-        <Inner />
-      </div>
-    </AppProvider>
+    // One weight for every Phosphor glyph in the app. The hand-drawn set in
+    // components/icons.tsx is stroked at 1.4, and Phosphor's "light" is the
+    // closest match — set once here so the two families read as one system.
+    <IconContext.Provider value={{ weight: "light" }}>
+      <AppProvider>
+        <div className="relative h-[100dvh] w-full overflow-hidden">
+          <Inner />
+        </div>
+      </AppProvider>
+    </IconContext.Provider>
   );
 }

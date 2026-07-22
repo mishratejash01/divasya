@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { CaretLeft } from "@phosphor-icons/react";
 import { IconDiya, IconBell, IconFlower, IconShankh, IconAarti } from "../icons";
 import { useApp } from "../app-context";
 import { cx, DeityGlyph } from "../ui";
@@ -58,9 +58,9 @@ export function MandirScreen() {
   ];
 
   return (
-    <div className="flex h-full flex-col pt-12">
-      <div className="flex items-center gap-3 px-5 py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="flex h-full flex-col screen-top">
+      <div className="flex items-center gap-3 gutter py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">My Mandir</div>
           <div className="text-[11px] text-muted">{deity.name} · {deity.aarti}</div>
@@ -68,7 +68,7 @@ export function MandirScreen() {
       </div>
 
       {/* deity selector */}
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-5 pb-1 no-scrollbar">
+      <div className="-mx-1 flex gap-2 overflow-x-auto gutter pb-1 no-scrollbar">
         {deities.map((d) => (
           <button
             key={d.id}
@@ -83,7 +83,7 @@ export function MandirScreen() {
       </div>
 
       {/* the shrine */}
-      <div className="relative mx-5 mt-3 flex-1 overflow-hidden rounded-3xl"
+      <div className="relative gutter-m mt-3 flex-1 overflow-hidden rounded-3xl"
         style={{ background: "linear-gradient(180deg, #FFF8E9, #F6ECD0)", border: "1px solid var(--line-gold)" }}>
 
         {/* toran / garland — antique bead string */}

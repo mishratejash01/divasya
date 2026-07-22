@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
-import {
-  ChevronLeft, Download, Share2, Sun, Moon, Check, Clock, Flame,
-  Sunrise, Sunset, Heart, Shield, Landmark, Flower2, Swords, Coins, Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { Bank, CaretLeft, Check, Clock, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, ShareNetwork, Shield, Sparkle, Sun, Sword } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { cx, DeityGlyph, Pill, Wordmark } from "../ui";
 import { deityById } from "@/lib/demo";
@@ -20,8 +17,8 @@ import { useFullPanchang, usePanchang, type ChoghadiyaSlot } from "@/lib/use-pan
 function Header({ title, sub }: { title: string; sub?: string }) {
   const { back } = useApp();
   return (
-    <div className="flex items-center gap-3 px-5 py-3">
-      <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="flex items-center gap-3 gutter py-3">
+      <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
       <div>
         <div className="font-display text-lg leading-tight text-ink">{title}</div>
         {sub && <div className="text-[11px] text-muted">{sub}</div>}
@@ -36,7 +33,7 @@ function ChoghadiyaRow({ slot, first }: { slot: ChoghadiyaSlot; first: boolean }
     <div className="flex items-center gap-3 px-4 py-3" style={{ borderTop: first ? undefined : "1px solid var(--line)" }}>
       <span className={cx("h-2 w-2 rounded-full", slot.good ? "bg-[var(--good)]" : "bg-[var(--avoid)]")} />
       <span className={cx("w-16 text-[14px]", slot.night ? "text-ink-dim" : "text-ink")}>{slot.name}</span>
-      <span className="flex-1 text-[12px] text-muted">{slot.from} – {slot.to}</span>
+      <span className="flex-1 text-[12px] tnum text-muted">{slot.from} – {slot.to}</span>
       {slot.active && <span className="rounded-full px-2 py-0.5 text-[10px] btn-saffron">NOW</span>}
       <span className={cx("text-[11px]", slot.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>{slot.good ? "Shubh" : "Avoid"}</span>
     </div>
@@ -59,48 +56,51 @@ export function PanchangScreen() {
     ["Masa", `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`],
   ];
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <Header title="Panchang" sub={`${p.vaara.name_en} · ${p.home.dateLabel}`} />
-      <div className="flex items-center justify-between gap-3 px-5 pb-3">
-        <div className="text-[11px] text-muted">Vikram {p.samvat.vikram} · {p.samvat.samvatsara}</div>
+      <div className="flex items-center justify-between gap-3 gutter pb-3">
+        <div className="text-[11px] tnum text-muted">
+          Vikram {p.samvat.vikram}
+          {p.samvat.samvatsara ? ` · ${p.samvat.samvatsara}` : ""}
+        </div>
         {p.home.vrat && <Pill tone="gold">{p.home.vrat}</Pill>}
       </div>
 
-      <div className="mx-5 flex gap-3 rounded-2xl surface p-4">
+      <div className="gutter-m flex gap-3 rounded-2xl surface p-4">
         <div className="flex flex-1 items-center gap-2.5 border-r pr-3" style={{ borderColor: "var(--line)" }}>
-          <Sunrise size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
+          <IconSunrise size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-muted">Sunrise</div>
+            <div className="eyebrow text-muted">Sunrise</div>
             <div className="text-[14px] text-ink">{p.sun.rise}</div>
           </div>
         </div>
         <div className="flex flex-1 items-center gap-2.5">
-          <Sunset size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
+          <IconSunset size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-muted">Sunset</div>
+            <div className="eyebrow text-muted">Sunset</div>
             <div className="text-[14px] text-ink">{p.sun.set}</div>
           </div>
         </div>
       </div>
 
-      <div className="mx-5 mt-4 grid grid-cols-2 gap-2.5">
+      <div className="gutter-m mt-4 grid grid-cols-2 gap-2.5">
         {grid.map(([k, v]) => (
           <div key={k} className="rounded-2xl surface p-3.5">
-            <div className="text-[11px] uppercase tracking-wider text-muted">{k}</div>
+            <div className="eyebrow text-muted">{k}</div>
             <div className="mt-0.5 text-[15px] text-ink">{v}</div>
           </div>
         ))}
       </div>
 
-      <div className="px-5 pt-6">
-        <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Choghadiya · Today</h3>
+      <div className="gutter pt-6">
+        <h3 className="mb-2 eyebrow text-muted">Choghadiya · Today</h3>
         <div className="overflow-hidden rounded-2xl surface">
           {daySlots.map((c, i) => (
             <ChoghadiyaRow key={i} slot={c} first={i === 0} />
           ))}
         </div>
 
-        <h4 className="mb-2 mt-4 text-[11px] uppercase tracking-[0.18em] text-muted">Night</h4>
+        <h4 className="mb-2 mt-4 eyebrow text-muted">Night</h4>
         <div className="overflow-hidden rounded-2xl surface-2">
           {nightSlots.map((c, i) => (
             <ChoghadiyaRow key={i} slot={c} first={i === 0} />
@@ -110,12 +110,12 @@ export function PanchangScreen() {
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           <div className="rounded-2xl surface p-4">
             <div className="text-[13px] text-ink">Rahu Kaal</div>
-            <div className="mt-0.5 text-[12px] text-[var(--avoid)]">{rahu ? `${rahu.from} – ${rahu.to}` : "–"}</div>
+            <div className="mt-0.5 text-[12px] tnum text-[var(--avoid)]">{rahu ? `${rahu.from} – ${rahu.to}` : "–"}</div>
             <div className="mt-1 text-[11px] text-muted">Avoid new beginnings</div>
           </div>
           <div className="rounded-2xl surface p-4">
             <div className="text-[13px] text-ink">Yamaganda</div>
-            <div className="mt-0.5 text-[12px] text-[var(--avoid)]">{yama ? `${yama.from} – ${yama.to}` : "–"}</div>
+            <div className="mt-0.5 text-[12px] tnum text-[var(--avoid)]">{yama ? `${yama.from} – ${yama.to}` : "–"}</div>
             <div className="mt-1 text-[11px] text-muted">Best kept quiet</div>
           </div>
         </div>
@@ -127,11 +127,11 @@ export function PanchangScreen() {
 /* ---------------- Festivals ---------------- */
 const SAMAGRI = ["Fresh fruits", "Flowers", "Milk", "Incense sticks", "Curd", "Diya (lamp)", "Honey", "Sweets", "Rice"];
 
-const FESTIVAL_ICONS: Record<string, LucideIcon> = {
-  sun: Sun, flame: Flame, heart: Heart, shield: Shield, landmark: Landmark,
-  flower: Flower2, sword: Swords, moon: Moon, coins: Coins, sparkles: Sparkles,
+const FESTIVAL_ICONS: Record<string, Icon> = {
+  sun: Sun, flame: Fire, heart: Heart, shield: Shield, landmark: Bank,
+  flower: FlowerLotus, sword: Sword, moon: Moon, coins: Coins, sparkles: Sparkle,
 };
-const festivalIcon = (icon?: string) => (icon && FESTIVAL_ICONS[icon]) || Flower2;
+const festivalIcon = (icon?: string) => (icon && FESTIVAL_ICONS[icon]) || FlowerLotus;
 const fmtFestivalDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
@@ -147,15 +147,15 @@ export function FestivalsScreen() {
   const samagri = hero?.samagri?.length ? hero.samagri : SAMAGRI;
   const HeroIcon = festivalIcon(hero?.icon);
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <Header title="Festivals & Pooja" />
       {hero && (
-        <div className="mx-5 overflow-hidden rounded-2xl surface">
+        <div className="gutter-m overflow-hidden rounded-2xl surface">
           <div className="grid h-36 w-full place-items-center" style={{ background: "linear-gradient(160deg, #FFE9D9, #F6ECD0)" }}>
-            <HeroIcon size={54} className="text-[var(--amber)]" strokeWidth={1.4} />
+            <HeroIcon size={54} className="text-[var(--amber)]" weight="thin" />
           </div>
           <div className="p-4">
-            <div className="text-[11px] uppercase tracking-wider text-muted">{fmtFestivalDate(hero.date)}</div>
+            <div className="eyebrow text-muted">{fmtFestivalDate(hero.date)}</div>
             <div className="font-display text-xl text-ink">{hero.name}</div>
             {hero.deva && <div className="mt-0.5 font-deva text-[15px] text-gold">{hero.deva}</div>}
             {hero.about && <p className="mt-1.5 text-[13px] leading-relaxed text-muted">{hero.about}</p>}
@@ -164,8 +164,8 @@ export function FestivalsScreen() {
         </div>
       )}
 
-      <div className="px-5 pt-6">
-        <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Required Samagri · tick to shop</h3>
+      <div className="gutter pt-6">
+        <h3 className="mb-2 eyebrow text-muted">Required Samagri · tick to shop</h3>
         <div className="grid grid-cols-2 gap-2">
           {samagri.map((s) => (
             <button key={s} onClick={() => setDone((d) => ({ ...d, [s]: !d[s] }))}
@@ -180,10 +180,10 @@ export function FestivalsScreen() {
         </div>
       </div>
 
-      <div className="px-5 pt-6">
+      <div className="gutter pt-6">
         {hero && hero.vidhi?.length > 0 && (
           <>
-            <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Pooja Vidhi</h3>
+            <h3 className="mb-2 eyebrow text-muted">Pooja Vidhi</h3>
             <div className="space-y-2">
               {hero.vidhi.map((v, i) => (
                 <div key={i} className="flex gap-3 rounded-2xl surface p-3">
@@ -198,15 +198,15 @@ export function FestivalsScreen() {
       </div>
 
       {rest.length > 0 && (
-        <div className="px-5 pt-7">
-          <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Upcoming</h3>
+        <div className="gutter pt-7">
+          <h3 className="mb-2 eyebrow text-muted">Upcoming</h3>
           <div className="overflow-hidden rounded-2xl surface">
             {rest.map((f, i) => {
               const Icon = festivalIcon(f.icon);
               return (
                 <div key={f.id} className="flex items-center gap-3 px-4 py-3.5" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ background: "rgba(200,129,49,0.10)" }}>
-                    <Icon size={17} className="text-[var(--amber)]" strokeWidth={1.7} />
+                    <Icon size={17} className="text-[var(--amber)]" />
                   </span>
                   <span className="flex-1 text-[14px] text-ink">{f.name}</span>
                   <span className="text-[12px] text-muted">{fmtFestivalDate(f.date)}</span>
@@ -227,24 +227,24 @@ export function LibraryScreen() {
   const article = open ? items.find((x) => x.id === open) : undefined;
   if (article) {
     return (
-      <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
+      <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
         <Header title="Spiritual Library" />
         <div className="h-40 w-full" style={{ background: `linear-gradient(160deg, ${article.tint}33, ${article.tint}11)` }} />
-        <div className="px-5 pt-4">
+        <div className="gutter pt-4">
           <div className="font-display text-2xl text-ink">{article.title}</div>
           <div className="mt-1 flex items-center gap-1.5 text-[12px] text-muted"><Clock size={12} /> {article.read} read</div>
           <p className="mt-4 whitespace-pre-wrap text-[14px] leading-relaxed text-ink-dim">{article.content}</p>
           <button onClick={() => setOpen(null)} className="mt-5 flex items-center gap-1 text-[13px] text-[var(--amber)]">
-            <ChevronLeft size={14} /> Back to library
+            <CaretLeft size={14} /> Back to library
           </button>
         </div>
       </div>
     );
   }
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <Header title="Spiritual Library" />
-      <div className="grid grid-cols-2 gap-3 px-5">
+      <div className="grid grid-cols-2 gap-3 gutter">
         {items.map((l) => (
           <button key={l.id} onClick={() => setOpen(l.id)} className="overflow-hidden rounded-2xl surface text-left">
             <div className="h-28 w-full" style={{ background: `linear-gradient(160deg, ${l.tint}33, ${l.tint}11)` }} />
@@ -289,9 +289,9 @@ export function SandeshScreen() {
   }
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       <Header title="Aaj ka Sandesh" />
-      <div className="px-5">
+      <div className="gutter">
         <div ref={card} className="card-temple overflow-hidden rounded-3xl p-6">
           <div className="flex items-center justify-between">
             <Wordmark size={15} />
@@ -312,10 +312,10 @@ export function SandeshScreen() {
 
         <div className="mt-4 flex gap-3">
           <button onClick={whatsapp} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] btn-saffron">
-            <Share2 size={16} /> Share to WhatsApp
+            <ShareNetwork size={16} /> Share to WhatsApp
           </button>
           <button onClick={download} disabled={busy} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost">
-            <Download size={18} />
+            <DownloadSimple size={18} />
           </button>
         </div>
         <p className="mt-2 text-center text-[11px] text-muted">Auto-generated daily · personalised with your rashi & deity</p>

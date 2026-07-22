@@ -377,8 +377,10 @@ export const SHLOKA = {
   meaning: "You have the right to action alone, never to its fruits. — Bhagavad Gita 2.47",
 };
 
+// Warm tints from the brand palette. These were dark hexes left over from an
+// earlier theme, which rendered as grey slabs on the cream cards.
 export const LIBRARY = [
-  { id: "l1", title: "What is Meditation?", sub: "Unlocking inner peace", read: "2 min", grad: ["#26332f", "#141a18"] },
-  { id: "l2", title: "The 7 Chakras", sub: "Energy centres of the body", read: "4 min", grad: ["#2f2630", "#181318"] },
-  { id: "l3", title: "Power of Hanuman Chalisa", sub: "Daily protection", read: "3 min", grad: ["#33271c", "#1a1410"] },
+  { id: "l1", title: "What is Meditation?", sub: "Unlocking inner peace", read: "2 min", grad: ["#CEB976", "#9C8544"] },
+  { id: "l2", title: "The 7 Chakras", sub: "Energy centres of the body", read: "4 min", grad: ["#C88131", "#A5661F"] },
+  { id: "l3", title: "Power of Hanuman Chalisa", sub: "Daily protection", read: "3 min", grad: ["#B4564B", "#7A4A2C"] },
 ];

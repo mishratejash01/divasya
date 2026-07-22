@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { CaretLeft } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
 import { KundliChart, Placement } from "../kundli-chart";
@@ -41,31 +41,31 @@ export function KundliScreen() {
   const d9: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.navamsaSign, retro: p.retro, combust: p.combust })) ?? [];
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
-      <div className="flex items-center gap-3 px-5 py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+      <div className="flex items-center gap-3 gutter py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Janma Kundli</div>
           <div className="text-[11px] text-muted">{profile?.name ? `${profile.name}'s birth chart` : "Your birth chart"}</div>
         </div>
       </div>
 
-      {err && <div className="mx-5 mt-6 rounded-2xl surface p-5 text-center text-[13px] text-muted">{err}</div>}
+      {err && <div className="gutter-m mt-6 rounded-2xl surface p-4 text-center text-[13px] text-muted">{err}</div>}
       {!k && !err && <div className="mt-24 text-center text-muted">Casting your chart…</div>}
 
       {k && (
         <>
           {/* summary strip */}
-          <div className="mx-5 mt-1 grid grid-cols-3 gap-2.5">
+          <div className="gutter-m mt-1 grid grid-cols-3 gap-2.5">
             {[["Lagna", k.lagna.sign], ["Rashi", k.moon.sign], ["Nakshatra", k.moon.nakshatra]].map(([a, b]) => (
               <div key={a} className="rounded-2xl surface p-3">
-                <div className="text-[10px] uppercase tracking-wider text-muted">{a}</div>
+                <div className="eyebrow text-muted">{a}</div>
                 <div className="mt-0.5 text-[14px] text-ink">{b}</div>
               </div>
             ))}
           </div>
           {(k.approximate) && (
-            <div className="mx-5 mt-2 text-center text-[11px] text-muted">Birth time unknown : houses & lagna are approximate (noon assumed).</div>
+            <div className="gutter-m mt-2 text-center text-[11px] text-muted">Birth time unknown : houses & lagna are approximate (noon assumed).</div>
           )}
 
           {/* the two charts */}
@@ -79,14 +79,14 @@ export function KundliScreen() {
           </div>
 
           {/* current dasha */}
-          <div className="mx-5 mt-5 rounded-2xl card-temple p-4">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-gold">Current Mahadasha</div>
+          <div className="gutter-m mt-5 rounded-2xl card-temple p-4">
+            <div className="eyebrow text-gold">Current Mahadasha</div>
             <div className="mt-1 font-display text-[17px] text-ink">{k.currentDasha}</div>
           </div>
 
           {/* planet table */}
-          <div className="px-5 pt-6">
-            <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Grahas</h3>
+          <div className="gutter pt-6">
+            <h3 className="mb-2 eyebrow text-muted">Grahas</h3>
             <div className="overflow-hidden rounded-2xl surface">
               {GRAHA_ORDER.map((id, i) => {
                 const g = k.grahas[id];
@@ -109,8 +109,8 @@ export function KundliScreen() {
 
           {/* yogas */}
           {k.yogas.length > 0 && (
-            <div className="px-5 pt-6">
-              <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Yogas in your chart</h3>
+            <div className="gutter pt-6">
+              <h3 className="mb-2 eyebrow text-muted">Yogas in your chart</h3>
               <div className="flex flex-wrap gap-2">
                 {k.yogas.map((y) => (
                   <span key={y} className="rounded-full px-3 py-1.5 text-[12px] ring-gold text-ink" style={{ background: "rgba(206,185,118,0.14)" }}>{y}</span>
@@ -120,8 +120,8 @@ export function KundliScreen() {
           )}
 
           {/* chara karakas + arudha */}
-          <div className="px-5 pt-6">
-            <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Jaimini Karakas</h3>
+          <div className="gutter pt-6">
+            <h3 className="mb-2 eyebrow text-muted">Jaimini Karakas</h3>
             <div className="rounded-2xl surface p-4 text-[12.5px] text-muted">
               <div>Atmakaraka (soul): <span className="text-ink">{cap(k.charaKarakas.AK || "")}</span></div>
               <div className="mt-1">Amatyakaraka (career): <span className="text-ink">{cap(k.charaKarakas.AmK || "")}</span></div>
@@ -131,8 +131,8 @@ export function KundliScreen() {
           </div>
 
           {/* dasha timeline */}
-          <div className="px-5 pt-6">
-            <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Vimshottari Mahadasha</h3>
+          <div className="gutter pt-6">
+            <h3 className="mb-2 eyebrow text-muted">Vimshottari Mahadasha</h3>
             <div className="overflow-hidden rounded-2xl surface">
               {k.mahadashas.slice(0, 9).map((m, i) => {
                 const now = new Date().toISOString().slice(0, 10);
@@ -140,7 +140,7 @@ export function KundliScreen() {
                 return (
                   <div key={i} className={cx("flex items-center gap-3 px-4 py-2.5 text-[12.5px]")}
                     style={{ borderTop: i === 0 ? undefined : "1px solid var(--line)", background: active ? "rgba(200,129,49,0.08)" : undefined }}>
-                    <span className={cx("w-20", active ? "text-ink font-semibold" : "text-ink")}>{cap(m.lord)}</span>
+                    <span className={cx("w-20", active ? "text-ink font-medium" : "text-ink")}>{cap(m.lord)}</span>
                     <span className="flex-1 text-muted">{m.from.slice(0, 4)} – {m.to.slice(0, 4)}</span>
                     {active && <span className="rounded-full px-2 py-0.5 text-[10px] btn-saffron">NOW</span>}
                   </div>
@@ -149,7 +149,7 @@ export function KundliScreen() {
             </div>
           </div>
 
-          <div className="px-5 pt-5 text-center text-[10px] text-muted">
+          <div className="gutter pt-5 text-center text-[10px] text-muted">
             Computed with Swiss Ephemeris : Lahiri ayanamsa {k.ayanamsa}° : {k.precision}
           </div>
         </>

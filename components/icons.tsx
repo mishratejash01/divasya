@@ -298,3 +298,62 @@ export function IconSandesh(p: IconProps) {
     </Svg>
   );
 }
+
+/**
+ * Suryodaya — a half-sun above the horizon line, rays fanning up, arrow rising.
+ * Sunrise and sunset sit side by side in the panchang strip at 15px, so the
+ * two must differ in silhouette, not just in the direction of a small arrow.
+ */
+export function IconSunrise(p: IconProps) {
+  return (
+    <Svg {...p}>
+      {/* horizon */}
+      <path d="M2.6 17.4h18.8" />
+      {/* half disc sitting on the line */}
+      <path d="M7.6 17.4a4.4 4.4 0 0 1 8.8 0" />
+      {/* rays, fanning upward */}
+      <path d="M12 6.4V4.6M6.4 9.1 5.2 7.9M17.6 9.1l1.2-1.2M3.4 13.9H5M19 13.9h1.6" strokeWidth={1.1} />
+      {/* rising arrow */}
+      <path d="m10.2 20.4 1.8-1.9 1.8 1.9" />
+    </Svg>
+  );
+}
+
+/**
+ * Suryast — the disc dropping below the horizon: a fuller circle cut by the
+ * line, rays shortened, arrow falling. Reads distinctly from IconSunrise even
+ * at 15px because the disc breaks the line instead of resting on it.
+ */
+export function IconSunset(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M2.6 17.4h18.8" />
+      {/* disc dipping through the horizon */}
+      <path d="M7.6 17.4a4.4 4.4 0 0 1 8.8 0" />
+      <path d="M8.9 17.4a3.1 3.1 0 0 0 6.2 0" strokeWidth={0.9} opacity={0.5} />
+      <path d="M12 6.4V4.6M6.4 9.1 5.2 7.9M17.6 9.1l1.2-1.2M3.4 13.9H5M19 13.9h1.6" strokeWidth={1.1} />
+      {/* falling arrow */}
+      <path d="m10.2 18.6 1.8 1.9 1.8-1.9" />
+    </Svg>
+  );
+}
+
+/**
+ * Section ornament — a hairline broken by a small diamond and two dots, the
+ * kind of rule that separates verses in a printed granth. Used instead of a
+ * plain border to break long screens into passages.
+ */
+export function Ornament({ className }: { className?: string }) {
+  return (
+    <div className={`flex items-center gap-2 ${className ?? ""}`} aria-hidden="true">
+      <span className="h-px flex-1" style={{ background: "currentColor", opacity: 0.3 }} />
+      {/* fixed-width centre mark — never scales with the rule */}
+      <svg width="30" height="7" viewBox="0 0 30 7" fill="none" className="shrink-0">
+        <circle cx="2" cy="3.5" r="0.9" fill="currentColor" opacity="0.55" />
+        <path d="M15 0.6 17.9 3.5 15 6.4 12.1 3.5 15 0.6Z" stroke="currentColor" strokeWidth="0.8" />
+        <circle cx="28" cy="3.5" r="0.9" fill="currentColor" opacity="0.55" />
+      </svg>
+      <span className="h-px flex-1" style={{ background: "currentColor", opacity: 0.3 }} />
+    </div>
+  );
+}

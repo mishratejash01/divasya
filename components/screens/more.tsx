@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Settings, HelpCircle, Share2, LogOut } from "lucide-react";
+import { CaretLeft, CaretRight, GearSix, Question, ShareNetwork, SignOut } from "@phosphor-icons/react";
 import {
   IconEye, IconDiya, IconChat, IconWheel, IconLotus, IconDarshan, IconMandir,
   IconMala, IconStar, IconCompass, IconBaby, IconJournal, IconSandesh, IconComponent,
@@ -44,10 +44,10 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 ];
 
 const UTILITY: Item[] = [
-  { label: "Settings", icon: Settings },
-  { label: "Help & Support", icon: HelpCircle },
-  { label: "Share App", icon: Share2 },
-  { label: "Logout", icon: LogOut },
+  { label: "GearSix", icon: GearSix },
+  { label: "Help & Support", icon: Question },
+  { label: "Share App", icon: ShareNetwork },
+  { label: "Logout", icon: SignOut },
 ];
 
 export function MoreScreen() {
@@ -55,25 +55,25 @@ export function MoreScreen() {
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-10 pt-12">
-      <div className="flex items-center gap-3 px-5 py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="h-full overflow-y-auto no-scrollbar pb-10 screen-top">
+      <div className="flex items-center gap-3 gutter py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <span className="font-display text-lg text-ink">Menu</span>
       </div>
 
       {/* profile */}
-      <button className="mx-5 flex w-[calc(100%-2.5rem)] items-center gap-3 rounded-2xl card-temple p-4 text-left">
+      <button className="gutter-m flex gutter-w items-center gap-3 rounded-2xl card-temple p-4 text-left">
         <Avatar name={name} size={52} tint="#C88131" />
         <div className="flex-1">
           <div className="font-display text-[17px] text-ink">{name}</div>
           <div className="text-[12px] text-muted">{rashi}</div>
         </div>
-        <ChevronRight size={18} className="text-muted" />
+        <CaretRight size={18} className="text-muted" />
       </button>
 
       {SECTIONS.map((sec) => (
-        <div key={sec.title} className="px-5 pt-6">
-          <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">{sec.title}</h3>
+        <div key={sec.title} className="gutter pt-6">
+          <h3 className="mb-2 eyebrow text-muted">{sec.title}</h3>
           <div className="overflow-hidden rounded-2xl surface">
             {sec.items.map((it, i) => {
               const Icon = it.icon;
@@ -85,10 +85,10 @@ export function MoreScreen() {
                   <Icon size={18} className="text-[var(--amber)]" strokeWidth={1.7} />
                   <span className="flex-1 text-[14px] text-ink">{it.label}</span>
                   {it.live && (
-                    <span className="rounded-full px-2 py-0.5 text-[9.5px] font-semibold tracking-wide"
+                    <span className="rounded-full px-2 py-0.5 text-[9.5px] font-medium tracking-wide"
                       style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}>LIVE</span>
                   )}
-                  <ChevronRight size={16} className="text-muted" />
+                  <CaretRight size={16} className="text-muted" />
                 </button>
               );
             })}
@@ -96,7 +96,7 @@ export function MoreScreen() {
         </div>
       ))}
 
-      <div className="px-5 pt-6">
+      <div className="gutter pt-6">
         <div className="overflow-hidden rounded-2xl surface">
           {UTILITY.map((it, i) => {
             const Icon = it.icon;
@@ -113,7 +113,7 @@ export function MoreScreen() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 px-5 pb-2 pt-7 text-[11px] text-muted tracking-widest">
+      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-7 text-[11px] text-muted tracking-widest">
         <Logomark size={14} className="text-[var(--amber)]" /> Divasya · Spiritual Journey
       </div>
     </div>

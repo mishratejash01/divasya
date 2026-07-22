@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, Baby, Sparkles } from "lucide-react";
+import { Baby, CaretLeft, Sparkle } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
 import { useCatalog, getNakshatraSyllables, getBabyNames } from "@/lib/catalog";
@@ -81,19 +81,19 @@ export function NaamkaranScreen() {
   const list = names.filter((x) => syllables.includes(x.syl) && (gender === "all" || x.g === gender));
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
-      <div className="flex items-center gap-3 px-5 py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
+      <div className="flex items-center gap-3 gutter py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Naamkaran</div>
           <div className="text-[11px] text-muted">Auspicious names by Janma Nakshatra</div>
         </div>
-        <Baby size={20} strokeWidth={1.7} className="ml-auto text-[var(--amber)]" />
+        <Baby size={20} className="ml-auto text-[var(--amber)]" />
       </div>
 
       {/* nakshatra */}
-      <div className="px-5">
-        <h3 className="mb-2 text-[12px] uppercase tracking-[0.18em] text-muted">Birth Nakshatra</h3>
+      <div className="gutter">
+        <h3 className="mb-2 eyebrow text-muted">Birth Nakshatra</h3>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 no-scrollbar">
           {nakshatras.map((n) => (
             <button key={n.name} onClick={() => { setNakName(n.name); haptic(8); }}
@@ -105,8 +105,8 @@ export function NaamkaranScreen() {
       </div>
 
       {/* prescribed syllables */}
-      <div className="mx-5 mt-3 flex items-center gap-3 rounded-2xl card-temple p-4">
-        <Sparkles size={18} strokeWidth={1.7} className="text-[var(--amber)]" />
+      <div className="gutter-m mt-3 flex items-center gap-3 rounded-2xl card-temple p-4">
+        <Sparkle size={18} className="text-[var(--amber)]" />
         <div className="flex-1">
           <div className="text-[12px] text-muted">Prescribed starting sounds</div>
           <div className="font-display text-lg text-gold">{syllables.join(" · ")}</div>
@@ -115,19 +115,19 @@ export function NaamkaranScreen() {
       </div>
 
       {/* gender */}
-      <div className="mx-5 mt-3 grid grid-cols-3 gap-1 rounded-full p-1 surface">
+      <div className="gutter-m mt-3 grid grid-cols-3 gap-1 rounded-full p-1 surface">
         {([["all", "All"], ["m", "Boy"], ["f", "Girl"]] as const).map(([g, l]) => (
           <button key={g} onClick={() => setGender(g)} className={cx("rounded-full py-2 text-[12.5px]", gender === g ? "btn-saffron" : "text-muted")}>{l}</button>
         ))}
       </div>
 
       {/* names */}
-      <div className="mt-4 grid grid-cols-2 gap-2.5 px-5">
+      <div className="mt-4 grid grid-cols-2 gap-2.5 gutter">
         {list.map((x) => (
           <div key={x.n} className="rounded-2xl surface p-3.5">
             <div className="flex items-center justify-between">
               <span className="font-display text-[17px] text-ink">{x.n}</span>
-              <span className="text-[10px] uppercase tracking-wide text-muted">{x.g === "m" ? "Boy" : "Girl"}</span>
+              <span className="eyebrow text-muted">{x.g === "m" ? "Boy" : "Girl"}</span>
             </div>
             <div className="mt-0.5 text-[11.5px] leading-snug text-muted">{x.m}</div>
             <div className="mt-2 flex items-center justify-between text-[10.5px] text-muted">

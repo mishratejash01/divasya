@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, Play, Pause, RotateCcw, Check, Flame } from "lucide-react";
+import { ArrowCounterClockwise, CaretLeft, Check, Fire, Pause, Play } from "@phosphor-icons/react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
@@ -74,18 +74,18 @@ export function MalaScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col pt-12">
-      <div className="flex items-center gap-3 px-5 py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="flex h-full flex-col screen-top">
+      <div className="flex items-center gap-3 gutter py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <span className="font-display text-lg text-ink">Mala Jaap</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Flame size={13} className="text-[var(--amber)]" />
+          <Fire size={13} className="text-[var(--amber)]" />
           <span className="text-[12px] text-ink">{streak}</span>
         </div>
       </div>
 
       {/* mantra selector */}
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-5 no-scrollbar">
+      <div className="-mx-1 flex gap-2 overflow-x-auto gutter no-scrollbar">
         {mantras.slice(0, 6).map((m) => (
           <button
             key={m.id}
@@ -154,7 +154,7 @@ export function MalaScreen() {
               <div className="flex flex-col items-center">
                 <span className="font-display text-6xl text-ink tabular-nums">{count}</span>
                 <span className="text-[13px] text-muted">/ {target}</span>
-                <span className="mt-1 text-[11px] uppercase tracking-widest text-muted">tap to chant</span>
+                <span className="mt-1 eyebrow text-muted">tap to chant</span>
               </div>
             )}
           </div>
@@ -175,7 +175,7 @@ export function MalaScreen() {
       </div>
 
       {/* controls + stats */}
-      <div className="px-5 pb-6">
+      <div className="gutter pb-6">
         <div className="mb-3 flex items-center justify-around rounded-2xl surface py-3 text-center">
           <div><div className="font-display text-lg text-ink">{count}</div><div className="text-[11px] text-muted">This mala</div></div>
           <div className="h-8 w-px" style={{ background: "var(--line)" }} />
@@ -187,7 +187,7 @@ export function MalaScreen() {
           <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] btn-saffron">
             {auto ? <><Pause size={17} /> Pause auto-jaap</> : <><Play size={17} /> Hands-free auto-jaap</>}
           </button>
-          <button onClick={reset} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost"><RotateCcw size={18} /></button>
+          <button onClick={reset} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost"><ArrowCounterClockwise size={18} /></button>
         </div>
         <p className="mt-2 text-center text-[11px] text-muted">Audio continues with screen off · haptic at every 27</p>
       </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ShieldAlert } from "lucide-react";
+import { ShieldWarning } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { Logomark } from "../ui";
 
@@ -55,7 +55,7 @@ export function LoginScreen() {
             className="mb-4 flex items-start gap-3 rounded-2xl px-4 py-3 text-left"
             style={{ background: "rgba(180,86,75,0.08)", border: "1px solid rgba(180,86,75,0.28)" }}
           >
-            <ShieldAlert size={18} className="mt-0.5 shrink-0 text-[var(--avoid)]" />
+            <ShieldWarning size={18} className="mt-0.5 shrink-0 text-[var(--avoid)]" />
             <div>
               <div className="text-[13px] font-medium text-ink">Access is invite-only</div>
               <div className="text-[12px] leading-snug text-muted">

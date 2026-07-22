@@ -57,12 +57,16 @@ export function Logomark({ size = 48, className }: { size?: number; className?: 
   );
 }
 
-/** "Divasya" wordmark — lapidary serif, amber, gently tracked. */
+/**
+ * "Divasya" wordmark. The mandala logomark carries the brand; the word beside
+ * it stays quiet — Inter Medium, drawn in tight so it reads as one set object
+ * rather than letters that happen to sit together.
+ */
 export function Wordmark({ className, size = 22 }: { className?: string; size?: number }) {
   return (
     <span
       className={cx("font-display text-[var(--amber)]", className)}
-      style={{ fontSize: size, letterSpacing: "0.08em" }}
+      style={{ fontSize: size, letterSpacing: "-0.018em", lineHeight: 1 }}
     >
       Divasya
     </span>
@@ -81,10 +85,14 @@ export function Avatar({
   tint?: string;
   status?: "online" | "busy";
 }) {
+  // Strip honorifics, then anything that isn't a letter — otherwise the full
+  // stop left behind by "Dr." becomes an initial and the disc reads ".A".
   const initials = name
-    .replace(/\b(ji|dr\.?|maa|guru|acharya|pandit|jyotishi)\b/gi, "")
+    .replace(/\b(ji|dr|maa|guru|acharya|pandit|jyotishi)\b\.?/gi, "")
+    .replace(/[^\p{L}\s]/gu, "")
     .trim()
     .split(/\s+/)
+    .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0])
     .join("")
@@ -128,7 +136,7 @@ export function DeityGlyph({
   const tint = deity.color || "#C88131";
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-full font-display"
+      className="grid shrink-0 place-items-center rounded-full font-deva"
       style={{
         width: size,
         height: size,
@@ -152,8 +160,8 @@ export function SectionLabel({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-3 flex items-end justify-between">
-      <h3 className="text-[12.5px] uppercase tracking-[0.2em] text-muted">{children}</h3>
+    <div className="mb-2.5 flex items-end justify-between">
+      <h3 className="eyebrow text-muted">{children}</h3>
       {action}
     </div>
   );

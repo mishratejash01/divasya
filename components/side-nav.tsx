@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, PanelLeftClose } from "lucide-react";
+import { SidebarSimple, SquaresFour } from "@phosphor-icons/react";
 import {
   IconHome, IconEye, IconDiya, IconChat, IconMandir, IconMala,
   IconWheel, IconLotus, IconDarshan, IconCompass, IconStar, IconComponent,
@@ -72,7 +72,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
             aria-label="Hide sidebar"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-[rgba(200,129,49,0.08)] hover:text-[var(--amber-deep)]"
           >
-            <PanelLeftClose size={16} />
+            <SidebarSimple size={16} />
           </button>
         )}
       </div>
@@ -81,7 +81,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
       <nav className="flex-1 space-y-5 overflow-y-auto no-scrollbar">
         {GROUPS.map((grp) => (
           <div key={grp.title}>
-            <div className="mb-1.5 px-3 text-[10px] uppercase tracking-[0.2em] text-[var(--muted-2)]">{grp.title}</div>
+            <div className="mb-1.5 px-3 eyebrow text-[var(--muted-2)]">{grp.title}</div>
             <div className="space-y-0.5">
               {grp.items.map((it) => {
                 const Icon = it.icon;
@@ -116,7 +116,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
           <div className="truncate font-display text-[14px] text-ink">{name}</div>
           <div className="truncate text-[11px] text-muted">{rashi}</div>
         </div>
-        <LayoutGrid size={15} className="shrink-0 text-muted" />
+        <SquaresFour size={15} className="shrink-0 text-muted" />
       </button>
       <button onClick={logout} className="mt-1 px-3 py-1 text-left text-[11px] text-[var(--muted-2)] transition-colors hover:text-[var(--avoid)]">
         Sign out

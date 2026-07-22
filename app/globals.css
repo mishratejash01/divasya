@@ -37,10 +37,30 @@
   --good: #5F8657;
   --avoid: #B4564B;
 
-  --radius: 18px;
+  --radius: 8px;
   --shadow-card: 0 1px 2px rgba(122, 94, 49, 0.06), 0 6px 20px -12px rgba(122, 94, 49, 0.18);
   --shadow-pop: 0 24px 60px -24px rgba(90, 66, 30, 0.35);
+
+  /* Single screen gutter for the whole app. Every screen edge reads from this,
+     so density is one value to tune rather than sixty hardcoded classes. */
+  --gutter: 14px;
 }
+
+@media (min-width: 640px)  { :root { --gutter: 16px; } }
+@media (min-width: 1024px) { :root { --gutter: 18px; } }
+
+/* padding / margin / width helpers bound to the gutter */
+.gutter    { padding-left: var(--gutter); padding-right: var(--gutter); }
+.gutter-m  { margin-left: var(--gutter); margin-right: var(--gutter); }
+.gutter-w  { width: calc(100% - (var(--gutter) * 2)); }
+
+/* Top inset. Clears the notch on a phone, costs almost nothing on a desktop —
+   replaces a flat 48px that was dead space everywhere but iOS. */
+.screen-top { padding-top: calc(env(safe-area-inset-top, 0px) + 14px); }
+/* Bottom inset for screens that sit above the tab bar. The bar is mobile-only,
+   so desktop reclaims that space instead of scrolling past 90px of nothing. */
+.screen-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); }
+@media (min-width: 1024px) { .screen-bottom { padding-bottom: 28px; } }
 
 @theme inline {
   --color-saffron: var(--amber);
@@ -54,9 +74,21 @@
   --color-muted: var(--muted);
   --color-good: var(--good);
   --color-avoid: var(--avoid);
-  --font-display: var(--font-marcellus);
-  --font-body: var(--font-serif-body);
-  --font-deva: var(--font-deva-serif);
+  --font-display: var(--font-inter);
+  --font-body: var(--font-inter);
+  --font-deva: var(--font-deva);
+
+  /* Corner scale, tightened. Tailwind's rounded-* utilities read from these,
+     so every card, sheet and tile in the app sharpens from this one block.
+     Circles (avatars, icon buttons, status dots) use rounded-full and are
+     deliberately untouched. */
+  --radius-sm:  3px;
+  --radius-md:  4px;
+  --radius-lg:  5px;
+  --radius-xl:  6px;
+  --radius-2xl: 8px;   /* cards — was 16px */
+  --radius-3xl: 10px;  /* bottom sheets — was 24px */
+  --radius-4xl: 12px;
 }
 
 * { box-sizing: border-box; }
@@ -71,12 +103,14 @@ body {
     linear-gradient(180deg, var(--bg-0) 0%, #FAF5DF 100%);
   background-attachment: fixed;
   color: var(--ink);
-  font-family: var(--font-body), Georgia, serif;
-  letter-spacing: 0.004em;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  /* Inter sets loose by default at UI sizes — pull it in a touch so text reads
+     as set, not as a browser default. */
+  letter-spacing: -0.006em;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 /* whisper of paper grain */
@@ -89,9 +123,35 @@ body::after {
 ::selection { background: rgba(200, 129, 49, 0.22); color: var(--ink); }
 #app-root { position: relative; z-index: 2; }
 
-.font-display { font-family: var(--font-display), serif; letter-spacing: 0.01em; }
-.font-deva { font-family: var(--font-deva), serif; }
-strong { font-weight: 600; }
+/* ---------- type ----------
+   Two weights, and only two. 400 carries everything; 500 is spent on titles
+   and the handful of labels that must outrank their neighbours. Rank comes
+   from size, tracking and colour before it ever comes from weight. */
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.021em;   /* Inter needs tightening as it gets bigger */
+}
+.font-deva {
+  font-family: var(--font-deva), ui-sans-serif, sans-serif;
+  letter-spacing: 0;          /* Devanagari must never be tracked */
+}
+/* Uppercase eyebrows are the one place Inter wants opening up. */
+.eyebrow {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  line-height: 1;
+}
+/* Numerals in tables, timings and charts should never shift width. */
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+/* Running prose caps at a readable measure. Cards may span the full column on
+   a wide screen; the sentences inside them may not. */
+.measure { max-width: 66ch; }
+
+strong { font-weight: 500; }
 
 /* ---------- surfaces ---------- */
 .surface {
@@ -128,7 +188,7 @@ strong { font-weight: 600; }
 .btn-saffron {
   background: linear-gradient(180deg, var(--amber-soft), var(--amber));
   color: #FFFDF2;
-  font-weight: 600;
+  font-weight: 500;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 8px 20px -10px rgba(200, 129, 49, 0.55);
   transition: filter 0.15s ease, transform 0.1s ease;
 }

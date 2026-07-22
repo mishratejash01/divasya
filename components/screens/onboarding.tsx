@@ -84,7 +84,7 @@ export function OnboardingScreen() {
         </Field>
 
         <div>
-          <div className="mb-1.5 px-1 text-[11px] uppercase tracking-wider text-muted">Gender</div>
+          <div className="mb-1.5 px-1 eyebrow text-muted">Gender</div>
           <div className="grid grid-cols-3 gap-2">
             {["Male", "Female", "Other"].map((g) => (
               <button key={g} onClick={() => setGender(g)}
@@ -94,7 +94,7 @@ export function OnboardingScreen() {
         </div>
 
         <div>
-          <div className="mb-1.5 px-1 text-[11px] uppercase tracking-wider text-muted">Your Ishta Devta</div>
+          <div className="mb-1.5 px-1 eyebrow text-muted">Your Ishta Devta</div>
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 no-scrollbar">
             {deities.map((d) => (
               <button key={d.id} onClick={() => setDeity(d.id)}
@@ -119,7 +119,7 @@ export function OnboardingScreen() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl px-3.5 py-2.5" style={{ border: "1px solid var(--line-strong)", background: "var(--surface)" }}>
-      <div className="text-[10.5px] uppercase tracking-wider text-muted">{label}</div>
+      <div className="eyebrow text-muted">{label}</div>
       <div className="mt-0.5">{children}</div>
     </div>
   );

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Menu, ChevronRight, Share2, Sun, Sunrise } from "lucide-react";
+import { CaretRight, List, ShareNetwork } from "@phosphor-icons/react";
 import {
-  IconEye, IconDiya, IconMandir, IconMala, IconChat, IconLotus,
-  IconWheel, IconCompass, IconFlame, IconBell, IconStar,
+  IconBell, IconChat, IconCompass, IconDiya, IconEye, IconFlame, IconJournal,
+  IconLotus, IconMala, IconMandir, IconStar, IconSunrise, IconSunset, IconWheel,
+  Ornament,
 } from "../icons";
 import { useApp } from "../app-context";
 import { Avatar, SectionLabel, Wordmark, Logomark, cx } from "../ui";
@@ -58,10 +59,16 @@ export function HomeScreen() {
   const library = useCatalog<Article[]>(getLibrary, []);
   const [shloka, setShloka] = useState<Shloka | null>(null);
   const [horoscope, setHoroscope] = useState<string | null>(null);
+  // Track settled-ness separately: an empty reading is a real answer, and
+  // without this the placeholder shimmers forever when the reading can't load.
+  const [horoscopeReady, setHoroscopeReady] = useState(false);
   useEffect(() => {
     let on = true;
+    setHoroscopeReady(false);
     getShlokaOfDay().then((s) => on && setShloka(s));
-    getDailyHoroscope(rashi.split(" ")[0]).then((h) => on && h && setHoroscope(h));
+    getDailyHoroscope(rashi.split(" ")[0])
+      .then((h) => { if (on) { setHoroscope(h || null); setHoroscopeReady(true); } })
+      .catch(() => { if (on) { setHoroscope(null); setHoroscopeReady(true); } });
     return () => { on = false; };
   }, [rashi]);
 
@@ -84,11 +91,11 @@ export function HomeScreen() {
   }, [sendPush, chog]);
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar pb-28 pt-12">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
       {/* header */}
-      <div className="flex items-center justify-between px-5 pt-2">
+      <div className="flex items-center justify-between gutter pt-2">
         <button onClick={() => go("menu")} className="grid h-9 w-9 place-items-center rounded-full surface lg:invisible">
-          <Menu size={18} className="text-ink" />
+          <List size={18} className="text-ink" />
         </button>
         <span className="flex items-center gap-2 lg:hidden">
           <Logomark size={22} className="text-[var(--amber)]" />
@@ -112,7 +119,7 @@ export function HomeScreen() {
       </div>
 
       {/* greeting */}
-      <div className="flex items-center gap-3 px-5 pt-6">
+      <div className="flex items-center gap-3 gutter pt-5">
         <Avatar name={name} size={46} tint="#C88131" />
         <div>
           <div className="text-[13px] text-muted">{salutation(new Date())}</div>
@@ -127,19 +134,19 @@ export function HomeScreen() {
       {/* live panchang strip */}
       <button
         onClick={() => go("panchang")}
-        className="mx-5 mt-5 flex w-[calc(100%-2.5rem)] items-stretch gap-3 rounded-2xl surface p-3 text-left"
+        className="gutter-m mt-4 flex gutter-w items-stretch gap-3 rounded-2xl surface p-3 text-left"
       >
         <div className="flex flex-col justify-center gap-1.5 border-r pr-3" style={{ borderColor: "var(--line)" }}>
-          <div className="flex items-center gap-1.5 text-[12px] text-muted"><Sunrise size={13} className="text-[var(--amber)]" /> {pg?.sunrise ?? "…"}</div>
-          <div className="flex items-center gap-1.5 text-[12px] text-muted"><Sun size={13} className="text-[var(--ochre-deep)]" /> {pg?.sunset ?? "…"}</div>
+          <div className="flex items-center gap-1.5 text-[12px] tnum text-muted"><IconSunrise size={15} className="shrink-0 text-[var(--amber)]" /> {pg?.sunrise ?? "…"}</div>
+          <div className="flex items-center gap-1.5 text-[12px] tnum text-muted"><IconSunset size={15} className="shrink-0 text-[var(--ochre-deep)]" /> {pg?.sunset ?? "…"}</div>
         </div>
         <div className="flex flex-1 flex-col justify-center">
-          <div className="text-[11px] uppercase tracking-wider text-muted">
+          <div className="eyebrow text-muted">
             Now · Choghadiya · {pg?.weekdayShort ?? ""}
           </div>
           {chog ? (
             <div className="flex items-center gap-2">
-              <span className={cx("text-[15px] font-semibold", chog.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>
+              <span className={cx("text-[15px] font-medium", chog.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>
                 {chog.name}
               </span>
               <span className="text-[12px] text-muted">
@@ -153,29 +160,45 @@ export function HomeScreen() {
             Rahu Kaal {pg?.rahuKaal ?? "—"}
           </div>
         </div>
-        <ChevronRight size={18} className="self-center text-muted" />
+        <CaretRight size={18} className="self-center text-muted" />
       </button>
 
-      {/* Aaj ka Sandesh — daily shloka from the backend */}
-      <div className="px-5 pt-6">
-        <div className="overflow-hidden rounded-2xl card-temple p-5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-[0.2em] text-gold">Aaj ka Sandesh</span>
-            <span className="text-[11px] text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
+      {/* Aaj ka Sandesh — the day's shloka. This is the one card carrying the
+          brand: the mandala sits behind the verse as a watermark, the verse is
+          set large in Devanagari, and a granth rule divides it from its
+          reading. Every other card on this screen stays quiet so this one
+          doesn't have to compete. */}
+      <div className="gutter pt-5">
+        <div className="relative overflow-hidden rounded-2xl card-temple p-4">
+          <Logomark
+            size={172}
+            className="pointer-events-none absolute -right-11 -top-11 text-[var(--ochre)] opacity-[0.13]"
+          />
+          <div className="relative flex items-center justify-between">
+            <span className="eyebrow text-gold">Aaj ka Sandesh</span>
+            <span className="text-[11px] tnum text-muted">{pg ? `${pg.weekday} · ${pg.dateLabel}` : ""}</span>
           </div>
-          <p className="mt-3 font-deva text-[17px] leading-relaxed text-ink">
+          <p className="relative mt-3.5 measure font-deva text-[19px] leading-[1.8] text-ink">
             {shloka?.deva ?? "…"}
           </p>
-          <p className="mt-1 text-[12.5px] text-muted">
-            {shloka ? `${shloka.meaning} · ${shloka.source}` : ""}
+          <Ornament className="relative mt-3.5 measure text-[var(--ochre-deep)]" />
+          <p className="relative mt-3 measure text-[12.5px] leading-relaxed text-muted">
+            {shloka?.meaning ?? ""}
           </p>
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-[12.5px] text-muted">{pg?.vrat ? `Aaj: ${pg.vrat}` : pg ? `${pg.masa} maas · ${pg.nakshatra}` : ""}</span>
+          <div className="relative mt-3.5 flex items-end justify-between gap-3">
+            <span className="text-[11.5px] leading-snug text-gold">
+              {shloka?.source ?? ""}
+              {pg && (
+                <span className="block text-muted">
+                  {pg.vrat ? `Aaj: ${pg.vrat}` : `${pg.masa} maas · ${pg.nakshatra}`}
+                </span>
+              )}
+            </span>
             <button
               onClick={() => go("sandesh")}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] btn-gold"
+              className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] btn-gold"
             >
-              <Share2 size={13} /> Share
+              <ShareNetwork size={13} /> Share
             </button>
           </div>
         </div>
@@ -184,7 +207,7 @@ export function HomeScreen() {
       {/* japa streak */}
       <button
         onClick={() => go("mala")}
-        className="mx-5 mt-4 flex w-[calc(100%-2.5rem)] items-center gap-4 rounded-2xl surface p-4 text-left"
+        className="gutter-m mt-3 flex gutter-w items-center gap-4 rounded-2xl surface p-4 text-left"
       >
         <div className="grid h-12 w-12 place-items-center rounded-full" style={{ background: "rgba(200,129,49,0.12)", border: "1px solid var(--line-gold)" }}>
           <IconFlame size={22} className="text-[var(--amber)]" />
@@ -197,19 +220,21 @@ export function HomeScreen() {
       </button>
 
       {/* quick grid */}
-      <div className="px-5 pt-7">
+      <div className="gutter pt-5">
         <SectionLabel>Explore</SectionLabel>
-        <div className="grid grid-cols-4 gap-2.5 lg:grid-cols-8 lg:gap-3">
+        {/* Nine entries — a 3-up grid divides evenly, where 4-up stranded the
+            last tile alone on its own row. */}
+        <div className="grid grid-cols-3 gap-2 lg:grid-cols-9 lg:gap-2.5">
           {GRID.map((g) => {
             const Icon = g.icon;
             return (
               <button
                 key={g.label}
                 onClick={() => go(g.to as never, ("params" in g ? g.params : undefined) as never)}
-                className="flex flex-col items-center gap-2 rounded-2xl surface px-1 py-3.5"
+                className="flex flex-col items-center gap-2 rounded-2xl surface px-1 py-3.5 transition-colors hover:border-[var(--line-gold)]"
               >
-                <Icon size={21} className="text-[var(--amber)]" strokeWidth={1.7} />
-                <span className="text-center text-[11px] leading-tight text-ink">{g.label}</span>
+                <Icon size={22} className="text-[var(--amber)]" strokeWidth={1.7} />
+                <span className="text-center text-[11.5px] leading-tight text-ink">{g.label}</span>
               </button>
             );
           })}
@@ -218,13 +243,13 @@ export function HomeScreen() {
 
       {/* next festival — real dates from backend */}
       {nextFestival && (
-        <div className="px-5 pt-7">
+        <div className="gutter pt-5">
           <button onClick={() => go("festivals")} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
             <div className="grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: "linear-gradient(160deg, rgba(255,217,204,0.7), rgba(206,185,118,0.25))", border: "1px solid var(--line-gold)" }}>
               <IconLotus size={28} className="text-[var(--amber-deep)]" />
             </div>
             <div className="flex-1">
-              <div className="text-[11px] uppercase tracking-wider text-muted">
+              <div className="eyebrow text-muted">
                 {new Date(nextFestival.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long" })}
               </div>
               <div className="font-display text-[17px] text-ink">{nextFestival.name}</div>
@@ -232,20 +257,24 @@ export function HomeScreen() {
                 {nextFestival.muhurat || nextFestival.about || "View pooja vidhi"}
               </div>
             </div>
-            <ChevronRight size={18} className="text-muted" />
+            <CaretRight size={18} className="text-muted" />
           </button>
         </div>
       )}
 
       {/* daily horoscope — AI-generated, Supabase-cached */}
-      <div className="px-5 pt-4">
+      <div className="gutter pt-3">
         <div className="rounded-2xl surface p-4">
           <div className="flex items-center justify-between">
             <span className="font-display text-[16px] text-ink">Today · {rashi.split(" ")[0]}</span>
             <IconStar size={18} className="text-[var(--ochre-deep)]" />
           </div>
           {horoscope ? (
-            <p className="mt-2 text-[13px] leading-relaxed text-muted">{horoscope}</p>
+            <p className="mt-2 measure text-[13px] leading-relaxed text-muted">{horoscope}</p>
+          ) : horoscopeReady ? (
+            <p className="mt-2 measure text-[13px] leading-relaxed text-muted">
+              Today&apos;s reading isn&apos;t ready yet. Ask the Jyotishi below and it will read your chart directly.
+            </p>
           ) : (
             <div className="mt-3 space-y-2">
               <div className="shimmer h-3 w-full rounded-full" style={{ background: "var(--surface-2)" }} />
@@ -260,16 +289,29 @@ export function HomeScreen() {
 
       {/* library — from backend */}
       {library.length > 0 && (
-        <div className="px-5 pt-7">
+        <div className="gutter pt-5">
           <SectionLabel action={<button onClick={() => go("library")} className="text-[12px] text-[var(--amber-deep)]">Explore all</button>}>
             Spiritual Library
           </SectionLabel>
           <div className="-mx-1 flex gap-3 overflow-x-auto px-1 no-scrollbar">
             {library.slice(0, 4).map((l) => (
               <button key={l.id} onClick={() => go("library")} className="w-40 shrink-0 overflow-hidden rounded-2xl surface text-left">
-                <div className="h-24 w-full" style={{ background: `linear-gradient(160deg, ${l.tint}33, ${l.tint}11)` }} />
+                {/* Tinted field carrying the granth glyph, bled off the corner.
+                    Was an empty colour block that read as a failed image. */}
+                <div
+                  className="relative h-[74px] w-full overflow-hidden"
+                  style={{ background: `linear-gradient(150deg, ${l.tint}3d, ${l.tint}12)` }}
+                >
+                  <span className="absolute -bottom-3 -right-2 opacity-40" style={{ color: l.tint }}>
+                    <IconJournal size={56} strokeWidth={1.1} />
+                  </span>
+                </div>
                 <div className="p-3">
-                  <div className="text-[13px] font-medium leading-tight text-ink">{l.title}</div>
+                  {/* two lines reserved so "N min read" shares a baseline
+                      across the row whether the title wraps or not */}
+                  <div className="line-clamp-2 min-h-[2.3em] text-[13px] font-medium leading-tight text-ink">
+                    {l.title}
+                  </div>
                   <div className="mt-1 text-[11px] text-muted">{l.read} read</div>
                 </div>
               </button>
@@ -278,7 +320,7 @@ export function HomeScreen() {
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-2 px-5 pb-2 pt-8">
+      <div className="flex items-center justify-center gap-2 gutter pb-2 pt-7">
         <Logomark size={14} className="text-[var(--amber)]" />
         <span className="text-[11px] tracking-[0.25em] text-muted">DIVASYA · SPIRITUAL JOURNEY</span>
       </div>

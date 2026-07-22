@@ -15,8 +15,9 @@ export function BottomNav() {
   const { screen, go, haptic } = useApp();
   return (
     <div
-      className="absolute inset-x-0 bottom-0 z-30 flex items-stretch justify-around px-2 pb-5 pt-2 lg:hidden"
+      className="absolute inset-x-0 bottom-0 z-30 flex items-stretch justify-around px-2 pt-2 lg:hidden"
       style={{
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)",
         background: "linear-gradient(0deg, var(--bg-0) 78%, rgba(252,249,232,0.9) 92%, transparent)",
         borderTop: "1px solid var(--line)",
         backdropFilter: "blur(8px)",

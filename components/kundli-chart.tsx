@@ -36,7 +36,7 @@ export function KundliChart({
 
   return (
     <div className="flex flex-col items-center">
-      {title && <div className="mb-1.5 text-[11px] uppercase tracking-[0.2em] text-gold">{title}</div>}
+      {title && <div className="mb-1.5 eyebrow text-gold">{title}</div>}
       <svg viewBox={`0 0 ${S} ${S}`} width={size} height={size} className="select-none">
         <defs>
           <linearGradient id="kfield" x1="0" y1="0" x2="1" y2="1">
@@ -80,7 +80,7 @@ export function KundliChart({
                   <text key={p.abbr} x={cx} y={startY + j * rowH} textAnchor="middle"
                     fontSize="12" fontFamily="var(--font-body), serif"
                     fill={p.combust ? "var(--muted)" : "var(--amber-deep)"}
-                    fontWeight={600}>
+                    fontWeight={500}>
                     {p.abbr}{p.retro ? <tspan fontSize="8" dy="-3" fill="var(--maroon)"> ℞</tspan> : null}
                   </text>
                 );

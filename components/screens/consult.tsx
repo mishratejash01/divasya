@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Send, Star, Wallet, Clock, Gift, ShieldCheck } from "lucide-react";
+import { CaretLeft, Clock, Gift, PaperPlaneTilt, ShieldCheck, Star, Wallet } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { Avatar, cx, Typing } from "../ui";
 import { ASTROLOGERS } from "@/lib/demo";
@@ -15,9 +15,9 @@ export function ConsultScreen() {
   const { back, go, wallet } = useApp();
   const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
   return (
-    <div className="flex h-full flex-col pt-12">
-      <div className="flex items-center gap-3 px-5 py-3">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+    <div className="flex h-full flex-col screen-top">
+      <div className="flex items-center gap-3 gutter py-3">
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <span className="font-display text-lg text-ink">Consult Astrologers</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
           <Wallet size={13} className="text-[var(--amber)]" />
@@ -25,7 +25,7 @@ export function ConsultScreen() {
         </div>
       </div>
 
-      <div className="mx-5 mb-3 flex items-center gap-3 rounded-2xl card-temple px-4 py-3">
+      <div className="gutter-m mb-3 flex items-center gap-3 rounded-2xl card-temple px-4 py-3">
         <Gift size={20} className="text-[var(--amber)]" />
         <div>
           <div className="text-[13px] font-medium text-ink">Your first chat is FREE</div>
@@ -149,10 +149,10 @@ export function ConsultChatScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col pt-12">
+    <div className="flex h-full flex-col screen-top">
       {/* header */}
       <div className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: "1px solid var(--line)" }}>
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><ChevronLeft size={18} /></button>
+        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={18} /></button>
         <Avatar name={astro.name} size={38} tint={astro.grad[0]} status="online" />
         <div className="flex-1">
           <div className="text-[13.5px] font-medium text-ink">{astro.name}</div>
@@ -193,7 +193,7 @@ export function ConsultChatScreen() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(51,41,26,0.28)", backdropFilter: "blur(3px)" }}>
             <motion.div initial={{ y: 60 }} animate={{ y: 0 }}
-              className="w-full rounded-t-3xl p-5 pb-7" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
+              className="w-full rounded-t-3xl p-4 pb-6" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
               <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />
               <div className="font-display text-lg text-ink">Continue with {astro.name.split(" ").slice(-1)[0]}</div>
               <div className="mt-1 text-[12.5px] text-muted">Your free session ended. Recharge your wallet to keep chatting at ₹{astro.rate}/min.</div>
@@ -221,7 +221,7 @@ export function ConsultChatScreen() {
           style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }} />
         <button onClick={() => send(input)} disabled={streaming || phase === "ended"}
           className="grid h-11 w-11 shrink-0 place-items-center rounded-full btn-saffron disabled:opacity-50">
-          <Send size={17} />
+          <PaperPlaneTilt size={17} />
         </button>
       </div>
     </div>
