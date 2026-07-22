@@ -35,9 +35,9 @@ export function PushToast() {
         >
           <div
             className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px]"
-            style={{ background: "rgba(200,129,49,0.10)", border: "1px solid var(--line-gold)" }}
+            style={{ background: "var(--surface-2)", border: "1px solid var(--line-gold)" }}
           >
-            <Logomark size={18} className="text-[var(--amber)]" />
+            <Logomark size={18} className="text-[var(--bhagwa)]" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-2">

@@ -22,8 +22,8 @@ function ItemMark({ item, size = 48 }: { item: Item; size?: number }) {
   const Icon = item.icon ? (CHADHAVA_ICON[item.icon] ?? FlowerLotus) : undefined;
   return (
     <div className="grid shrink-0 place-items-center rounded-xl font-display"
-      style={{ width: size, height: size, background: "rgba(200,129,49,0.10)", border: "1px solid var(--line-gold)", color: "var(--amber-deep)", fontSize: Math.round(size * 0.44) }}>
-      {Icon ? <Icon size={Math.round(size * 0.42)} className="text-[var(--amber)]" strokeWidth={1.6} /> : "ॐ"}
+      style={{ width: size, height: size, background: "var(--surface-2)", border: "1px solid var(--line-gold)", color: "var(--bhagwa-deep)", fontSize: Math.round(size * 0.44) }}>
+      {Icon ? <Icon size={Math.round(size * 0.42)} className="text-[var(--bhagwa)]" strokeWidth={1.6} /> : "ॐ"}
     </div>
   );
 }
@@ -82,7 +82,7 @@ export function PujaScreen() {
 
   return (
     <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Online Puja & Chadhava</span>
       </div>
@@ -99,7 +99,7 @@ export function PujaScreen() {
         {tab === "puja" ? (
           <div className="space-y-2.5">
             {pujas.map((p) => (
-              <div key={p.id} className="flex items-center gap-3 rounded-2xl surface p-3.5">
+              <div key={p.id} className="flex items-center gap-3 rounded-2xl surface p-3">
                 <ItemMark item={{ kind: "puja", name: p.name, price: p.price }} />
                 <div className="flex-1">
                   <div className="text-[12.5px] font-medium text-ink">{p.name}</div>
@@ -129,7 +129,7 @@ export function PujaScreen() {
       <AnimatePresence>
         {sel && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(51,41,26,0.28)", backdropFilter: "blur(3px)" }}
+            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}
             onClick={() => step !== "paying" && setSel(null)}>
             <motion.div initial={{ y: 80 }} animate={{ y: 0 }} onClick={(e) => e.stopPropagation()}
               className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl p-4 pb-6 no-scrollbar" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
@@ -162,7 +162,7 @@ export function PujaScreen() {
 
               {step === "paying" && (
                 <div className="flex flex-col items-center py-10">
-                  <div className="h-10 w-10 animate-spin rounded-full" style={{ border: "3px solid var(--line)", borderTopColor: "var(--amber)" }} />
+                  <div className="h-10 w-10 animate-spin rounded-full" style={{ border: "3px solid var(--line)", borderTopColor: "var(--bhagwa)" }} />
                   <div className="mt-4 text-[12.5px] text-ink">Confirming your sankalp…</div>
                   <div className="text-[11px] text-muted">Securing payment of ₹{sel.price}</div>
                 </div>
@@ -210,7 +210,7 @@ export function TempleScreen() {
     const t = temples.find((x) => x.id === open) ?? temples[0];
     return (
       <div className="flex h-full flex-col screen-top">
-        <div className="flex items-center gap-3 gutter py-3">
+        <div className="flex items-center gap-3 gutter py-2.5">
           <button onClick={() => { setOpen(null); setAarti(false); }} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
           <span className="font-display text-lg text-ink">{t.name}</span>
         </div>
@@ -260,7 +260,7 @@ export function TempleScreen() {
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Live Temple Darshan</span>
       </div>
@@ -268,7 +268,7 @@ export function TempleScreen() {
         {temples.map((t) => (
           <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
             <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)`, border: "1px solid var(--line)" }}>
-              <Bank size={23} className="text-[var(--amber-deep)]" />
+              <Bank size={23} className="text-[var(--bhagwa-deep)]" />
               <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}><Broadcast size={8} className="text-[var(--good)]" />Live</span>
             </div>
             <div className="flex-1">

@@ -132,7 +132,7 @@ export function JyotishiScreen() {
         )}
         {mode === "deity" && (
           <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
-            className="mx-auto mt-1 flex items-center gap-2 rounded-full surface px-4 py-2 text-[11px] text-[var(--amber-deep)]">
+            className="mx-auto mt-1 flex items-center gap-2 rounded-full surface px-4 py-2 text-[11px] text-[var(--bhagwa-deep)]">
             <CircleDashed size={13} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
           </button>
         )}
@@ -169,8 +169,8 @@ function Bubble({ role, children, mode, deity }: {
         <DeityGlyph deity={deity} size={25} />
       ) : (
         <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full"
-          style={{ background: "rgba(200,129,49,0.12)", border: "1px solid var(--line)" }}>
-          <Sparkle size={12} className="text-[var(--amber)]" />
+          style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>
+          <Sparkle size={12} className="text-[var(--bhagwa)]" />
         </div>
       )}
       <div className="max-w-[80%] rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[12px] leading-relaxed text-ink surface">{children}</div>

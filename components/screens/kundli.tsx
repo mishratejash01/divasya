@@ -42,7 +42,7 @@ export function KundliScreen() {
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Janma Kundli</div>
@@ -50,7 +50,7 @@ export function KundliScreen() {
         </div>
       </div>
 
-      {err && <div className="gutter-m mt-6 rounded-2xl surface p-4 text-center text-[11.5px] text-muted">{err}</div>}
+      {err && <div className="gutter-m mt-2 rounded-2xl surface p-3 text-center text-[11.5px] text-muted">{err}</div>}
       {!k && !err && <div className="mt-24 text-center text-muted">Casting your chart…</div>}
 
       {k && (
@@ -69,24 +69,24 @@ export function KundliScreen() {
           )}
 
           {/* the two charts */}
-          <div className="mt-5 flex flex-col items-center gap-6 px-3 lg:flex-row lg:justify-center">
-            <div className="rounded-3xl card-temple p-4">
+          <div className="mt-2 flex flex-col items-center gap-4 px-3 lg:flex-row lg:justify-center">
+            <div className="rounded-2xl card-temple p-3">
               <KundliChart lagnaIndex={k.chart.lagnaIndex} placements={d1} title="Rasi · D1" size={270} />
             </div>
-            <div className="rounded-3xl card-temple p-4">
+            <div className="rounded-2xl card-temple p-3">
               <KundliChart lagnaIndex={k.chart.navamsaLagnaIndex} placements={d9} title="Navamsa · D9" size={270} />
             </div>
           </div>
 
           {/* current dasha */}
-          <div className="gutter-m mt-5 rounded-2xl card-temple p-4">
+          <div className="gutter-m mt-2 rounded-2xl card-temple p-3">
             <div className="eyebrow text-gold">Current Mahadasha</div>
             <div className="mt-1 font-display text-[15.5px] text-ink">{k.currentDasha}</div>
           </div>
 
           {/* planet table */}
-          <div className="gutter pt-6">
-            <h3 className="mb-2 eyebrow text-muted">Grahas</h3>
+          <div className="gutter pt-2">
+            <h3 className="mb-2 section-title">Grahas</h3>
             <div className="overflow-hidden rounded-2xl surface">
               {GRAHA_ORDER.map((id, i) => {
                 const g = k.grahas[id];
@@ -109,20 +109,20 @@ export function KundliScreen() {
 
           {/* yogas */}
           {k.yogas.length > 0 && (
-            <div className="gutter pt-6">
-              <h3 className="mb-2 eyebrow text-muted">Yogas in your chart</h3>
+            <div className="gutter pt-2">
+              <h3 className="mb-2 section-title">Yogas in your chart</h3>
               <div className="flex flex-wrap gap-2">
                 {k.yogas.map((y) => (
-                  <span key={y} className="rounded-full px-3 py-1.5 text-[11px] ring-gold text-ink" style={{ background: "rgba(206,185,118,0.14)" }}>{y}</span>
+                  <span key={y} className="rounded-full px-3 py-1.5 text-[11px] ring-gold text-ink" style={{ background: "var(--surface-2)" }}>{y}</span>
                 ))}
               </div>
             </div>
           )}
 
           {/* chara karakas + arudha */}
-          <div className="gutter pt-6">
-            <h3 className="mb-2 eyebrow text-muted">Jaimini Karakas</h3>
-            <div className="rounded-2xl surface p-4 text-[11px] text-muted">
+          <div className="gutter pt-2">
+            <h3 className="mb-2 section-title">Jaimini Karakas</h3>
+            <div className="rounded-2xl surface p-3 text-[11px] text-muted">
               <div>Atmakaraka (soul): <span className="text-ink">{cap(k.charaKarakas.AK || "")}</span></div>
               <div className="mt-1">Amatyakaraka (career): <span className="text-ink">{cap(k.charaKarakas.AmK || "")}</span></div>
               <div className="mt-1">Darakaraka (spouse): <span className="text-ink">{cap(k.charaKarakas.DK || "")}</span></div>
@@ -131,18 +131,18 @@ export function KundliScreen() {
           </div>
 
           {/* dasha timeline */}
-          <div className="gutter pt-6">
-            <h3 className="mb-2 eyebrow text-muted">Vimshottari Mahadasha</h3>
+          <div className="gutter pt-2">
+            <h3 className="mb-2 section-title">Vimshottari Mahadasha</h3>
             <div className="overflow-hidden rounded-2xl surface">
               {k.mahadashas.slice(0, 9).map((m, i) => {
                 const now = new Date().toISOString().slice(0, 10);
                 const active = m.from <= now && now < m.to;
                 return (
                   <div key={i} className={cx("flex items-center gap-3 px-4 py-2.5 text-[11px]")}
-                    style={{ borderTop: i === 0 ? undefined : "1px solid var(--line)", background: active ? "rgba(200,129,49,0.08)" : undefined }}>
+                    style={{ borderTop: i === 0 ? undefined : "1px solid var(--line)", background: active ? "var(--surface-2)" : undefined }}>
                     <span className={cx("w-20", active ? "text-ink font-medium" : "text-ink")}>{cap(m.lord)}</span>
                     <span className="flex-1 text-muted">{m.from.slice(0, 4)} – {m.to.slice(0, 4)}</span>
-                    {active && <span className="rounded-full px-2 py-0.5 text-[9px] btn-saffron">NOW</span>}
+                    {active && <span className="rounded-full px-2 py-0.5 text-[9px] btn-saffron">Now</span>}
                   </div>
                 );
               })}

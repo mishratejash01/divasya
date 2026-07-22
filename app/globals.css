@@ -209,7 +209,9 @@ strong { font-weight: 500; }
 }
 
 /* ---------- text accents ---------- */
-.text-gold { color: var(--ochre-deep); }
+/* Was olive ochre. Redefined once here so every existing text-gold across the
+   app picks up the bhagwa accent instead of reading muddy-green beside it. */
+.text-gold { color: var(--bhagwa-deep); }
 .wordmark {
   background: linear-gradient(100deg, var(--amber), var(--amber-deep));
   -webkit-background-clip: text; background-clip: text; color: transparent;

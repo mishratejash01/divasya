@@ -41,7 +41,7 @@ export function OnboardingScreen() {
   if (saving) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-5">
-        <Logomark size={50} className="text-[var(--amber)] animate-spinSlow" />
+        <Logomark size={50} className="text-[var(--bhagwa)] animate-spinSlow" />
         <div className="text-center">
           <div className="font-display text-lg text-ink">Building your cosmic chart…</div>
           <div className="mt-1 text-[11px] text-muted">Aligning the planets for {name.split(" ")[0]}</div>
@@ -53,7 +53,7 @@ export function OnboardingScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar px-6 pb-8 pt-16">
       <div className="text-center">
-        <Logomark size={40} className="mx-auto text-[var(--amber)]" />
+        <Logomark size={40} className="mx-auto text-[var(--bhagwa)]" />
         <h1 className="mt-3 font-display text-2xl text-ink">Create your spiritual profile</h1>
         <p className="mt-1 text-[11px] leading-relaxed text-muted">Your birth details personalise your Panchang, Kundli, horoscope & the AI Jyotishi. They stay private.</p>
       </div>

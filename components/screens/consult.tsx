@@ -16,19 +16,19 @@ export function ConsultScreen() {
   const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
   return (
     <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Consult Astrologers</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Wallet size={12} className="text-[var(--amber)]" />
+          <Wallet size={12} className="text-[var(--bhagwa)]" />
           <span className="text-[11px] text-ink">₹{wallet}</span>
         </div>
       </div>
 
       <div className="gutter-m mb-3 flex items-center gap-3 rounded-2xl card-temple px-4 py-3">
-        <Gift size={18} className="text-[var(--amber)]" />
+        <Gift size={18} className="text-[var(--bhagwa)]" />
         <div>
-          <div className="text-[11.5px] font-medium text-ink">Your first chat is FREE</div>
+          <div className="text-[11.5px] font-medium text-ink">Your first chat is free</div>
           <div className="text-[10.5px] text-muted">Talk to any verified astrologer · no queue</div>
         </div>
       </div>
@@ -191,7 +191,7 @@ export function ConsultChatScreen() {
       <AnimatePresence>
         {phase === "ended" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(51,41,26,0.28)", backdropFilter: "blur(3px)" }}>
+            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}>
             <motion.div initial={{ y: 60 }} animate={{ y: 0 }}
               className="w-full rounded-t-3xl p-4 pb-6" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
               <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />

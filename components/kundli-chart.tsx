@@ -69,7 +69,7 @@ export function KundliChart({
               </text>
               {/* lagna marker */}
               {isLagna && (
-                <text x={cx} y={cy - 30} textAnchor="middle" fontSize="8" fill="var(--amber)"
+                <text x={cx} y={cy - 30} textAnchor="middle" fontSize="8" fill="var(--bhagwa)"
                   fontFamily="var(--font-body), serif" letterSpacing="1">La</text>
               )}
               {/* planets — stacked */}

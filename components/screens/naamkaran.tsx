@@ -82,18 +82,18 @@ export function NaamkaranScreen() {
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Naamkaran</div>
           <div className="text-[10px] text-muted">Auspicious names by Janma Nakshatra</div>
         </div>
-        <Baby size={18} className="ml-auto text-[var(--amber)]" />
+        <Baby size={18} className="ml-auto text-[var(--bhagwa)]" />
       </div>
 
       {/* nakshatra */}
       <div className="gutter">
-        <h3 className="mb-2 eyebrow text-muted">Birth Nakshatra</h3>
+        <h3 className="mb-2 section-title">Birth Nakshatra</h3>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 no-scrollbar">
           {nakshatras.map((n) => (
             <button key={n.name} onClick={() => { setNakName(n.name); haptic(8); }}
@@ -105,8 +105,8 @@ export function NaamkaranScreen() {
       </div>
 
       {/* prescribed syllables */}
-      <div className="gutter-m mt-3 flex items-center gap-3 rounded-2xl card-temple p-4">
-        <Sparkle size={16} className="text-[var(--amber)]" />
+      <div className="gutter-m mt-3 flex items-center gap-3 rounded-2xl card-temple p-3">
+        <Sparkle size={16} className="text-[var(--bhagwa)]" />
         <div className="flex-1">
           <div className="text-[11px] text-muted">Prescribed starting sounds</div>
           <div className="font-display text-lg text-gold">{syllables.join(" · ")}</div>
@@ -122,9 +122,9 @@ export function NaamkaranScreen() {
       </div>
 
       {/* names */}
-      <div className="mt-4 grid grid-cols-2 gap-2.5 gutter">
+      <div className="mt-2 grid grid-cols-2 gap-2 gutter">
         {list.map((x) => (
-          <div key={x.n} className="rounded-2xl surface p-3.5">
+          <div key={x.n} className="rounded-2xl surface p-3">
             <div className="flex items-center justify-between">
               <span className="font-display text-[15.5px] text-ink">{x.n}</span>
               <span className="eyebrow text-muted">{x.g === "m" ? "Boy" : "Girl"}</span>

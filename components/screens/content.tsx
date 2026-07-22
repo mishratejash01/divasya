@@ -17,7 +17,7 @@ import { useFullPanchang, usePanchang, type ChoghadiyaSlot } from "@/lib/use-pan
 function Header({ title, sub }: { title: string; sub?: string }) {
   const { back } = useApp();
   return (
-    <div className="flex items-center gap-3 gutter py-3">
+    <div className="flex items-center gap-3 gutter py-2.5">
       <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
       <div>
         <div className="font-display text-lg leading-tight text-ink">{title}</div>
@@ -34,7 +34,7 @@ function ChoghadiyaRow({ slot, first }: { slot: ChoghadiyaSlot; first: boolean }
       <span className={cx("h-2 w-2 rounded-full", slot.good ? "bg-[var(--good)]" : "bg-[var(--avoid)]")} />
       <span className={cx("w-16 text-[12.5px]", slot.night ? "text-ink-dim" : "text-ink")}>{slot.name}</span>
       <span className="flex-1 text-[11px] tnum text-muted">{slot.from} – {slot.to}</span>
-      {slot.active && <span className="rounded-full px-2 py-0.5 text-[9px] btn-saffron">NOW</span>}
+      {slot.active && <span className="rounded-full px-2 py-0.5 text-[9px] btn-saffron">Now</span>}
       <span className={cx("text-[10px]", slot.good ? "text-[var(--good)]" : "text-[var(--avoid)]")}>{slot.good ? "Shubh" : "Avoid"}</span>
     </div>
   );
@@ -66,16 +66,16 @@ export function PanchangScreen() {
         {p.home.vrat && <Pill tone="gold">{p.home.vrat}</Pill>}
       </div>
 
-      <div className="gutter-m flex gap-3 rounded-2xl surface p-4">
+      <div className="gutter-m flex gap-3 rounded-2xl surface p-3">
         <div className="flex flex-1 items-center gap-2.5 border-r pr-3" style={{ borderColor: "var(--line)" }}>
-          <IconSunrise size={15} className="text-[var(--amber)]" strokeWidth={1.7} />
+          <IconSunrise size={15} className="text-[var(--bhagwa)]" strokeWidth={1.7} />
           <div>
             <div className="eyebrow text-muted">Sunrise</div>
             <div className="text-[12.5px] text-ink">{p.sun.rise}</div>
           </div>
         </div>
         <div className="flex flex-1 items-center gap-2.5">
-          <IconSunset size={15} className="text-[var(--amber)]" strokeWidth={1.7} />
+          <IconSunset size={15} className="text-[var(--bhagwa)]" strokeWidth={1.7} />
           <div>
             <div className="eyebrow text-muted">Sunset</div>
             <div className="text-[12.5px] text-ink">{p.sun.set}</div>
@@ -83,24 +83,24 @@ export function PanchangScreen() {
         </div>
       </div>
 
-      <div className="gutter-m mt-4 grid grid-cols-2 gap-2.5">
+      <div className="gutter-m mt-2 grid grid-cols-2 gap-2.5">
         {grid.map(([k, v]) => (
-          <div key={k} className="rounded-2xl surface p-3.5">
+          <div key={k} className="rounded-2xl surface p-3">
             <div className="eyebrow text-muted">{k}</div>
             <div className="mt-0.5 text-[13.5px] text-ink">{v}</div>
           </div>
         ))}
       </div>
 
-      <div className="gutter pt-6">
-        <h3 className="mb-2 eyebrow text-muted">Choghadiya · Today</h3>
+      <div className="gutter pt-2">
+        <h3 className="mb-2 section-title">Choghadiya · Today</h3>
         <div className="overflow-hidden rounded-2xl surface">
           {daySlots.map((c, i) => (
             <ChoghadiyaRow key={i} slot={c} first={i === 0} />
           ))}
         </div>
 
-        <h4 className="mb-2 mt-4 eyebrow text-muted">Night</h4>
+        <h4 className="mb-2 mt-3 section-title">Night</h4>
         <div className="overflow-hidden rounded-2xl surface-2">
           {nightSlots.map((c, i) => (
             <ChoghadiyaRow key={i} slot={c} first={i === 0} />
@@ -108,12 +108,12 @@ export function PanchangScreen() {
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2.5">
-          <div className="rounded-2xl surface p-4">
+          <div className="rounded-2xl surface p-3">
             <div className="text-[11.5px] text-ink">Rahu Kaal</div>
             <div className="mt-0.5 text-[11px] tnum text-[var(--avoid)]">{rahu ? `${rahu.from} – ${rahu.to}` : "–"}</div>
             <div className="mt-1 text-[10px] text-muted">Avoid new beginnings</div>
           </div>
-          <div className="rounded-2xl surface p-4">
+          <div className="rounded-2xl surface p-3">
             <div className="text-[11.5px] text-ink">Yamaganda</div>
             <div className="mt-0.5 text-[11px] tnum text-[var(--avoid)]">{yama ? `${yama.from} – ${yama.to}` : "–"}</div>
             <div className="mt-1 text-[10px] text-muted">Best kept quiet</div>
@@ -153,7 +153,7 @@ export function FestivalsScreen() {
           are lunar and cannot be guessed, and a wrong date in a jyotish app is
           worse than none. Say so rather than showing a blank screen. */}
       {!list.length && (
-        <div className="gutter-m rounded-2xl surface p-4 text-center">
+        <div className="gutter-m rounded-2xl surface p-3 text-center">
           <div className="text-[12.5px] text-ink">No festival dates loaded</div>
           <p className="mx-auto mt-1 measure text-[11px] leading-relaxed text-muted">
             The calendar is served from the backend. Check your connection, or open Panchang
@@ -182,8 +182,8 @@ export function FestivalsScreen() {
         </div>
       )}
 
-      <div className="gutter pt-6">
-        <h3 className="mb-2 eyebrow text-muted">Required Samagri · tick to shop</h3>
+      <div className="gutter pt-2">
+        <h3 className="mb-2 section-title">Required Samagri · tick to shop</h3>
         <div className="grid grid-cols-2 gap-2">
           {samagri.map((s) => (
             <button key={s} onClick={() => setDone((d) => ({ ...d, [s]: !d[s] }))}
@@ -198,10 +198,10 @@ export function FestivalsScreen() {
         </div>
       </div>
 
-      <div className="gutter pt-6">
+      <div className="gutter pt-2">
         {hero && hero.vidhi?.length > 0 && (
           <>
-            <h3 className="mb-2 eyebrow text-muted">Pooja Vidhi</h3>
+            <h3 className="mb-2 section-title">Pooja Vidhi</h3>
             <div className="space-y-2">
               {hero.vidhi.map((v, i) => (
                 <div key={i} className="flex gap-3 rounded-2xl surface p-3">
@@ -216,15 +216,15 @@ export function FestivalsScreen() {
       </div>
 
       {rest.length > 0 && (
-        <div className="gutter pt-7">
-          <h3 className="mb-2 eyebrow text-muted">Upcoming</h3>
+        <div className="gutter pt-2">
+          <h3 className="mb-2 section-title">Upcoming</h3>
           <div className="overflow-hidden rounded-2xl surface">
             {rest.map((f, i) => {
               const Icon = festivalIcon(f.icon);
               return (
                 <div key={f.id} className="flex items-center gap-3 px-4 py-3.5" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ background: "rgba(200,129,49,0.10)" }}>
-                    <Icon size={15} className="text-[var(--amber)]" />
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ background: "var(--surface-2)" }}>
+                    <Icon size={15} className="text-[var(--bhagwa)]" />
                   </span>
                   <span className="flex-1 text-[12.5px] text-ink">{f.name}</span>
                   <span className="text-[11px] text-muted">{fmtFestivalDate(f.date)}</span>
@@ -252,7 +252,7 @@ export function LibraryScreen() {
           <div className="font-display text-2xl text-ink">{article.title}</div>
           <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted"><Clock size={12} /> {article.read} read</div>
           <p className="mt-4 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink-dim">{article.content}</p>
-          <button onClick={() => setOpen(null)} className="mt-5 flex items-center gap-1 text-[11.5px] text-[var(--amber)]">
+          <button onClick={() => setOpen(null)} className="mt-5 flex items-center gap-1 text-[11.5px] text-[var(--bhagwa)]">
             <CaretLeft size={13} /> Back to library
           </button>
         </div>

@@ -75,11 +75,11 @@ export function MalaScreen() {
 
   return (
     <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Mala Jaap</span>
         <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Fire size={12} className="text-[var(--amber)]" />
+          <Fire size={12} className="text-[var(--bhagwa)]" />
           <span className="text-[11px] text-ink">{streak}</span>
         </div>
       </div>
@@ -115,7 +115,7 @@ export function MalaScreen() {
                 <span
                   key={i}
                   className="absolute h-2 w-2 rounded-full"
-                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--ochre-deep)" : "rgba(0,0,0,0.14)" }}
+                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--bhagwa-deep)" : "rgba(0,0,0,0.14)" }}
                 />
               );
             })}
@@ -126,7 +126,7 @@ export function MalaScreen() {
             <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth={6} />
             <motion.circle
               cx={CENTER} cy={CENTER} r={R} fill="none"
-              stroke="var(--amber)" strokeWidth={6} strokeLinecap="round"
+              stroke="var(--bhagwa)" strokeWidth={6} strokeLinecap="round"
               strokeDasharray={circ}
               animate={{ strokeDashoffset: circ * (1 - progress) }}
               transition={{ type: "spring", stiffness: 120, damping: 20 }}

@@ -60,7 +60,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
       {/* brand + collapse */}
       <div className="mb-7 flex items-center gap-3 px-2">
         <button onClick={() => go("home")} className="flex flex-1 items-center gap-3 text-left">
-          <Logomark size={32} className="shrink-0 text-[var(--amber)]" />
+          <Logomark size={32} className="shrink-0 text-[var(--bhagwa)]" />
           <span>
             <Wordmark size={17} />
             <span className="block font-deva text-[9.5px] tracking-wide text-gold">आध्यात्मिक यात्रा</span>
@@ -70,7 +70,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
           <button
             onClick={onToggle}
             aria-label="Hide sidebar"
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-[rgba(200,129,49,0.08)] hover:text-[var(--amber-deep)]"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--amber-deep)]"
           >
             <SidebarSimple size={14} />
           </button>
@@ -94,10 +94,10 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
                       "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
                       active ? "text-ink" : "text-muted hover:text-ink"
                     )}
-                    style={active ? { background: "rgba(200,129,49,0.10)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
+                    style={active ? { background: "var(--surface-2)", border: "1px solid var(--line-gold)" } : { border: "1px solid transparent" }}
                   >
                     <Icon size={16} strokeWidth={active ? 2.1 : 1.7}
-                      className={cx("shrink-0 transition-colors", active ? "text-[var(--amber)]" : "text-[var(--muted)] group-hover:text-[var(--amber)]")} />
+                      className={cx("shrink-0 transition-colors", active ? "text-[var(--bhagwa)]" : "text-[var(--muted)] group-hover:text-[var(--bhagwa)]")} />
                     <span className="text-[12px]">{it.label}</span>
                   </button>
                 );

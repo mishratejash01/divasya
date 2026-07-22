@@ -66,7 +66,7 @@ export function VastuScreen() {
 
   return (
     <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">Vastu Compass</div>
@@ -97,7 +97,7 @@ export function VastuScreen() {
         <div className="flex flex-col items-center gutter">
           <div className="relative mt-3" style={{ width: 270, height: 270 }}>
             {/* fixed top pointer */}
-            <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "12px solid var(--amber)" }} />
+            <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "12px solid var(--bhagwa)" }} />
             <div className="absolute inset-0 rounded-full surface" style={{ border: "1px solid var(--line)", transform: `rotate(${-heading}deg)`, transition: live ? "transform 0.12s linear" : undefined }}>
               {DIRS16.map((d, i) => {
                 const a = (i / 16) * 360;
@@ -128,7 +128,7 @@ export function VastuScreen() {
             </button>
           )}
 
-          <div className="mt-5 w-full rounded-2xl card-temple p-4">
+          <div className="mt-5 w-full rounded-2xl card-temple p-3">
             <div className="eyebrow text-gold">Facing {z.zone}</div>
             <div className="mt-1 text-[13.5px] text-ink">{z.use}</div>
             <div className="mt-1 text-[11px] leading-relaxed text-muted">{z.tip}</div>
@@ -138,7 +138,7 @@ export function VastuScreen() {
 
       {/* zone guide */}
       <div className="mt-4 flex-1 overflow-y-auto gutter screen-bottom no-scrollbar">
-        <h3 className="mb-2 eyebrow text-muted">Direction Guide</h3>
+        <h3 className="mb-2 section-title">Direction Guide</h3>
         <div className="overflow-hidden rounded-2xl surface">
           {(["NE", "E", "SE", "S", "SW", "W", "NW", "N"] as const).map((d, i) => {
             const zd = zoneFor(d);

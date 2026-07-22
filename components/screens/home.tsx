@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { CaretRight, List, MagnifyingGlass } from "@phosphor-icons/react";
+import { CaretRight, List, MagnifyingGlass, Wallet } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
   IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
@@ -280,6 +280,9 @@ export function HomeScreen() {
               }
             >
               <IconBell size={22} strokeWidth={1.9} className="text-ink" />
+            </button>
+            <button onClick={() => go("menu")} aria-label="Wallet" className="shrink-0">
+              <Wallet size={22} weight="bold" className="text-ink" />
             </button>
             <button onClick={() => go("menu")} aria-label="Search" className="shrink-0">
               <MagnifyingGlass size={22} weight="bold" className="text-ink" />
@@ -669,7 +672,7 @@ export function HomeScreen() {
       </div>
 
       <div className="flex items-center justify-center gap-2 gutter pb-2 pt-5">
-        <Logomark size={13} className="text-[var(--amber)]" />
+        <Logomark size={13} className="text-[var(--bhagwa)]" />
         <span className="text-[10.5px] text-muted">Divasya · Spiritual Journey</span>
       </div>
     </div>

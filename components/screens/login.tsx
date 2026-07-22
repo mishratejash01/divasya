@@ -35,11 +35,11 @@ export function LoginScreen() {
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="text-[var(--amber)]"
+          className="text-[var(--bhagwa)]"
         >
           <Logomark size={83} />
         </motion.div>
-        <h1 className="mt-6 font-display text-[39.5px] leading-none tracking-[0.06em] text-[var(--amber)]">Divasya</h1>
+        <h1 className="mt-6 font-display text-[39.5px] leading-none tracking-[0.06em] text-[var(--bhagwa)]">Divasya</h1>
         <p className="mt-3 font-deva text-[13.5px] text-gold">आपकी आध्यात्मिक यात्रा</p>
         <p className="mt-1.5 text-[11.5px] text-muted">Understand your time. Move with it.</p>
       </div>

@@ -94,7 +94,7 @@ function RoutedApp() {
             aria-label="Show sidebar"
             className="absolute left-4 top-4 z-40 hidden h-9 w-9 place-items-center rounded-full surface lg:grid"
           >
-            <SidebarSimple size={15} className="text-[var(--amber)]" />
+            <SidebarSimple size={15} className="text-[var(--bhagwa)]" />
           </button>
         )}
       </main>
@@ -118,7 +118,7 @@ function Splash() {
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: [0.55, 1, 0.55], scale: 1 }}
         transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-        className="text-[var(--amber)]"
+        className="text-[var(--bhagwa)]"
       >
         <Logomark size={65} />
       </motion.div>

@@ -33,7 +33,7 @@ const SECTIONS: { title: string; items: Item[] }[] = [
     ],
   },
   {
-    title: "Tools",
+    title: "Guides & Tools",
     items: [
       { label: "Vastu Compass", icon: IconCompass, to: "vastu", live: true },
       { label: "Naamkaran", icon: IconBaby, to: "naamkaran", live: true },
@@ -56,13 +56,13 @@ export function MoreScreen() {
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <span className="font-display text-lg text-ink">Menu</span>
       </div>
 
       {/* profile */}
-      <button className="gutter-m flex gutter-w items-center gap-3 rounded-2xl card-temple p-4 text-left">
+      <button className="gutter-m flex gutter-w items-center gap-3 rounded-2xl card-temple p-3 text-left">
         <Avatar name={name} size={47} tint="#C88131" />
         <div className="flex-1">
           <div className="font-display text-[15.5px] text-ink">{name}</div>
@@ -72,8 +72,8 @@ export function MoreScreen() {
       </button>
 
       {SECTIONS.map((sec) => (
-        <div key={sec.title} className="gutter pt-6">
-          <h3 className="mb-2 eyebrow text-muted">{sec.title}</h3>
+        <div key={sec.title} className="gutter pt-2">
+          <h3 className="mb-2 section-title">{sec.title}</h3>
           <div className="overflow-hidden rounded-2xl surface">
             {sec.items.map((it, i) => {
               const Icon = it.icon;
@@ -82,7 +82,7 @@ export function MoreScreen() {
                   onClick={() => it.to && go(it.to, it.params)}
                   className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                   style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                  <Icon size={16} className="text-[var(--amber)]" strokeWidth={1.7} />
+                  <Icon size={16} className="text-[var(--bhagwa)]" strokeWidth={1.7} />
                   <span className="flex-1 text-[12.5px] text-ink">{it.label}</span>
                   {it.live && (
                     <span className="rounded-full px-2 py-0.5 text-[9px] font-medium tracking-wide"
@@ -96,7 +96,7 @@ export function MoreScreen() {
         </div>
       ))}
 
-      <div className="gutter pt-6">
+      <div className="gutter pt-2">
         <div className="overflow-hidden rounded-2xl surface">
           {UTILITY.map((it, i) => {
             const Icon = it.icon;
@@ -113,8 +113,8 @@ export function MoreScreen() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-7 text-[10px] text-muted tracking-widest">
-        <Logomark size={13} className="text-[var(--amber)]" /> Divasya · Spiritual Journey
+      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-5 text-[10px] text-muted">
+        <Logomark size={13} className="text-[var(--bhagwa)]" /> Divasya · Spiritual Journey
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ export function cx(...a: (string | false | null | undefined)[]) {
 /**
  * Divasya logomark — celestial mandala inspired by the brand's symbol:
  * concentric rings, moon phases and the intuitive eye with radiating light.
- * Drawn in currentColor; use with text-[var(--amber)].
+ * Drawn in currentColor; use with text-[var(--bhagwa)].
  */
 export function Logomark({ size = 48, className }: { size?: number; className?: string }) {
   return (
@@ -65,7 +65,7 @@ export function Logomark({ size = 48, className }: { size?: number; className?: 
 export function Wordmark({ className, size = 22 }: { className?: string; size?: number }) {
   return (
     <span
-      className={cx("font-display text-[var(--amber)]", className)}
+      className={cx("font-display text-[var(--bhagwa)]", className)}
       style={{ fontSize: size, letterSpacing: "-0.018em", lineHeight: 1 }}
     >
       Divasya
@@ -91,7 +91,7 @@ export function initialsOf(name: string): string {
     .toUpperCase();
 }
 
-// Warm avatar: cream disc, gold hairline, amber monogram, optional status dot.
+// Avatar: tinted disc, hairline, bhagwa monogram, optional status dot.
 export function Avatar({
   name,
   size = 44,
@@ -113,7 +113,7 @@ export function Avatar({
             ? `linear-gradient(160deg, ${tint}26, var(--surface-2))`
             : "var(--surface-2)",
           border: "1px solid var(--line-gold)",
-          color: "var(--amber-deep)",
+          color: "var(--bhagwa-deep)",
           fontSize: size * 0.34,
         }}
       >
@@ -123,7 +123,7 @@ export function Avatar({
         <span
           className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full"
           style={{
-            background: status === "online" ? "var(--good)" : "var(--ochre-deep)",
+            background: status === "online" ? "var(--good)" : "var(--bhagwa)",
             border: "2px solid var(--surface)",
           }}
         />
@@ -132,7 +132,7 @@ export function Avatar({
   );
 }
 
-// Deity medallion — warm blush radial, amber ॐ. Refined, consistent, no emoji.
+// Deity medallion — soft radial tint, bhagwa ॐ. No emoji.
 export function DeityGlyph({
   deity,
   size = 44,
@@ -149,7 +149,7 @@ export function DeityGlyph({
         height: size,
         background: `radial-gradient(circle at 38% 30%, ${tint}2b, var(--surface-2) 74%)`,
         border: "1px solid var(--line-gold)",
-        color: "var(--amber-deep)",
+        color: "var(--bhagwa-deep)",
         fontSize: Math.round(size * 0.46),
         lineHeight: 1,
       }}
@@ -245,7 +245,7 @@ export function Pill({
         "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px]",
         map[tone]
       )}
-      style={{ background: "rgba(206,185,118,0.14)", border: "1px solid var(--line)" }}
+      style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}
     >
       {children}
     </span>

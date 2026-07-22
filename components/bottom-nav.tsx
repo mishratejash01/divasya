@@ -38,7 +38,7 @@ export function BottomNav() {
             <Icon
               size={20}
               strokeWidth={active ? 2.3 : 1.8}
-              className={cx("transition-colors", active ? "text-[var(--amber)]" : "text-muted")}
+              className={cx("transition-colors", active ? "text-[var(--bhagwa)]" : "text-muted")}
             />
             <span
               className={cx(

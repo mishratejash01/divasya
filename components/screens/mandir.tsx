@@ -59,7 +59,7 @@ export function MandirScreen() {
 
   return (
     <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-3">
+      <div className="flex items-center gap-3 gutter py-2.5">
         <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
         <div>
           <div className="font-display text-lg leading-tight text-ink">My Mandir</div>
@@ -90,7 +90,7 @@ export function MandirScreen() {
         <div className="absolute inset-x-0 top-0 flex items-start justify-around px-3 pt-2.5">
           {Array.from({ length: 17 }).map((_, i) => (
             <span key={i} className="block h-1.5 w-1.5 rounded-full"
-              style={{ background: i % 2 ? "var(--amber)" : "var(--ochre)", opacity: 0.6, transform: `translateY(${i % 2 ? 5 : 0}px)` }} />
+              style={{ background: i % 2 ? "var(--bhagwa)" : "var(--ochre)", opacity: 0.6, transform: `translateY(${i % 2 ? 5 : 0}px)` }} />
           ))}
         </div>
 
@@ -130,7 +130,7 @@ export function MandirScreen() {
         <motion.div
           key={bellKey}
           animate={{ rotate: [0, 16, -14, 10, -7, 0] }} transition={{ duration: 0.7 }}
-          className="absolute right-5 top-11"><IconBell size={23} className="text-[var(--ochre-deep)]" /></motion.div>
+          className="absolute right-5 top-11"><IconBell size={23} className="text-[var(--bhagwa-deep)]" /></motion.div>
 
         {/* falling petals */}
         <AnimatePresence>
@@ -150,7 +150,7 @@ export function MandirScreen() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
               className="absolute inset-x-0 bottom-14 flex items-end justify-center gap-1">
               {Array.from({ length: 14 }).map((_, i) => (
-                <motion.span key={i} className="w-1 rounded-full bg-[var(--amber)]"
+                <motion.span key={i} className="w-1 rounded-full bg-[var(--bhagwa)]"
                   animate={{ height: [6, 8 + ((i * 7) % 22), 6] }}
                   transition={{ duration: 0.6 + (i % 4) * 0.15, repeat: Infinity, ease: "easeInOut" }} />
               ))}
@@ -177,7 +177,7 @@ export function MandirScreen() {
           return (
             <button key={a.label} onClick={a.run}
               className={cx("flex flex-col items-center gap-1.5 rounded-2xl py-3", a.on ? "btn-saffron" : "surface")}>
-              <Icon size={17} className={a.on ? "" : "text-[var(--amber)]"} strokeWidth={1.8} />
+              <Icon size={17} className={a.on ? "" : "text-[var(--bhagwa)]"} strokeWidth={1.8} />
               <span className={cx("text-center text-[9px] leading-tight", a.on ? "" : "text-muted")}>{a.label}</span>
             </button>
           );
