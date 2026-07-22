@@ -9,7 +9,7 @@ import {
   type IconComponent,
 } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
-import { Avatar, Logomark, cx } from "../ui";
+import { initialsOf, Logomark, cx } from "../ui";
 import { usePanchang } from "@/lib/use-panchang";
 import {
   useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
@@ -68,13 +68,6 @@ const SECTIONS: { title: string; layout: "stack" | "row"; blocks: Block[] }[] = 
   },
 ];
 
-function salutation(d: Date): string {
-  const h = d.getHours();
-  if (h < 12) return "Suprabhat,";
-  if (h < 17) return "Namaste,";
-  return "Shubh Sandhya,";
-}
-
 export function HomeScreen() {
   const { go, sendPush, streak, japaToday, profile } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
@@ -112,6 +105,23 @@ export function HomeScreen() {
 
   const nextFestival = festivals[0];
 
+  // Rows beside the mark, in three steps: the name is the title, the sign sits
+  // a step under it, and the birth and day details run smaller beneath. Birth
+  // details only appear when the profile actually carries them.
+  const userRows: { text: string; lead?: boolean }[] = [
+    { text: rashi, lead: true },
+    profile?.dob
+      ? {
+          text: `Born ${new Date(profile.dob + "T00:00:00").toLocaleDateString("en-IN", {
+            day: "numeric", month: "short", year: "numeric",
+          })}${profile.tob ? ` · ${profile.tob}` : ""}`,
+        }
+      : null,
+    profile?.birthplace ? { text: profile.birthplace } : null,
+    pg ? { text: `${pg.weekday} · ${pg.dateLabel}` } : null,
+    pg ? { text: `${pg.tithiDisplay} · ${pg.nakshatra}` } : null,
+  ].filter(Boolean) as { text: string; lead?: boolean }[];
+
   useEffect(() => {
     if (firedOnce || !chog) return;
     firedOnce = true;
@@ -147,35 +157,6 @@ export function HomeScreen() {
         >
           <IconBell size={16} className="text-ink" />
         </button>
-      </div>
-
-      {/* Greeting and the day, on the page rather than in a card. The day was
-          being told three times over — tithi in the greeting, weekday and date
-          in the Sandesh header, masa and nakshatra in its foot — which is what
-          made this area feel packed. It is stated once, here, on one line. */}
-      <div className="flex items-center gap-2.5 gutter pt-1">
-        <Avatar name={name} size={40} tint="#F26B0F" />
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[15px] leading-tight text-ink">
-            <span className="text-muted">{salutation(new Date())} </span>
-            <span className="font-display text-[17px]">{name}</span>
-          </div>
-          <div className="mt-0.5 flex items-center gap-1.5">
-            {/* A vrat is the one thing that changes what someone does today, so
-                it keeps the accent rather than being lost in the muted run. */}
-            {pg?.vrat && (
-              <span
-                className="shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10px] text-white"
-                style={{ background: "var(--bhagwa)" }}
-              >
-                {pg.vrat}
-              </span>
-            )}
-            <span className="truncate text-[11px] tnum text-muted">
-              {pg ? `${pg.weekdayShort} · ${pg.dateLabel} · ${pg.tithiDisplay} · ${pg.nakshatra}` : "…"}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* What is running now — the one time-sensitive thing on the screen, so
@@ -232,6 +213,49 @@ export function HomeScreen() {
                 <IconShare size={13} /> Share
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Who this chart belongs to. The mark is framed on all four sides and
+          stretches the full height of the block; the details run beside it as
+          rows, stepping down in size from the name. */}
+      <div className="gutter pt-1.5">
+        <div className="flex items-stretch gap-3 rounded-2xl surface p-2.5">
+          <div
+            className="grid w-[68px] shrink-0 place-items-center self-stretch rounded-xl"
+            style={{ background: "var(--surface-2)", border: "1px solid var(--line-card)" }}
+          >
+            <span className="font-display text-[24px] text-[var(--bhagwa-deep)]">
+              {initialsOf(name)}
+            </span>
+          </div>
+
+          <div className="min-w-0 flex-1 py-0.5">
+            <div className="flex items-center gap-1.5">
+              <span className="truncate font-display text-[19px] leading-tight text-ink">{name}</span>
+              {/* A vrat is the one thing that changes what someone does today,
+                  so it keeps the accent instead of joining the run of rows. */}
+              {pg?.vrat && (
+                <span
+                  className="shrink-0 rounded-[4px] px-1.5 py-0.5 text-[10px] text-white"
+                  style={{ background: "var(--bhagwa)" }}
+                >
+                  {pg.vrat}
+                </span>
+              )}
+            </div>
+            {userRows.map((r) => (
+              <div
+                key={r.text}
+                className={cx(
+                  "truncate tnum leading-snug text-ink",
+                  r.lead ? "mt-1 text-[12.5px]" : "mt-0.5 text-[11px]"
+                )}
+              >
+                {r.text}
+              </div>
+            ))}
           </div>
         </div>
       </div>

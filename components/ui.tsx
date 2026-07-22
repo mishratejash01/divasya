@@ -73,6 +73,24 @@ export function Wordmark({ className, size = 22 }: { className?: string; size?: 
   );
 }
 
+/**
+ * Monogram for a name. Strips honorifics, then anything that isn't a letter —
+ * otherwise the full stop left behind by "Dr." becomes an initial and the mark
+ * reads ".A".
+ */
+export function initialsOf(name: string): string {
+  return name
+    .replace(/\b(ji|dr|maa|guru|acharya|pandit|jyotishi)\b\.?/gi, "")
+    .replace(/[^\p{L}\s]/gu, "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
 // Warm avatar: cream disc, gold hairline, amber monogram, optional status dot.
 export function Avatar({
   name,
@@ -85,18 +103,7 @@ export function Avatar({
   tint?: string;
   status?: "online" | "busy";
 }) {
-  // Strip honorifics, then anything that isn't a letter — otherwise the full
-  // stop left behind by "Dr." becomes an initial and the disc reads ".A".
-  const initials = name
-    .replace(/\b(ji|dr|maa|guru|acharya|pandit|jyotishi)\b\.?/gi, "")
-    .replace(/[^\p{L}\s]/gu, "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
+  const initials = initialsOf(name);
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <div
