@@ -71,7 +71,10 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
   },
 ];
 
-// Short labels — the strip has to fit a phone without scrolling to be useful.
+// A tab earns its place by addressing a section worth jumping to. Sandesh,
+// Japa and Rashi are each a single card — a tab for them is a control nobody
+// would reach for. The strip fills its width by spreading these, not by
+// padding the list out with filler.
 const TABS = [
   { id: "today", label: "Today" },
   { id: "astro", label: "Astro" },
@@ -227,7 +230,10 @@ export function HomeScreen() {
           </div>
         </div>
 
-        <div className="flex gap-4 gutter overflow-x-auto no-scrollbar">
+        {/* Packed left with a fixed gap rather than spread edge to edge —
+            justify-between stretches the five tabs right across a wide window
+            and leaves them floating apart. */}
+        <div className="flex items-end gap-5 gutter overflow-x-auto no-scrollbar">
           {TABS.map((t) => {
             const on = activeTab === t.id;
             return (
@@ -235,7 +241,7 @@ export function HomeScreen() {
                 key={t.id}
                 onClick={() => scrollToSection(t.id)}
                 className={cx(
-                  "shrink-0 whitespace-nowrap pb-1.5 pt-0 text-[11.5px] transition-colors",
+                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] transition-colors",
                   on ? "font-medium text-ink" : "text-[rgba(23,22,19,0.55)]"
                 )}
                 style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
