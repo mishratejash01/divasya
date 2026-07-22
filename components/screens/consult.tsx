@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CaretLeft, Clock, Gift, PaperPlaneTilt, ShieldCheck, Star, Wallet } from "@phosphor-icons/react";
+import { CaretLeft, Check, Clock, Gift, PaperPlaneTilt, ShieldCheck, Star, Wallet } from "@phosphor-icons/react";
+import { IconChat } from "../icons";
 import { useApp } from "../app-context";
 import { Avatar, cx, Typing } from "../ui";
 import { ASTROLOGERS } from "@/lib/demo";
@@ -11,53 +12,117 @@ import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
 import * as db from "@/lib/db";
 
 /* ---------------- Directory ---------------- */
+
+// Chat action ground. Classic sky blue (#87CEEB) carries white type at 1.7:1
+// and is simply unreadable; this holds the blue while clearing 4.8:1.
+const CHAT_BLUE = "#1478B0";
+// The verified tick, in the blue people already read as "verified".
+const VERIFIED_BLUE = "#1D9BF0";
+// Rating star — golden, not the app's orange. A rating is its own convention
+// and reads wrong in the brand accent.
+const STAR_GOLD = "#E9A800";
+
 export function ConsultScreen() {
   const { back, go, wallet } = useApp();
   const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
   return (
-    <div className="flex h-full flex-col screen-top">
-      <div className="flex items-center gap-3 gutter py-2.5">
-        <button onClick={back} className="grid h-9 w-9 place-items-center rounded-full surface"><CaretLeft size={16} /></button>
-        <span className="font-display text-lg text-ink">Consult Astrologers</span>
-        <div className="ml-auto flex items-center gap-1.5 rounded-full surface px-3 py-1.5">
-          <Wallet size={12} className="text-[var(--bhagwa)]" />
-          <span className="text-[11px] text-ink">₹{wallet}</span>
-        </div>
+    <div className="flex h-full flex-col">
+      {/* Yellow header, matching the bar on home. Wallet reads as plain text
+          beside its mark — a pill around a balance implies a button. */}
+      <div
+        className="flex items-center gap-3 gutter"
+        style={{
+          background: "var(--bar-yellow)",
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
+          paddingBottom: 11,
+        }}
+      >
+        <button onClick={back} aria-label="Back" className="shrink-0">
+          <CaretLeft size={20} weight="regular" className="text-ink" />
+        </button>
+        <span className="font-display text-[17px] text-ink">Consult Astrologers</span>
+        <span className="ml-auto flex shrink-0 items-center gap-1.5">
+          <Wallet size={17} weight="bold" className="text-ink" />
+          <span className="text-[13px] tnum font-medium text-ink">₹{wallet}</span>
+        </span>
       </div>
 
-      <div className="gutter-m mb-3 flex items-center gap-3 rounded-2xl card-temple px-4 py-3">
-        <Gift size={18} className="text-[var(--bhagwa)]" />
-        <div>
-          <div className="text-[11.5px] font-medium text-ink">Your first chat is free</div>
-          <div className="text-[10.5px] text-muted">Talk to any verified astrologer · no queue</div>
+      <div className="flex-1 overflow-y-auto screen-bottom no-scrollbar">
+        {/* Promotional band — deep ground, not another pale card, so the offer
+            actually reads as an offer. */}
+        <div className="gutter pt-2">
+          <div
+            className="flex items-center gap-3 rounded-2xl px-3 py-2.5"
+            style={{ background: "linear-gradient(140deg, #7E1D2E, #46101C)" }}
+          >
+            <Gift size={20} weight="regular" className="shrink-0 text-white" />
+            <div className="min-w-0">
+              <div className="text-[12px] font-medium text-white">Your first chat is free</div>
+              <div className="truncate text-[10.5px] text-white/75">
+                Talk to any verified astrologer · no queue
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 space-y-2.5 overflow-y-auto px-4 pb-6 no-scrollbar">
-        {astrologers.map((a) => (
-          <button key={a.id} onClick={() => go("consultChat", { astrologerId: a.id })}
-            className="flex w-full items-center gap-3 rounded-2xl surface p-3 text-left">
-            <Avatar name={a.name} size={45} tint={a.grad[0]} status={a.status} />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="truncate text-[12px] font-medium text-ink">{a.name}</span>
-                <ShieldCheck size={12} className="shrink-0 text-[var(--good)]" />
+        <div className="gutter space-y-2 pt-2">
+          {astrologers.map((a) => (
+            // One tap target for the whole card; the Chat block is the visible
+            // affordance, not a nested button.
+            <button
+              key={a.id}
+              onClick={() => go("consultChat", { astrologerId: a.id })}
+              className="w-full rounded-2xl surface p-2.5 text-left"
+            >
+              <div className="flex gap-2.5">
+                {/* Photo, then its own credentials directly beneath it — the
+                    rating belongs to the person, so it sits under their face
+                    rather than in the run of text beside it. */}
+                <div className="flex w-[54px] shrink-0 flex-col items-center gap-1">
+                  <span className="relative">
+                    <Avatar name={a.name} size={44} tint={a.grad[0]} />
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 grid h-[15px] w-[15px] place-items-center rounded-full"
+                      style={{ background: VERIFIED_BLUE, border: "2px solid var(--surface)" }}
+                    >
+                      <Check size={8} weight="bold" className="text-white" />
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-0.5 text-[10.5px] tnum text-ink">
+                    <Star size={11} weight="fill" style={{ color: STAR_GOLD }} />
+                    {a.rating}
+                  </span>
+                  <span className="text-[9px] tnum leading-none text-muted">{a.orders} orders</span>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[12.5px] font-medium text-ink">{a.name}</div>
+                  <div className="truncate text-[10.5px] text-muted">{a.specialty}</div>
+                  {/* second row, right side — experience and what it costs */}
+                  <div className="mt-1 flex items-center justify-end gap-2">
+                    <span className="shrink-0 text-[10.5px] tnum text-ink">
+                      {a.exp}y ·{" "}
+                      {a.status === "online" ? (
+                        <span className="font-medium text-[var(--good)]">Free</span>
+                      ) : (
+                        <span>₹{a.rate}/min</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="truncate text-[10.5px] text-muted">{a.specialty}</div>
-              <div className="mt-0.5 flex items-center gap-2 text-[10px] text-muted">
-                <span className="flex items-center gap-0.5 text-gold"><Star size={11} fill="currentColor" /> {a.rating}</span>
-                <span>· {a.orders} orders</span>
-                <span>· {a.exp}y</span>
+
+              <div className="mt-2 flex justify-end">
+                <span
+                  className="flex items-center gap-1.5 rounded-[5px] px-3.5 py-1.5 text-[11.5px] text-white"
+                  style={{ background: CHAT_BLUE }}
+                >
+                  <IconChat size={14} strokeWidth={1.7} /> Chat
+                </span>
               </div>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <span className={cx("rounded-full px-3 py-1.5 text-[11px]", a.status === "online" ? "btn-saffron" : "surface text-muted")}>
-                {a.status === "online" ? "Free" : a.wait}
-              </span>
-              <span className="text-[9.5px] text-muted">₹{a.rate}/min</span>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
