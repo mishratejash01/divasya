@@ -15,6 +15,7 @@ import { MalaScreen } from "./screens/mala";
 import { MandirScreen } from "./screens/mandir";
 import { KundliScreen } from "./screens/kundli";
 import { ShopScreen, ProductScreen, CartScreen } from "./screens/shop";
+import { CheckoutScreen } from "./screens/checkout";
 import { JyotishiScreen } from "./screens/jyotishi";
 import { ConsultScreen, ConsultChatScreen } from "./screens/consult";
 import { MoreScreen } from "./screens/more";
@@ -41,6 +42,7 @@ function Screen() {
     case "shop": return <ShopScreen />;
     case "product": return <ProductScreen />;
     case "cart": return <CartScreen />;
+    case "checkout": return <CheckoutScreen />;
     case "ai": return <JyotishiScreen />;
     case "consult": return <ConsultScreen />;
     case "consultChat": return <ConsultChatScreen />;
