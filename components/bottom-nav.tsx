@@ -1,14 +1,14 @@
 "use client";
 
-import { IconHome, IconEye, IconChat, IconMore, IconComponent } from "./icons";
+import { IconHome, IconEye, IconShop, IconMore, IconComponent } from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { cx } from "./ui";
 
 const TABS: { id: ScreenName; label: string; icon: IconComponent; match: ScreenName[] }[] = [
   { id: "home", label: "Home", icon: IconHome, match: ["home"] },
   { id: "ai", label: "Jyotishi", icon: IconEye, match: ["ai"] },
-  { id: "consult", label: "Consult", icon: IconChat, match: ["consult", "consultChat"] },
-  { id: "menu", label: "More", icon: IconMore, match: ["menu", "vastu", "naamkaran", "library", "festivals", "puja", "temple", "panchang", "mala", "mandir", "sandesh"] },
+  { id: "shop", label: "Store", icon: IconShop, match: ["shop", "product", "cart", "checkout", "orders"] },
+  { id: "menu", label: "Menu", icon: IconMore, match: ["menu", "account", "profile", "category", "vastu", "naamkaran", "library", "festivals", "puja", "temple", "panchang", "mala", "mandir", "sandesh", "consult", "consultChat", "kundli"] },
 ];
 
 export function BottomNav() {

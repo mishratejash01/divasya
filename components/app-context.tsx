@@ -12,7 +12,8 @@ export type ScreenName =
   | "home" | "mala" | "mandir" | "ai" | "consult" | "consultChat"
   | "panchang" | "festivals" | "library" | "vastu" | "naamkaran"
   | "puja" | "temple" | "sandesh" | "kundli" | "menu" | "category"
-  | "shop" | "product" | "cart" | "checkout";
+  | "shop" | "product" | "cart" | "checkout"
+  | "account" | "profile" | "orders";
 
 export type ScreenState = { name: ScreenName; params?: Record<string, unknown> };
 export type PushPayload = { title: string; body: string; tone?: "auspicious" | "info" };

@@ -9,6 +9,7 @@ import {
   type IconComponent,
 } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
+import { NAV, NAV_ORDER } from "../nav-map";
 import { DeityPortrait, Logomark, cx } from "../ui";
 import { usePanchang } from "@/lib/use-panchang";
 import {
@@ -32,58 +33,18 @@ type Block = {
 //           tiles are the main way in and want presence.
 //   row   — mark beside the name, 2-up. For the short utility list, where a
 //           column of tall tiles would be all air.
-const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: Block[] }[] = [
-  {
-    title: "Astrology & Guidance",
-    tab: "astro",
-    layout: "stack",
-    blocks: [
-      { label: "My Kundli", icon: IconStar, to: "kundli" },
-      { label: "AI Jyotishi", icon: IconEye, to: "ai", params: { mode: "jyotishi" } },
-      { label: "Talk to Devta", icon: IconDiya, to: "ai", params: { mode: "deity" } },
-      { label: "Panchang", icon: IconWheel, to: "panchang" },
-      { label: "Consult", icon: IconChat, to: "consult" },
-      { label: "Naamkaran", icon: IconBaby, to: "naamkaran" },
-    ],
-  },
-  {
-    title: "Devotion",
-    tab: "devotion",
-    layout: "stack",
-    blocks: [
-      { label: "Mala Jaap", icon: IconMala, to: "mala" },
-      { label: "My Mandir", icon: IconMandir, to: "mandir" },
-      { label: "Online Puja", icon: IconLotus, to: "puja" },
-      { label: "Live Darshan", icon: IconDarshan, to: "temple" },
-      { label: "Chadhava", icon: IconFlower, to: "puja", params: { tab: "chadhava" } },
-      { label: "Festivals", icon: IconAarti, to: "festivals" },
-    ],
-  },
-  {
-    title: "The Store",
-    tab: "store",
-    layout: "stack",
-    blocks: [
-      { label: "Rudraksha", icon: IconMala, to: "shop", params: { cat: "rudraksha" } },
-      { label: "Rashi Bands", icon: IconStar, to: "shop", params: { cat: "rashi" } },
-      { label: "Mulank Bands", icon: IconWheel, to: "shop", params: { cat: "mulank" } },
-      { label: "Malas", icon: IconFlower, to: "shop", params: { cat: "malas" } },
-      { label: "Studio", icon: IconJournal, to: "shop", params: { cat: "studio" } },
-      { label: "Everything", icon: IconShop, to: "shop" },
-    ],
-  },
-  {
-    title: "Guides & Tools",
-    tab: "tools",
-    layout: "row",
-    blocks: [
-      { label: "Vastu", icon: IconCompass, to: "vastu" },
-      { label: "Library", icon: IconJournal, to: "library" },
-      { label: "Sandesh", icon: IconSandesh, to: "sandesh" },
-      { label: "All features", icon: IconMore, to: "menu" },
-    ],
-  },
-];
+// Home is a digest, not the directory. Each shelf shows the first few of its
+// group and hands off to the category page for the rest — the full list lives
+// in the Menu. Both read the same nav map, so they cannot disagree.
+const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: Block[] }[] =
+  NAV_ORDER.map((id) => ({
+    title: NAV[id].title,
+    tab: id,
+    layout: id === "tools" ? "row" : "stack",
+    // three fills the 3-up grid exactly; four fills the 2-up one. Neither
+    // leaves a ragged last row.
+    blocks: NAV[id].entries.slice(0, id === "tools" ? 4 : 3),
+  }));
 
 // A tab earns its place by addressing a section worth jumping to — Sandesh,
 // Japa and Rashi are each a single card, and a tab that scrolls you to one card
@@ -481,7 +442,15 @@ export function HomeScreen() {
         <Fragment key={sec.title}>
         <div data-section={sec.tab} className="gutter pt-1.5">
           <section className="rounded-2xl surface p-2.5">
-            <h3 className="section-title mb-2.5">{sec.title}</h3>
+            <div className="mb-2.5 flex items-end justify-between">
+              <h3 className="section-title">{sec.title}</h3>
+              <button
+                onClick={() => go("category", { id: sec.tab })}
+                className="flex items-center gap-0.5 text-[11px] text-gold"
+              >
+                See all <CaretRight size={11} weight="bold" />
+              </button>
+            </div>
             <div
               className={cx(
                 "grid gap-2",

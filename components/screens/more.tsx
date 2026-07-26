@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, EnvelopeSimple, ShareNetwork, SignOut } from "@phosphor-icons/react";
+import { Check, EnvelopeSimple, PencilSimple, ShareNetwork, SignOut } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { Avatar, Logomark, ScreenHeader } from "../ui";
 import { rashiLabel } from "@/lib/astro";
@@ -23,7 +23,7 @@ function prettyDob(iso: string) {
 }
 
 export function MoreScreen() {
-  const { back, haptic, profile, user, logout } = useApp();
+  const { back, go, haptic, profile, user, logout } = useApp();
   const [shared, setShared] = useState(false);
 
   const name = profile?.name || "Devotee";
@@ -58,18 +58,22 @@ export function MoreScreen() {
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="Account" onBack={back} />
 
-      {/* Who you are, and which login this is. Not a button — there is no
-          profile editor behind it, and a row that opens nothing is worse than
-          a row that plainly states a fact. */}
+      {/* Who you are, and which login this is. The card now opens the editor —
+          birth details are the input to every chart the app computes, so they
+          have to be correctable. */}
       <div className="gutter pt-2">
         <div className="overflow-hidden rounded-2xl surface">
-          <div className="flex items-center gap-3 p-3">
+          <button
+            onClick={() => { haptic(6); go("profile"); }}
+            className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-[var(--surface-2)]"
+          >
             <Avatar name={name} size={44} tint="#C88131" />
             <div className="min-w-0 flex-1">
               <div className="truncate font-display text-[15px] text-ink">{name}</div>
               <div className="truncate text-[11px] text-ink">{rashi}</div>
             </div>
-          </div>
+            <PencilSimple size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
+          </button>
           {signedInWith && (
             <div className="flex items-center gap-3 px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
               <EnvelopeSimple size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
@@ -82,14 +86,17 @@ export function MoreScreen() {
             </div>
           )}
           {profile?.dob && (
-            <div className="px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
+            <button
+              onClick={() => { haptic(6); go("profile"); }}
+              className="block w-full px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]"
+              style={{ borderTop: "1px solid var(--line)" }}>
               <div className="text-[10px] leading-none text-[var(--muted-2)]">Birth details</div>
               {/* Read as a date, not as an ISO string. */}
               <div className="mt-1 truncate text-[12px] leading-none text-ink">
                 {prettyDob(profile.dob)}{profile.tob ? `, ${profile.tob}` : ""}
                 {profile.birthplace ? ` · ${profile.birthplace}` : ""}
               </div>
-            </div>
+            </button>
           )}
         </div>
       </div>
@@ -97,7 +104,16 @@ export function MoreScreen() {
       <div className="gutter pt-2">
         <div className="overflow-hidden rounded-2xl surface">
           <button
+            onClick={() => { haptic(6); go("profile"); }}
+            className="flex w-full items-center gap-3 px-3 py-3 text-left"
+          >
+            <PencilSimple size={16} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
+            <span className="flex-1 text-[12.5px] text-ink">Edit your details</span>
+          </button>
+
+          <button
             onClick={share}
+            style={{ borderTop: "1px solid var(--line)" }}
             className="flex w-full items-center gap-3 px-3 py-3 text-left"
           >
             <ShareNetwork size={16} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
