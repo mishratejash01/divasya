@@ -4,7 +4,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { CaretRight, List, MagnifyingGlass, Wallet } from "@phosphor-icons/react";
 import {
   IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
-  IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconMore,
+  IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconShop, IconMore,
   IconGanesha, IconSandesh, IconShare, IconStar, IconWheel,
   type IconComponent,
 } from "../icons";
@@ -60,6 +60,19 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
     ],
   },
   {
+    title: "The Store",
+    tab: "store",
+    layout: "stack",
+    blocks: [
+      { label: "Rudraksha", icon: IconMala, to: "shop", params: { cat: "rudraksha" } },
+      { label: "Rashi Bands", icon: IconStar, to: "shop", params: { cat: "rashi" } },
+      { label: "Mulank Bands", icon: IconWheel, to: "shop", params: { cat: "mulank" } },
+      { label: "Malas", icon: IconFlower, to: "shop", params: { cat: "malas" } },
+      { label: "Studio", icon: IconJournal, to: "shop", params: { cat: "studio" } },
+      { label: "Everything", icon: IconShop, to: "shop" },
+    ],
+  },
+  {
     title: "Guides & Tools",
     tab: "tools",
     layout: "row",
@@ -84,6 +97,7 @@ const TABS: { id: string; label: string; to?: ScreenName }[] = [
   { id: "astro", label: "Astro" },
   { id: "devotion", label: "Devotion" },
   { id: "festival", label: "Festival", to: "festivals" },
+  { id: "store", label: "Store" },
   { id: "tools", label: "Guides" },
   { id: "library", label: "Library" },
 ];

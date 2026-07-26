@@ -53,12 +53,12 @@ function Price({ p, big }: { p: Product; big?: boolean }) {
 
 /* ------------------------------------------------------------------ shop */
 export function ShopScreen() {
-  const { back, go, haptic } = useApp();
+  const { screen, back, go, haptic } = useApp();
   const cats = useShop<ShopCategory[]>(getCategories, []);
   const products = useShop<Product[]>(getProducts, []);
   const cfg = useShop<ShopConfig | null>(getShopConfig, null);
   const cart = useCart();
-  const [filter, setFilter] = useState<string>("all");
+  const [filter, setFilter] = useState<string>((screen.params?.cat as string) || "all");
 
   const shown = useMemo(() => {
     if (filter === "all") return products;
