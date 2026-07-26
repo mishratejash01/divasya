@@ -86,9 +86,9 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
                 "group flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors",
                 !active && "hover:bg-[var(--surface-2)]",
               )}
-              style={active
-                ? { background: "var(--surface-2)", border: "1px solid var(--line-card)" }
-                : { border: "1px solid transparent" }}
+              // Active is a plain fill, no orange rule around it. Rank still
+              // reads from the bhagwa mark and the medium label.
+              style={active ? { background: "var(--surface-2)" } : undefined}
             >
               {/* Rank comes from the mark and the weight. Inactive rows used to
                   be --muted, which since text went near-black is a shade off
@@ -106,13 +106,12 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
         })}
       </nav>
 
-      {/* Account and the way out, in one bordered group — the same shape the
-          Account screen uses. Sign out was a bare text link hanging below the
-          card, flush against the bottom edge. */}
-      <div className="mt-4 overflow-hidden rounded-[8px]" style={{ border: "1px solid var(--line)" }}>
+      {/* Account and the way out — no box, no rules, the same bare rows as the
+          nav above. */}
+      <div className="mt-3">
         <button
           onClick={() => go("menu")}
-          className="flex w-full items-center gap-2.5 p-2.5 text-left transition-colors hover:bg-[var(--surface-2)]"
+          className="flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
         >
           <Avatar name={name} size={30} tint="#C88131" />
           <div className="min-w-0 flex-1">
@@ -123,8 +122,7 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
         </button>
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2.5 px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
-          style={{ borderTop: "1px solid var(--line)" }}
+          className="mt-0.5 flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
         >
           <SignOut size={15} weight="light" className="shrink-0 text-[var(--avoid)]" />
           <span className="text-[11.5px] text-[var(--avoid)]">Sign out</span>

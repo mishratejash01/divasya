@@ -1,5 +1,6 @@
 "use client";
 
+import { Package } from "@phosphor-icons/react";
 import {
   IconStar, IconEye, IconDiya, IconWheel, IconChat, IconBaby,
   IconMala, IconMandir, IconLotus, IconDarshan, IconFlower, IconAarti,
@@ -20,6 +21,9 @@ export type NavGroup = {
   title: string;
   note: string;
   entries: NavEntry[];
+  /** "list" (default) is icon + title + hint in a ruled card. "grid" is bare
+   *  icon-and-title tiles with no note and no hints — the store shelf. */
+  layout?: "list" | "grid";
 };
 
 /**
@@ -62,14 +66,20 @@ export const NAV: Record<string, NavGroup> = {
   store: {
     id: "store",
     title: "The Store",
-    note: "Sacred objects, posted with care.",
+    note: "",
+    layout: "grid",
+    // My Orders first, then the whole shelf and every category — one tile each,
+    // icon and title only. All of them have real products behind them.
     entries: [
-      { label: "Everything", hint: "The whole shelf", icon: IconShop, to: "shop" },
-      { label: "Rudraksha", hint: "Certified beads, 1 to 14 mukhi", icon: IconMala, to: "shop", params: { cat: "rudraksha" } },
-      { label: "Rashi Bands", hint: "One for each of the twelve rashis", icon: IconStar, to: "shop", params: { cat: "rashi" } },
-      { label: "Mulank Bands", hint: "Chosen by your birth number", icon: IconWheel, to: "shop", params: { cat: "mulank" } },
-      { label: "Malas", hint: "For japa and for wearing", icon: IconFlower, to: "shop", params: { cat: "malas" } },
-      { label: "My Orders", hint: "What you have bought, and where it is", icon: IconJournal, to: "orders" },
+      { label: "My Orders", hint: "", icon: Package as unknown as IconComponent, to: "orders" },
+      { label: "Everything", hint: "", icon: IconShop, to: "shop" },
+      { label: "Rudraksha", hint: "", icon: IconMala, to: "shop", params: { cat: "rudraksha" } },
+      { label: "Rashi Bands", hint: "", icon: IconStar, to: "shop", params: { cat: "rashi" } },
+      { label: "Mulank Bands", hint: "", icon: IconWheel, to: "shop", params: { cat: "mulank" } },
+      { label: "Bracelets", hint: "", icon: IconFlower, to: "shop", params: { cat: "bracelets" } },
+      { label: "Malas", hint: "", icon: IconMala, to: "shop", params: { cat: "malas" } },
+      { label: "Anklets", hint: "", icon: IconAarti, to: "shop", params: { cat: "anklets" } },
+      { label: "Studio", hint: "", icon: IconSandesh, to: "shop", params: { cat: "studio" } },
     ],
   },
   tools: {

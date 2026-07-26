@@ -187,52 +187,55 @@ export function ProductScreen() {
     setAdded(true);
   };
 
+  // Buy Now — the Flipkart shortcut: put it in the cart and go straight to
+  // checkout, skipping the cart review.
+  const buyNow = async () => {
+    haptic(12);
+    await cart.add(p.id, 1);
+    go("checkout");
+  };
+
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+    <div className="flex h-full flex-col">
       <ScreenHeader title={p.name} onBack={back} />
 
-      <div className="gutter pt-2">
-        <section className="overflow-hidden rounded-2xl surface">
-          {/* Padded frame, image contained. object-cover cropped the product
-              to the box edges — a cropped diya or idol is the one thing a shop
-              hero must not do. The whole object sits inside its frame now, on a
-              soft ground with room around it. */}
-          <div className="aspect-[4/3] w-full p-5" style={{ background: "var(--surface-2)" }}>
-            <ProductMark product={p} size={62} fit="contain" />
-          </div>
-          <div className="p-3">
-            <div className="text-[14px] leading-tight text-ink">{p.name}</div>
-            {p.subtitle && <div className="mt-0.5 text-[11px] text-muted">{p.subtitle}</div>}
-            <div className="mt-2"><Price p={p} big /></div>
+      {/* Everything scrolls; the buy bar does not. */}
+      <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: 14 }}>
+        {/* No cards, no dividers — everything sits directly on the page. Image,
+            then name and price, then description and shipping, spaced apart. */}
 
-            {p.badges?.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {p.badges.map((b) => (
-                  <span
-                    key={b}
-                    className="flex items-center gap-1 rounded-[4px] px-2 py-1 text-[10px] text-ink"
-                    style={{ background: "var(--surface-2)" }}
-                  >
-                    <ShieldCheck size={11} className="text-[var(--good)]" /> {b}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
-
-      {p.description && (
-        <div className="gutter pt-1.5">
-          <section className="rounded-2xl surface p-2.5">
-            <h3 className="section-title mb-1.5">About this</h3>
-            <p className="measure text-[11.5px] leading-relaxed text-ink">{p.description}</p>
-          </section>
+        {/* Padded frame, image contained on plain white. object-cover cropped
+            the item to the box edges before; the whole object sits inside its
+            padding now. */}
+        <div className="aspect-[4/3] w-full p-6">
+          <ProductMark product={p} size={64} fit="contain" />
         </div>
-      )}
 
-      <div className="gutter pt-1.5">
-        <section className="rounded-2xl surface p-2.5">
+        <div className="gutter pt-1">
+          <div className="text-[15px] leading-tight text-ink">{p.name}</div>
+          {p.subtitle && <div className="mt-0.5 text-[11.5px] text-muted">{p.subtitle}</div>}
+          <div className="mt-2"><Price p={p} big /></div>
+
+          {p.badges?.length > 0 && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {p.badges.map((b) => (
+                <span
+                  key={b}
+                  className="flex items-center gap-1 rounded-[4px] px-2 py-1 text-[10px] text-ink"
+                  style={{ background: "var(--surface-2)" }}
+                >
+                  <ShieldCheck size={11} className="text-[var(--good)]" /> {b}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {p.description && (
+          <p className="measure gutter pt-4 text-[11.5px] leading-relaxed text-ink">{p.description}</p>
+        )}
+
+        <div className="gutter pt-4">
           <div className="flex items-center gap-2 text-[11px] text-muted">
             <Truck size={13} className="shrink-0 text-[var(--bhagwa)]" />
             {p.is_digital
@@ -244,25 +247,34 @@ export function ProductScreen() {
               Free delivery on orders above {money(cfg.shipping.free_above)}, else {money(cfg.shipping.flat_fee)}.
             </div>
           )}
-        </section>
+        </div>
       </div>
 
-      {/* action row */}
-      <div className="gutter pt-2.5">
-        {added ? (
-          <div className="flex gap-2">
-            <button onClick={() => { haptic(6); go("cart"); }} className="flex-1 rounded-2xl py-3 text-[12.5px] btn-saffron">
-              Go to cart · {cart.count}
-            </button>
-            <button onClick={() => setAdded(false)} className="rounded-2xl px-4 py-3 text-[12.5px] btn-white">
-              Keep looking
-            </button>
-          </div>
-        ) : (
-          <button onClick={addToCart} className="w-full rounded-2xl py-3 text-[12.5px] btn-saffron">
-            Add to cart · {money(p.price)}
-          </button>
-        )}
+      {/* Buy bar, Flipkart-style: two actions side by side, pinned above the
+          tab bar so they are always in the thumb's path. Add to Cart takes the
+          lighter orange with dark type; Buy Now takes the deep orange with
+          white — two shades of the same bhagwa, each legible, the primary one
+          heavier. above-tabbar clears the fixed tab bar and collapses on
+          desktop. */}
+      <div
+        className="shrink-0 flex gutter above-tabbar pt-2.5"
+        style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
+      >
+        <button
+          onClick={added ? () => { haptic(6); go("cart"); } : addToCart}
+          className="flex flex-1 items-center justify-center gap-2 rounded-l-2xl py-3.5 text-[13px] font-medium text-ink"
+          style={{ background: "var(--bhagwa-soft)" }}
+        >
+          <ShoppingCartSimple size={17} weight="bold" />
+          {added ? `Go to cart · ${cart.count}` : "Add to Cart"}
+        </button>
+        <button
+          onClick={buyNow}
+          className="flex flex-1 items-center justify-center rounded-r-2xl py-3.5 text-[13px] font-medium text-white"
+          style={{ background: "var(--bhagwa-deep)" }}
+        >
+          Buy Now
+        </button>
       </div>
     </div>
   );
