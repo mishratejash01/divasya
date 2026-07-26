@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CaretRight, Minus, Plus, Trash, ShieldCheck, Truck } from "@phosphor-icons/react";
+import { CaretRight, Minus, Plus, ShoppingCartSimple, Trash, ShieldCheck, Truck } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { ScreenHeader, cx } from "../ui";
 import {
@@ -22,12 +22,12 @@ const CAT_ICON: Record<string, IconComponent> = {
 };
 const markFor = (p: Product): IconComponent => CAT_ICON[p.category_id] ?? IconLotus;
 
-function ProductMark({ product, size = 30 }: { product: Product; size?: number }) {
+function ProductMark({ product, size = 30, fit = "cover" }: { product: Product; size?: number; fit?: "cover" | "contain" }) {
   const Icon = markFor(product);
   const img = product.images?.[0];
   if (img) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={img} alt={product.name} className="h-full w-full object-cover" />;
+    return <img src={img} alt={product.name} className={cx("h-full w-full", fit === "contain" ? "object-contain" : "object-cover")} />;
   }
   return (
     <div className="grid h-full w-full place-items-center" style={{ background: "var(--surface-2)" }}>
@@ -80,22 +80,27 @@ export function ShopScreen() {
         right={
           <button
             onClick={() => { haptic(6); go("cart"); }}
-            className="relative shrink-0 rounded-full px-2.5 py-1 text-[11px] btn-white"
+            aria-label={cart.count > 0 ? `Cart, ${cart.count} item${cart.count === 1 ? "" : "s"}` : "Cart"}
+            className="relative shrink-0"
           >
-            Cart
+            <ShoppingCartSimple size={22} weight="regular" className="text-ink" />
+            {/* Count rides the icon as a badge. The old text button spelt out
+                "Cart 3", which is a label doing an icon's job in a bar that is
+                otherwise all marks. */}
             {cart.count > 0 && (
-              <span className="ml-1 tnum text-[var(--bhagwa-deep)]">{cart.count}</span>
+              <span
+                className="absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-medium leading-none tnum text-white"
+                style={{ background: "var(--bhagwa-deep)" }}
+              >
+                {cart.count > 9 ? "9+" : cart.count}
+              </span>
             )}
           </button>
         }
       />
 
-      {cfg?.copy?.tagline && (
-        <p className="gutter pt-3 text-[11.5px] leading-relaxed text-ink">{cfg.copy.tagline}</p>
-      )}
-
       {/* category filter */}
-      <div className="gutter flex gap-1.5 overflow-x-auto no-scrollbar pt-2.5">
+      <div className="gutter flex gap-1.5 overflow-x-auto no-scrollbar pt-3">
         {chips.map((c) => (
           <button
             key={c.id}
@@ -188,8 +193,12 @@ export function ProductScreen() {
 
       <div className="gutter pt-2">
         <section className="overflow-hidden rounded-2xl surface">
-          <div className="aspect-[4/3] w-full overflow-hidden">
-            <ProductMark product={p} size={62} />
+          {/* Padded frame, image contained. object-cover cropped the product
+              to the box edges — a cropped diya or idol is the one thing a shop
+              hero must not do. The whole object sits inside its frame now, on a
+              soft ground with room around it. */}
+          <div className="aspect-[4/3] w-full p-5" style={{ background: "var(--surface-2)" }}>
+            <ProductMark product={p} size={62} fit="contain" />
           </div>
           <div className="p-3">
             <div className="text-[14px] leading-tight text-ink">{p.name}</div>
