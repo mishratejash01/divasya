@@ -23,45 +23,45 @@ export function MenuScreen() {
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="Menu" onBack={back} />
 
-      {/* who you are — opens the account page */}
-      <div className="gutter pt-2">
-        <button
-          onClick={() => { haptic(6); go("account"); }}
-          className="flex w-full items-center gap-3 rounded-2xl surface p-3 text-left transition-colors hover:bg-[var(--surface-2)]"
-        >
-          <Avatar name={name} size={42} tint="#C88131" />
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-display text-[14.5px] text-ink">{name}</div>
-            <div className="truncate text-[11px] text-muted">
-              {profile?.nakshatra ? `${rashi} · ${profile.nakshatra}` : rashi}
-            </div>
-          </div>
-          <CaretRight size={15} className="shrink-0 text-[var(--muted-2)]" />
-        </button>
-      </div>
-
+      {/* Each group is a title and its rows — icon and label only, like the
+          store shelf. No hint under the label, no rule between rows, and the
+          chevron is black. The account row shares the first section's card, so
+          "you" and the first shelf read as one panel rather than a lone card
+          floating above the list. */}
       {NAV_ORDER.map((id) => {
         const group = NAV[id];
+        const first = id === NAV_ORDER[0];
         return (
           <div key={group.id} className="gutter pt-1.5">
             <section className="rounded-2xl surface p-2.5">
+              {first && (
+                <button
+                  onClick={() => { haptic(6); go("account"); }}
+                  className="mb-2 flex w-full items-center gap-3 rounded-[6px] p-1 text-left transition-opacity hover:opacity-70"
+                >
+                  <Avatar name={name} size={40} tint="#C88131" />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-display text-[14px] text-ink">{name}</div>
+                    <div className="truncate text-[11px] text-muted">
+                      {profile?.nakshatra ? `${rashi} · ${profile.nakshatra}` : rashi}
+                    </div>
+                  </div>
+                  <CaretRight size={15} className="shrink-0 text-ink" />
+                </button>
+              )}
               <h3 className="section-title mb-1.5">{group.title}</h3>
               <div className="overflow-hidden rounded-[6px]" style={{ background: "var(--surface-2)" }}>
-                {group.entries.map((e, i) => {
+                {group.entries.map((e) => {
                   const Icon = e.icon;
                   return (
                     <button
                       key={e.label}
                       onClick={() => { haptic(6); go(e.to, e.params); }}
                       className="flex w-full items-center gap-3 px-2.5 py-2.5 text-left transition-colors hover:bg-[rgba(222,107,31,0.09)]"
-                      style={{ borderTop: i ? "1px solid var(--line)" : undefined }}
                     >
                       <Icon size={18} strokeWidth={1.5} className="shrink-0 text-[var(--bhagwa)]" />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[12.5px] leading-tight text-ink">{e.label}</div>
-                        <div className="mt-0.5 truncate text-[10.5px] leading-tight text-[var(--muted-2)]">{e.hint}</div>
-                      </div>
-                      <CaretRight size={13} className="shrink-0 text-[var(--muted-2)]" />
+                      <span className="flex-1 text-[12.5px] font-medium leading-tight text-ink">{e.label}</span>
+                      <CaretRight size={13} className="shrink-0 text-ink" />
                     </button>
                   );
                 })}

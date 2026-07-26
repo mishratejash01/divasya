@@ -1,9 +1,9 @@
 "use client";
 
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { IconShare, IconSunrise, IconSunset } from "../icons";
+import { IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
-import { Bank, CaretLeft, Check, Clock, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword } from "@phosphor-icons/react";
+import { Bank, Check, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword, WhatsappLogo } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DeityGlyph, Pill, ScreenHeader, Wordmark, cx } from "../ui";
 import { deityById } from "@/lib/demo";
@@ -344,16 +344,45 @@ export function LibraryScreen() {
   const article = open ? items.find((x) => x.id === open) : undefined;
   if (article) {
     return (
+      // Read like a broadsheet: a kicker, a centred masthead headline under a
+      // double rule, and justified body copy with a dropped initial. The back
+      // arrow up top returns to the shelf, so the old "Back to library" line at
+      // the foot is gone.
       <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-        <Header title="Spiritual Library" />
-        <div className="h-40 w-full" style={{ background: `linear-gradient(160deg, ${article.tint}33, ${article.tint}11)` }} />
+        <ScreenHeader title="Spiritual Library" onBack={() => setOpen(null)} />
+
+        {/* hero frame — read time straddles the bottom edge, centred */}
+        <div className="gutter pt-3">
+          <div className="relative">
+            <div className="h-44 w-full rounded-lg" style={{ background: `linear-gradient(160deg, ${article.tint}44, ${article.tint}14)` }} />
+            <span
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 whitespace-nowrap rounded-[3px] px-2 py-[2.5px] text-[9.5px] tnum text-ink"
+              style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
+            >
+              {article.read} read
+            </span>
+          </div>
+        </div>
+
+        {/* masthead */}
+        <div className="gutter pt-8 text-center">
+          <div className="text-[9.5px] tracking-[0.2em] text-[var(--muted-2)]">Divasya · Spiritual Library</div>
+          <h1 className="mx-auto mt-2 max-w-[22ch] font-display text-[25px] leading-[1.12] tracking-[-0.02em] text-ink">
+            {article.title}
+          </h1>
+        </div>
+
+        {/* double rule */}
         <div className="gutter pt-4">
-          <div className="font-display text-2xl text-ink">{article.title}</div>
-          <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted"><Clock size={12} /> {article.read} read</div>
-          <p className="mt-4 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink-dim">{article.content}</p>
-          <button onClick={() => setOpen(null)} className="mt-5 flex items-center gap-1 text-[11.5px] text-[var(--bhagwa)]">
-            <CaretLeft size={13} /> Back to library
-          </button>
+          <div style={{ borderTop: "2px solid var(--ink)" }} />
+          <div className="mt-[3px]" style={{ borderTop: "1px solid var(--ink)" }} />
+        </div>
+
+        {/* body — justified, with a dropped initial on the first letter */}
+        <div className="gutter pt-4">
+          <p className="whitespace-pre-wrap text-justify text-[12.5px] leading-[1.7] text-ink first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:font-display first-letter:text-[42px] first-letter:leading-[0.72] first-letter:text-[var(--bhagwa-deep)]">
+            {article.content}
+          </p>
         </div>
       </div>
     );
@@ -361,13 +390,29 @@ export function LibraryScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <Header title="Spiritual Library" />
-      <div className="grid grid-cols-2 gap-3 gutter">
+      {/* Same card as the home shelf: an inset picture with the read time as a
+          chip straddling its lower edge, the title beneath. */}
+      <div className="grid grid-cols-2 gap-2.5 gutter pt-3">
         {items.map((l) => (
-          <button key={l.id} onClick={() => setOpen(l.id)} className="overflow-hidden rounded-2xl surface text-left">
-            <div className="h-28 w-full" style={{ background: `linear-gradient(160deg, ${l.tint}33, ${l.tint}11)` }} />
-            <div className="p-3">
-              <div className="text-[11.5px] font-medium leading-tight text-ink">{l.title}</div>
-              <div className="mt-1 text-[10px] text-muted">{l.read} read</div>
+          <button
+            key={l.id}
+            onClick={() => setOpen(l.id)}
+            className="rounded-xl p-1.5 text-left"
+            style={{ background: "var(--surface-2)" }}
+          >
+            <div className="relative">
+              <div className="h-[92px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+              <span
+                className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[9px] tnum text-ink"
+                style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
+              >
+                {l.read} read
+              </span>
+            </div>
+            <div className="px-1 pb-1 pt-4">
+              <div className="line-clamp-2 min-h-[2.3em] text-[11.5px] font-medium leading-tight text-ink">
+                {l.title}
+              </div>
             </div>
           </button>
         ))}
@@ -406,36 +451,53 @@ export function SandeshScreen() {
   }
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+    <div className="flex h-full flex-col">
       <Header title="Aaj ka Sandesh" />
-      <div className="gutter">
-        <div ref={card} className="card-temple overflow-hidden rounded-3xl p-6">
-          <div className="flex items-center justify-between">
-            <Wordmark size={14} />
-            <span className="text-[10px] text-muted">{pg ? `${pg.weekdayShort} · ${pg.tithiDisplay}` : ""}</span>
-          </div>
-          <div className="mt-5 flex justify-center"><DeityGlyph deity={deity} size={58} /></div>
-          <div className="mt-3 text-center font-deva text-[18px] leading-relaxed text-ink">{shloka?.deva}</div>
-          <div className="mt-2 text-center text-[11px] text-muted">{shloka?.translit}</div>
-          <div className="my-4 h-px w-full" style={{ background: "var(--line)" }} />
-          <div className="text-center text-[11.5px] leading-relaxed text-ink-dim">
-            {horo ?? `Aaj ka din shubh ho · ${pg?.tithiDisplay ?? ""}`}
-          </div>
-          <div className="mt-5 text-center">
-            <div className="text-[11px] text-muted">A blessing for</div>
-            <div className="font-display text-lg text-gold">{name} · {rashi.split(" ")[0]}</div>
-          </div>
-        </div>
 
-        <div className="mt-4 flex gap-3">
-          <button onClick={whatsapp} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
-            <IconShare size={15} /> Share to WhatsApp
-          </button>
-          <button onClick={download} disabled={busy} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost">
-            <DownloadSimple size={16} />
-          </button>
+      {/* The poster scrolls; the actions are pinned below. */}
+      <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: 14 }}>
+        <div className="gutter pt-3">
+          <div ref={card} className="card-temple overflow-hidden rounded-3xl p-6">
+            <div className="flex items-center justify-between">
+              <Wordmark size={14} />
+              <span className="text-[10px] text-muted">{pg ? `${pg.weekdayShort} · ${pg.tithiDisplay}` : ""}</span>
+            </div>
+            <div className="mt-5 flex justify-center"><DeityGlyph deity={deity} size={58} /></div>
+            <div className="mt-3 text-center font-deva text-[18px] leading-relaxed text-ink">{shloka?.deva}</div>
+            <div className="mt-2 text-center text-[11px] text-muted">{shloka?.translit}</div>
+            <div className="my-4 h-px w-full" style={{ background: "var(--line)" }} />
+            <div className="text-center text-[11.5px] leading-relaxed text-ink-dim">
+              {horo ?? `Aaj ka din shubh ho · ${pg?.tithiDisplay ?? ""}`}
+            </div>
+            <div className="mt-5 text-center">
+              <div className="text-[11px] text-muted">A blessing for</div>
+              <div className="font-display text-lg text-gold">{name} · {rashi.split(" ")[0]}</div>
+            </div>
+          </div>
         </div>
-        <p className="mt-2 text-center text-[10px] text-muted">Auto-generated daily · personalised with your rashi & deity</p>
+      </div>
+
+      {/* Actions pinned above the tab bar. Share is WhatsApp green with its own
+          mark; download takes a heavier icon so it reads at a glance. */}
+      <div
+        className="shrink-0 flex gap-2.5 gutter above-tabbar pt-2.5"
+        style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
+      >
+        <button
+          onClick={whatsapp}
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] font-medium text-white"
+          style={{ background: "#25D366" }}
+        >
+          <WhatsappLogo size={17} weight="fill" /> Share to WhatsApp
+        </button>
+        <button
+          onClick={download}
+          disabled={busy}
+          aria-label="Download poster"
+          className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-2xl btn-ghost disabled:opacity-50"
+        >
+          <DownloadSimple size={20} weight="bold" />
+        </button>
       </div>
     </div>
   );

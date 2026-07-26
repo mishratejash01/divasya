@@ -105,7 +105,7 @@ export const getPujas = () =>
 
 export const getChadhava = () =>
   cached<ChadhavaItem[]>("chadhava", () => rows<ChadhavaItem>("chadhava_items"),
-    CHADHAVA.map((c) => ({ id: c.id, name: c.name, price: c.price, icon: "flower" })));
+    CHADHAVA.map((c) => ({ id: c.id, name: c.name, price: c.price, icon: c.icon })));
 
 export const getFestivals = () =>
   cached<Festival[]>("festivals", async () => {
@@ -131,7 +131,7 @@ export const getLibrary = () =>
     }));
   }, LIBRARY.map((l) => ({
     id: l.id, title: l.title, sub: l.sub, read: l.read, kind: "read",
-    content: "", tint: l.grad[0], grad: l.grad as [string, string],
+    content: l.content ?? "", tint: l.grad[0], grad: l.grad as [string, string],
   })));
 
 export const getShlokas = () =>

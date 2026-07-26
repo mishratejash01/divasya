@@ -54,13 +54,60 @@ function cached<T>(key: string, load: () => Promise<T>, fallback: T): Promise<T>
   return cache.get(key) as Promise<T>;
 }
 
+// ---------------------------------------------------------------- preview seed
+// Design-review only. When NEXT_PUBLIC_PREVIEW=1 and Supabase returns nothing,
+// the store falls back to this so the shop, product and cart screens can be
+// seen without a database — the same pattern the rest of the app uses via
+// lib/demo. It compiles out to [] in production, where PREVIEW is never set.
+const PREVIEW = process.env.NEXT_PUBLIC_PREVIEW === "1";
+
+const PREVIEW_CATEGORIES: ShopCategory[] = [
+  { id: "rudraksha", name: "Rudraksha", slug: "rudraksha", blurb: null, sort: 1 },
+  { id: "rashi", name: "Rashi Bracelets", slug: "rashi", blurb: null, sort: 2 },
+  { id: "malas", name: "Malas", slug: "malas", blurb: null, sort: 3 },
+];
+
+const mkProduct = (p: Partial<Product> & Pick<Product, "id" | "slug" | "name" | "category_id" | "price">): Product => ({
+  subtitle: null, description: null, mrp: null, currency: "INR",
+  images: [], badges: [], is_digital: false, requires_shipping: true,
+  stock: 20, is_bestseller: false, sort: 0, ...p,
+});
+
+const PREVIEW_PRODUCTS: Product[] = [
+  mkProduct({
+    id: "p1", slug: "5-mukhi-rudraksha", name: "5 Mukhi Rudraksha", category_id: "rudraksha",
+    subtitle: "Original Nepali bead, lab tested", price: 499, mrp: 899,
+    description: "Original 5-mukhi rudraksha strung on cotton thread with a meru bead. Cleansed and energised with the Mahamrityunjaya mantra before it is posted.",
+    badges: ["Govt Lab Certified", "Energised"], is_bestseller: true, sort: 1,
+  }),
+  mkProduct({
+    id: "p2", slug: "1-mukhi-rudraksha", name: "1 Mukhi Rudraksha", category_id: "rudraksha",
+    subtitle: "Rare single-faced bead", price: 4999, mrp: 12999,
+    description: "The rarest of the rudraksha, associated with Lord Shiva himself. Comes with a certificate of authenticity.",
+    badges: ["With Certification"], sort: 2,
+  }),
+  mkProduct({
+    id: "p3", slug: "simha-rashi-bracelet", name: "Simha Rashi Bracelet", category_id: "rashi",
+    subtitle: "For the Leo-born", price: 799, mrp: 1499,
+    description: "A bracelet strung for the Simha rashi, worn on the right wrist. Cleansed before dispatch.",
+    badges: ["Energised"], sort: 1,
+  }),
+  mkProduct({
+    id: "p4", slug: "tulsi-japa-mala", name: "Tulsi Japa Mala", category_id: "malas",
+    subtitle: "108 + 1 beads, hand-knotted", price: 349, mrp: 599,
+    description: "Sacred tulsi beads, hand-knotted for japa. Light, fragrant and worn close to the skin.",
+    badges: ["Hand-knotted"], sort: 1,
+  }),
+];
+
 export function getCategories(): Promise<ShopCategory[]> {
   return cached("shop:categories", async () => {
     const { data } = await supabaseBrowser()
       .from("product_categories").select("id,name,slug,blurb,sort")
       .eq("is_active", true).order("sort");
-    return (data ?? []) as ShopCategory[];
-  }, []);
+    if (data && data.length) return data as ShopCategory[];
+    return PREVIEW ? PREVIEW_CATEGORIES : [];
+  }, PREVIEW ? PREVIEW_CATEGORIES : []);
 }
 
 export function getProducts(): Promise<Product[]> {
@@ -69,8 +116,9 @@ export function getProducts(): Promise<Product[]> {
       .from("products")
       .select("id,slug,name,subtitle,description,category_id,price,mrp,currency,images,badges,is_digital,requires_shipping,stock,is_bestseller,sort")
       .eq("is_active", true).order("sort");
-    return (data ?? []) as Product[];
-  }, []);
+    if (data && data.length) return data as Product[];
+    return PREVIEW ? PREVIEW_PRODUCTS : [];
+  }, PREVIEW ? PREVIEW_PRODUCTS : []);
 }
 
 export function getShopConfig(): Promise<ShopConfig> {

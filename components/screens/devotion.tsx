@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { IconShankh } from "../icons";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bank, Broadcast, CaretLeft, Check, Drop, Eye, Fire, FlowerLotus, ForkKnife, Leaf, MapPin, Orange, Play, ShieldCheck, VideoCamera } from "@phosphor-icons/react";
+import { Bank, CaretLeft, Check, Drop, Eye, Fire, FlowerLotus, ForkKnife, Leaf, MapPin, Orange, Play, VideoCamera } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { ScreenHeader, cx } from "../ui";
 import { PUJAS, CHADHAVA, TEMPLES } from "@/lib/demo";
@@ -82,44 +82,50 @@ export function PujaScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <ScreenHeader title="Online Puja & Chadhava" onBack={back} />
+      <ScreenHeader
+        title="Online Puja & Chadhava"
+        onBack={back}
+        tabs={[{ id: "puja", label: "Pujas" }, { id: "chadhava", label: "e-Chadhava" }]}
+        activeTab={tab}
+        onTab={(id) => setTab(id as "puja" | "chadhava")}
+      />
 
-      <div className="gutter-m grid grid-cols-2 gap-1 rounded-full p-1 surface">
-        {(["puja", "chadhava"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} className={cx("rounded-full py-2 text-[11px]", tab === t ? "btn-saffron" : "text-muted")}>
-            {t === "puja" ? "Pujas" : "e-Chadhava"}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex-1 overflow-y-auto gutter pt-4 screen-bottom no-scrollbar">
+      <div className="flex-1 overflow-y-auto gutter pt-1 screen-bottom no-scrollbar">
         {tab === "puja" ? (
-          <div className="space-y-2.5">
+          // No card around each puja and no rule between them — image, title and
+          // the price button just flow down the page.
+          <div className="pt-2">
             {pujas.map((p) => (
-              <div key={p.id} className="flex items-center gap-3 rounded-2xl surface p-3">
+              <div
+                key={p.id}
+                className="flex items-center gap-3 py-2.5"
+              >
                 <ItemMark item={{ kind: "puja", name: p.name, price: p.price }} />
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="text-[12.5px] font-medium text-ink">{p.name}</div>
                   <div className="text-[10.5px] text-muted">{p.benefit}</div>
                 </div>
                 <button onClick={() => open({ kind: "puja", id: p.id, name: p.name, price: p.price, benefit: p.benefit })}
-                  className="rounded-full px-3.5 py-2 text-[11px] btn-saffron">₹{p.price}</button>
+                  className="shrink-0 rounded-[6px] px-3.5 py-2 text-[11px] btn-saffron">₹{p.price}</button>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2.5">
+          // Same row as Pujas — the offering's mark, its name, and a price
+          // button, one under the next.
+          <div className="pt-2">
             {chadhava.map((c) => (
-              <button key={c.id} onClick={() => open({ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon })}
-                className="flex flex-col items-center gap-2 rounded-2xl surface px-1 py-4">
-                <ItemMark item={{ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon }} size={38} />
-                <span className="text-center text-[10px] leading-tight text-ink">{c.name}</span>
-                <span className="text-[11px] text-gold">₹{c.price}</span>
-              </button>
+              <div key={c.id} className="flex items-center gap-3 py-2.5">
+                <ItemMark item={{ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon }} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[12.5px] font-medium text-ink">{c.name}</div>
+                </div>
+                <button onClick={() => open({ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon })}
+                  className="shrink-0 rounded-[6px] px-3.5 py-2 text-[11px] btn-saffron">₹{c.price}</button>
+              </div>
             ))}
           </div>
         )}
-        <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] text-muted"><ShieldCheck size={12} className="text-[var(--good)]" /> Performed by verified pandits · video proof on WhatsApp</div>
       </div>
 
       {/* booking sheet */}
@@ -233,8 +239,8 @@ export function TempleScreen() {
               <div className="absolute inset-0 shimmer opacity-25" />
             </div>
           )}
-          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-medium text-white">
-            <Broadcast size={12} className="animate-pulse text-[var(--good)]" /> Live
+          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-[10px] font-medium text-white" style={{ background: "#E11900" }}>
+            <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live
           </div>
           <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-white"><Eye size={12} /> {(12480).toLocaleString("en-IN")} watching</div>
           <button onClick={() => { setAarti((v) => !v); if (!aarti) { bell(540, 1.6, 0.18); } }}
@@ -259,16 +265,24 @@ export function TempleScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="Live Temple Darshan" onBack={back} />
-      <div className="space-y-2.5 gutter">
+      {/* No card and no rule around each temple — a 16:9 thumbnail like a video
+          list, the name and timing beside it, straight on the page. */}
+      <div className="gutter pt-1">
         {temples.map((t) => (
-          <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 overflow-hidden rounded-2xl surface p-3 text-left">
-            <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-xl" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)`, border: "1px solid var(--line)" }}>
-              <Bank size={23} className="text-[var(--bhagwa-deep)]" />
-              <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ background: "rgba(95,134,87,0.14)", color: "var(--good)" }}><Broadcast size={8} className="text-[var(--good)]" />Live</span>
+          <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 py-2.5 text-left transition-opacity hover:opacity-80">
+            <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-lg" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)` }}>
+              <div className="grid h-full w-full place-items-center">
+                <Bank size={22} className="text-[var(--bhagwa-deep)]" />
+              </div>
+              {/* Red Live badge, like a live stream — a green dot did not read
+                  as "on air". */}
+              <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-[3px] px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
+                <span className="h-1 w-1 rounded-full bg-white" />Live
+              </span>
             </div>
-            <div className="flex-1">
-              <div className="text-[12.5px] font-medium text-ink">{t.name}</div>
-              <div className="text-[10.5px] text-muted">{t.location} · {t.deity}</div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[12.5px] font-medium text-ink">{t.name}</div>
+              <div className="truncate text-[10.5px] text-muted">{t.location} · {t.deity}</div>
               <div className="text-[10px] text-gold">{t.timing}</div>
             </div>
           </button>

@@ -39,23 +39,43 @@ export function ConsultScreen() {
   return (
     <div className="flex h-full flex-col">
       {/* Yellow header, matching the bar on home. Wallet reads as plain text
-          beside its mark — a pill around a balance implies a button. */}
+          beside its mark — a pill around a balance implies a button. The skill
+          filter rides the bar as a tab strip, selected black + underlined. */}
       <div
-        className="flex items-center gap-3 gutter"
+        className="shrink-0"
         style={{
           background: "var(--bar-yellow)",
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
-          paddingBottom: 11,
         }}
       >
-        <button onClick={back} aria-label="Back" className="shrink-0">
-          <CaretLeft size={20} weight="regular" className="text-ink" />
-        </button>
-        <span className="font-display text-[17px] text-ink">Consult Astrologers</span>
-        <span className="ml-auto flex shrink-0 items-center gap-1.5">
-          <Wallet size={17} weight="bold" className="text-ink" />
-          <span className="text-[13px] tnum font-medium text-ink">₹{wallet}</span>
-        </span>
+        <div className="flex items-center gap-3 gutter pb-2">
+          <button onClick={back} aria-label="Back" className="shrink-0">
+            <CaretLeft size={20} weight="regular" className="text-ink" />
+          </button>
+          <span className="font-display text-[17px] text-ink">Consult Astrologers</span>
+          <span className="ml-auto flex shrink-0 items-center gap-1.5">
+            <Wallet size={17} weight="bold" className="text-ink" />
+            <span className="text-[13px] tnum font-medium text-ink">₹{wallet}</span>
+          </span>
+        </div>
+        <div className="-mb-px flex items-end gap-5 gutter overflow-x-auto no-scrollbar">
+          {tags.map((t) => {
+            const on = t === tag;
+            return (
+              <button
+                key={t}
+                onClick={() => setTag(t)}
+                className={cx(
+                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium transition-colors",
+                  on ? "text-ink" : "text-[rgba(23,22,19,0.55)]",
+                )}
+                style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto screen-bottom no-scrollbar">
@@ -76,28 +96,7 @@ export function ConsultScreen() {
           </div>
         </div>
 
-        {/* Skill filter. Nine near-identical rows with no way in was the real
-            gap — this is how someone actually finds the right person. */}
-        <div className="flex gap-1.5 gutter overflow-x-auto pt-2 no-scrollbar">
-          {tags.map((t) => {
-            const on = t === tag;
-            return (
-              <button
-                key={t}
-                onClick={() => setTag(t)}
-                className={cx(
-                  "shrink-0 whitespace-nowrap rounded-[5px] px-2.5 py-1.5 text-[11px] transition-colors",
-                  on ? "text-white" : "surface text-ink"
-                )}
-                style={on ? { background: "var(--bhagwa)" } : undefined}
-              >
-                {t}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center justify-between gutter pt-2 text-[10.5px] text-muted">
+        <div className="flex items-center justify-between gutter pt-3 text-[10.5px] text-muted">
           <span>
             {shown.length} {shown.length === 1 ? "astrologer" : "astrologers"}
             {tag !== "All" ? ` in ${tag}` : ""}

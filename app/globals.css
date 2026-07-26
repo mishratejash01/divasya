@@ -54,10 +54,11 @@
   --muted: #2B2924;
   --muted-2: #565248;
 
-  /* Section outline is a warm bhagwa hairline, not black. A black rule around
-     every panel turned the screen into a set of boxes; this separates the
-     panel from the page while belonging to the palette. */
-  --line-card: rgba(242, 107, 15, 0.30);
+  /* Section outline is a plain, very light grey — just enough to separate a
+     card from the white page, no colour. It used to be a bhagwa-tinted rule
+     (rgba(242,107,15,0.30)), which put an orange edge on every panel across the
+     app and read as too much colour once the screens filled in. */
+  --line-card: rgba(0, 0, 0, 0.07);
   --line: rgba(0, 0, 0, 0.11);
   --line-strong: rgba(0, 0, 0, 0.20);
   --line-gold: rgba(0, 0, 0, 0.14);

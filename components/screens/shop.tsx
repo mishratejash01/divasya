@@ -30,7 +30,7 @@ function ProductMark({ product, size = 30, fit = "cover" }: { product: Product; 
     return <img src={img} alt={product.name} className={cx("h-full w-full", fit === "contain" ? "object-contain" : "object-cover")} />;
   }
   return (
-    <div className="grid h-full w-full place-items-center" style={{ background: "var(--surface-2)" }}>
+    <div className="grid h-full w-full place-items-center" style={{ background: "rgba(0,0,0,0.035)" }}>
       <Icon size={size} strokeWidth={1.4} className="text-[var(--bhagwa)]" />
     </div>
   );
@@ -77,6 +77,9 @@ export function ShopScreen() {
       <ScreenHeader
         title="Store"
         onBack={back}
+        tabs={chips}
+        activeTab={filter}
+        onTab={(id) => { haptic(4); setFilter(id); }}
         right={
           <button
             onClick={() => { haptic(6); go("cart"); }}
@@ -99,24 +102,8 @@ export function ShopScreen() {
         }
       />
 
-      {/* category filter */}
-      <div className="gutter flex gap-1.5 overflow-x-auto no-scrollbar pt-3">
-        {chips.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => { haptic(4); setFilter(c.id); }}
-            className={cx(
-              "shrink-0 rounded-full px-3 py-1.5 text-[11px] transition-colors",
-              filter === c.id ? "btn-saffron" : "surface text-muted"
-            )}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
       {/* grid */}
-      <div className="gutter pt-2.5">
+      <div className="gutter pt-3">
         {shown.length === 0 ? (
           <div className="rounded-2xl surface p-6 text-center text-[11.5px] text-muted">
             {products.length ? "Nothing in this shelf yet." : "Opening the store…"}
@@ -212,9 +199,9 @@ export function ProductScreen() {
         </div>
 
         <div className="gutter pt-1">
-          <div className="text-[15px] leading-tight text-ink">{p.name}</div>
-          {p.subtitle && <div className="mt-0.5 text-[11.5px] text-muted">{p.subtitle}</div>}
-          <div className="mt-2"><Price p={p} big /></div>
+          <h1 className="font-display text-[19px] leading-tight tracking-[-0.02em] text-ink">{p.name}</h1>
+          {p.subtitle && <div className="mt-1 text-[11.5px] text-muted">{p.subtitle}</div>}
+          <div className="mt-2.5"><Price p={p} big /></div>
 
           {p.badges?.length > 0 && (
             <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -232,7 +219,10 @@ export function ProductScreen() {
         </div>
 
         {p.description && (
-          <p className="measure gutter pt-4 text-[11.5px] leading-relaxed text-ink">{p.description}</p>
+          <div className="gutter pt-5">
+            <h2 className="section-title mb-1.5">About this product</h2>
+            <p className="measure text-[11.5px] leading-relaxed text-ink">{p.description}</p>
+          </div>
         )}
 
         <div className="gutter pt-4">
@@ -257,12 +247,12 @@ export function ProductScreen() {
           heavier. above-tabbar clears the fixed tab bar and collapses on
           desktop. */}
       <div
-        className="shrink-0 flex gutter above-tabbar pt-2.5"
+        className="shrink-0 flex gap-2.5 gutter above-tabbar pt-2.5"
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
         <button
           onClick={added ? () => { haptic(6); go("cart"); } : addToCart}
-          className="flex flex-1 items-center justify-center gap-2 rounded-l-2xl py-3.5 text-[13px] font-medium text-ink"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[13px] font-medium text-ink"
           style={{ background: "var(--bhagwa-soft)" }}
         >
           <ShoppingCartSimple size={17} weight="bold" />
@@ -270,7 +260,7 @@ export function ProductScreen() {
         </button>
         <button
           onClick={buyNow}
-          className="flex flex-1 items-center justify-center rounded-r-2xl py-3.5 text-[13px] font-medium text-white"
+          className="flex flex-1 items-center justify-center rounded-2xl py-3.5 text-[13px] font-medium text-white"
           style={{ background: "var(--bhagwa-deep)" }}
         >
           Buy Now

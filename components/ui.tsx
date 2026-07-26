@@ -255,34 +255,67 @@ export function DeityPortrait({
  * screens were each carrying their own copy, which is how they drifted apart
  * in the first place.
  */
+export type HeaderTab = { id: string; label: string };
+
 export function ScreenHeader({
   title,
   sub,
   onBack,
   right,
+  tabs,
+  activeTab,
+  onTab,
 }: {
   title: string;
   sub?: string;
   onBack: () => void;
   right?: ReactNode;
+  /** Optional filter strip, riding the yellow bar under the title. Selected is
+   *  black + medium with a black underline, like the home navbar — the one
+   *  place a horizontal filter belongs, rather than as loose chips on the page. */
+  tabs?: HeaderTab[];
+  activeTab?: string;
+  onTab?: (id: string) => void;
 }) {
   return (
     <div
-      className="flex shrink-0 items-center gap-2.5 gutter"
+      className="shrink-0"
       style={{
         background: "var(--bar-yellow)",
         paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
-        paddingBottom: 11,
       }}
     >
-      <button onClick={onBack} aria-label="Back" className="shrink-0">
-        <CaretLeft size={20} weight="regular" className="text-ink" />
-      </button>
-      <div className="min-w-0 flex-1">
-        <div className="truncate font-display text-[17px] leading-tight text-ink">{title}</div>
-        {sub && <div className="truncate text-[10.5px] leading-tight text-ink/65">{sub}</div>}
+      <div className={cx("flex items-center gap-2.5 gutter", tabs ? "pb-2" : "pb-[11px]")}>
+        <button onClick={onBack} aria-label="Back" className="shrink-0">
+          <CaretLeft size={20} weight="regular" className="text-ink" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-display text-[17px] leading-tight text-ink">{title}</div>
+          {sub && <div className="truncate text-[10.5px] leading-tight text-ink/65">{sub}</div>}
+        </div>
+        {right}
       </div>
-      {right}
+
+      {tabs && (
+        <div className="-mb-px flex items-end gap-5 gutter overflow-x-auto no-scrollbar">
+          {tabs.map((t) => {
+            const on = t.id === activeTab;
+            return (
+              <button
+                key={t.id}
+                onClick={() => onTab?.(t.id)}
+                className={cx(
+                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium transition-colors",
+                  on ? "text-ink" : "text-[rgba(23,22,19,0.55)]",
+                )}
+                style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -276,8 +276,8 @@ export function HomeScreen() {
                 key={t.id}
                 onClick={() => (t.to ? go(t.to) : scrollToSection(t.id))}
                 className={cx(
-                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] transition-colors",
-                  on ? "font-medium text-ink" : "text-[rgba(23,22,19,0.55)]"
+                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium transition-colors",
+                  on ? "text-ink" : "text-[rgba(23,22,19,0.55)]"
                 )}
                 style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
               >
@@ -519,8 +519,8 @@ export function HomeScreen() {
                         className="pointer-events-none absolute inset-0"
                         style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 58%)" }}
                       />
-                      <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[4px] px-1.5 py-[2px] text-[9px] text-white" style={{ background: "rgba(255,255,255,0.18)" }}>
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#6FD08C" }} />
+                      <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[3px] px-1.5 py-[2px] text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
+                        <span className="h-1 w-1 rounded-full bg-white" />
                         Live
                       </span>
                       <span className="absolute inset-x-0 bottom-0 p-2.5">
