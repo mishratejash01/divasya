@@ -2,7 +2,7 @@
 
 import { CaretRight, SidebarSimple, SignOut, UserCircle } from "@phosphor-icons/react";
 import {
-  IconHome, IconEye, IconChat, IconStar, IconDiya, IconAarti, IconCompass, IconComponent,
+  IconHome, IconEye, IconChat, IconStar, IconDiya, IconAarti, IconCompass, IconShop, IconComponent,
 } from "./icons";
 import { useApp, ScreenName } from "./app-context";
 import { Avatar, Logomark, Wordmark, cx } from "./ui";
@@ -36,6 +36,7 @@ const ITEMS: NavItem[] = [
   { id: "devotion", label: "Devotion", icon: IconDiya, to: "category", params: { id: "devotion" }, match: [], cat: "devotion" },
   { id: "festival", label: "Festivals", icon: IconAarti, to: "festivals", match: ["festivals"] },
   { id: "tools", label: "Guides", icon: IconCompass, to: "category", params: { id: "tools" }, match: [], cat: "tools" },
+  { id: "shop", label: "Store", icon: IconShop, to: "shop", match: ["shop", "product", "cart", "checkout"] },
   { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
   { id: "menu", label: "Account", icon: UserCircle as unknown as IconComponent, to: "menu", match: ["menu"] },
 ];

@@ -505,3 +505,16 @@ export function Ornament({ className }: { className?: string }) {
     </div>
   );
 }
+
+/** Woven basket, lidded with a bud — the store. */
+export function IconShop(p: IconProps) {
+  const body = "M4.9 9.1h14.2l-1.2 9.1a2.1 2.1 0 0 1-2.1 1.8H8.2a2.1 2.1 0 0 1-2.1-1.8L4.9 9.1Z";
+  return (
+    <Svg {...p}>
+      <F d={body} o={0.14} />
+      <path d={body} />
+      <path d="M9.1 9.1V7.4a2.9 2.9 0 0 1 5.8 0v1.7" />
+      <path d="M9 12.6v3M12 12.6v3M15 12.6v3" strokeWidth={1.05} />
+    </Svg>
+  );
+}
