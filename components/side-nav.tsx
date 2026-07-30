@@ -1,80 +1,65 @@
 "use client";
 
-import { CaretRight, SidebarSimple, SignOut, UserCircle } from "@phosphor-icons/react";
-import {
-  IconHome, IconEye, IconChat, IconStar, IconDiya, IconAarti, IconCompass, IconShop, IconComponent,
-} from "./icons";
+import { CaretRight } from "@phosphor-icons/react";
+import { Iconify } from "./iconify";
 import { useApp, ScreenName } from "./app-context";
-import { Avatar, Logomark, Wordmark, cx } from "./ui";
+import { Avatar, Logomark, cx } from "./ui";
 import { rashiLabel } from "@/lib/astro";
 
 type NavItem = {
   id: string;
   label: string;
-  icon: IconComponent;
+  /** Iconify name — Solar bold-duotone set. Browse at icones.js.org. */
+  icon: string;
   to: ScreenName;
   params?: Record<string, unknown>;
   match: ScreenName[];
-  /** Category pages all share one screen name, so they are told apart by id. */
   cat?: string;
 };
 
-/**
- * Main tabs only. Nothing here expands in place — the three that hold more than
- * one thing (Astrology, Devotion, Guides) open a page listing what is inside,
- * so the sidebar stays one flat list at every width instead of growing a tree.
- *
- * It used to list eleven entries across three groups, which made it a second
- * copy of the homepage: two places to maintain and no answer to which one you
- * were meant to use. The tools themselves live in CATEGORIES, read by both this
- * and the category screen, so neither can drift from the other.
- */
 const ITEMS: NavItem[] = [
-  { id: "home", label: "Home", icon: IconHome, to: "home", match: ["home"] },
-  { id: "kundli", label: "My Kundli", icon: IconStar, to: "kundli", match: ["kundli"] },
-  { id: "astro", label: "Astrology", icon: IconEye, to: "category", params: { id: "astro" }, match: [], cat: "astro" },
-  { id: "devotion", label: "Devotion", icon: IconDiya, to: "category", params: { id: "devotion" }, match: [], cat: "devotion" },
-  { id: "festival", label: "Festivals", icon: IconAarti, to: "festivals", match: ["festivals"] },
-  { id: "tools", label: "Guides", icon: IconCompass, to: "category", params: { id: "tools" }, match: [], cat: "tools" },
-  { id: "shop", label: "Store", icon: IconShop, to: "shop", match: ["shop", "product", "cart", "checkout"] },
-  { id: "consult", label: "Consult", icon: IconChat, to: "consult", match: ["consult", "consultChat"] },
-  { id: "menu", label: "Account", icon: UserCircle as unknown as IconComponent, to: "menu", match: ["menu"] },
+  { id: "home", label: "Home", icon: "solar:home-2-bold-duotone", to: "home", match: ["home"] },
+  { id: "kundli", label: "My Kundli", icon: "solar:star-bold-duotone", to: "kundli", match: ["kundli"] },
+  { id: "astro", label: "Astrology", icon: "game-icons:orbital", to: "category", params: { id: "astro" }, match: [], cat: "astro" },
+  { id: "devotion", label: "Devotion", icon: "solar:hand-heart-bold-duotone", to: "category", params: { id: "devotion" }, match: [], cat: "devotion" },
+  { id: "festival", label: "Festivals", icon: "solar:fire-bold-duotone", to: "festivals", match: ["festivals"] },
+  { id: "tools", label: "Guides", icon: "solar:notebook-bold-duotone", to: "category", params: { id: "tools" }, match: [], cat: "tools" },
+  { id: "shop", label: "Store", icon: "solar:cart-large-2-bold-duotone", to: "shop", match: ["shop", "product", "cart", "checkout"] },
+  { id: "consult", label: "Consult", icon: "solar:chat-round-dots-bold-duotone", to: "consult", match: ["consult", "consultChat"] },
+  { id: "menu", label: "Menu", icon: "solar:hamburger-menu-linear", to: "menu", match: ["menu"] },
 ];
 
-export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: () => void }) {
+/**
+ * A rail, not a slab. It sits at 64px showing only the marks; hovering blooms it
+ * open to 240px with the labels. It grows in the flow rather than floating, so
+ * the top bar and the page shift right to make room — nothing is left hidden
+ * under the open panel. Just the logomark rides here; the Divasya wordmark lives
+ * in the top bar. Haldi yellow, kumkum marks. Desktop only.
+ */
+export function SideNav() {
   const { screen, go, haptic, profile, logout } = useApp();
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
-
-  if (!open) return null;
+  // The rail items carry no background chip — the ground stays haldi throughout.
+  // Selection reads from a kumkum accent bar and a solid mark instead, and the
+  // unselected marks sit back at reduced strength. Only the footer rows take a
+  // soft white wash on hover.
+  const HOVER = "rgba(255,255,255,0.38)";
 
   return (
     <aside
-      className="hidden h-full w-[248px] shrink-0 flex-col border-r px-3 pb-6 pt-5 lg:flex"
-      style={{ borderColor: "var(--line)", background: "var(--bg-0)" }}
+      className="group relative z-40 hidden h-full w-16 shrink-0 flex-col overflow-hidden px-2 pb-4 pt-3 transition-[width] duration-200 ease-out hover:w-60 lg:flex"
+      style={{ background: "var(--bar-yellow)", borderRight: "1px solid rgba(0,0,0,0.10)" }}
     >
-      <div className="mb-5 flex items-center gap-2.5 px-2">
-        <button onClick={() => go("home")} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
-          <Logomark size={28} className="shrink-0 text-[var(--bhagwa)]" />
-          <span className="min-w-0">
-            <Wordmark size={16} />
-            <span className="block font-deva text-[9px] leading-tight text-[var(--muted-2)]">आध्यात्मिक यात्रा</span>
-          </span>
-        </button>
-        {onToggle && (
-          <button
-            onClick={onToggle}
-            aria-label="Hide sidebar"
-            className="grid h-7 w-7 shrink-0 place-items-center rounded-[5px] text-[var(--muted-2)] transition-colors hover:bg-[var(--surface-2)] hover:text-ink"
-          >
-            <SidebarSimple size={15} />
-          </button>
-        )}
-      </div>
+      {/* brand — just the mark; the Divasya wordmark now sits in the top bar */}
+      <button onClick={() => go("home")} className="mb-3 flex h-10 shrink-0 items-center text-left">
+        <span className="grid w-12 shrink-0 place-items-center">
+          <Logomark size={26} className="text-ink" />
+        </span>
+      </button>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
         {ITEMS.map((it) => {
-          const Icon = it.icon;
           const active = it.cat
             ? screen.name === "category" && screen.params?.id === it.cat
             : it.match.includes(screen.name);
@@ -82,50 +67,68 @@ export function SideNav({ open = true, onToggle }: { open?: boolean; onToggle?: 
             <button
               key={it.id}
               onClick={() => { haptic(6); go(it.to, it.params); }}
-              className={cx(
-                "group flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors",
-                !active && "hover:bg-[var(--surface-2)]",
-              )}
-              // Active is a plain fill, no orange rule around it. Rank still
-              // reads from the bhagwa mark and the medium label.
-              style={active ? { background: "var(--surface-2)" } : undefined}
+              title={it.label}
+              className="group/item relative flex h-11 w-full items-center rounded-[9px] text-left"
             >
-              {/* Rank comes from the mark and the weight. Inactive rows used to
-                  be --muted, which since text went near-black is a shade off
-                  --ink — so the only thing separating current from not was the
-                  fill, and at a glance every row looked selected. */}
-              <Icon
-                size={16}
-                strokeWidth={1.7}
-                className={cx("shrink-0 transition-colors",
-                  active ? "text-[var(--bhagwa)]" : "text-[var(--muted-2)] group-hover:text-[var(--bhagwa)]")}
-              />
-              <span className={cx("text-[12.5px] text-ink", active && "font-medium")}>{it.label}</span>
+              {/* kumkum accent for the current screen — no filled background */}
+              {active && (
+                <span
+                  className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full"
+                  style={{ background: "var(--icon-ink)" }}
+                />
+              )}
+              <span className="grid w-12 shrink-0 place-items-center">
+                <Iconify
+                  icon={it.icon}
+                  width={22}
+                  height={22}
+                  className={cx(
+                    "text-[var(--icon-ink)] transition-opacity",
+                    active ? "opacity-100" : "opacity-50 group-hover/item:opacity-90",
+                  )}
+                />
+              </span>
+              <span className={cx(
+                "whitespace-nowrap text-[12.5px] text-ink opacity-0 transition-opacity duration-150 group-hover:opacity-100",
+                active ? "font-medium" : "font-normal",
+              )}>
+                {it.label}
+              </span>
             </button>
           );
         })}
       </nav>
 
-      {/* Account and the way out — no box, no rules, the same bare rows as the
-          nav above. */}
-      <div className="mt-3">
+      {/* account + the way out */}
+      <div className="mt-2 shrink-0" style={{ borderTop: "1px solid rgba(0,0,0,0.12)", paddingTop: 8 }}>
         <button
           onClick={() => go("menu")}
-          className="flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
+          onMouseEnter={(e) => (e.currentTarget.style.background = HOVER)}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          className="flex h-11 w-full items-center rounded-[9px] text-left transition-colors"
         >
-          <Avatar name={name} size={30} tint="#C88131" />
-          <div className="min-w-0 flex-1">
-            <div className="truncate font-display text-[12px] leading-tight text-ink">{name}</div>
-            <div className="truncate text-[10px] leading-tight text-[var(--muted-2)]">{rashi}</div>
-          </div>
-          <CaretRight size={13} className="shrink-0 text-[var(--muted-2)]" />
+          <span className="grid w-12 shrink-0 place-items-center">
+            <Avatar name={name} size={28} tint="#D98A16" />
+          </span>
+          <span className="min-w-0 flex-1 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+            <span className="block truncate font-display text-[12px] leading-tight text-ink">{name}</span>
+            <span className="block truncate text-[10px] leading-tight text-ink/60">{rashi}</span>
+          </span>
+          <CaretRight size={13} className="mr-2 shrink-0 text-ink opacity-0 transition-opacity group-hover:opacity-100" />
         </button>
         <button
           onClick={logout}
-          className="mt-0.5 flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2 text-left transition-colors hover:bg-[var(--surface-2)]"
+          title="Sign out"
+          onMouseEnter={(e) => (e.currentTarget.style.background = HOVER)}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          className="flex h-10 w-full items-center rounded-[9px] text-left transition-colors"
         >
-          <SignOut size={15} weight="light" className="shrink-0 text-[var(--avoid)]" />
-          <span className="text-[11.5px] text-[var(--avoid)]">Sign out</span>
+          <span className="grid w-12 shrink-0 place-items-center">
+            <Iconify icon="solar:logout-2-bold-duotone" width={20} height={20} className="text-[var(--icon-ink)]" />
+          </span>
+          <span className="whitespace-nowrap text-[11.5px] text-ink opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+            Sign out
+          </span>
         </button>
       </div>
     </aside>

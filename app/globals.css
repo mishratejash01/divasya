@@ -10,6 +10,15 @@
      once it was put next to the cream surfaces. */
   --bhagwa: #F26B0F;
   --bhagwa-deep: #D65403;
+  /* Nav / tile icon colour — deep maroon (kumkum). Warm enough to sit in the
+     saffron/haldi family, dark enough to register on the peach and yellow. */
+  --icon-ink: #8A2B22;
+  /* Home shelf tiles. Yellow is reserved for the chrome (rail + top bar); the
+     content stays calm so the brand colour reads as a frame, not wallpaper. The
+     tiles are a soft warm cream with a thin dark outline on the white panel, so
+     the mark and name sit in a defined cell rather than on flat colour. */
+  --tile-bg: #FBF2E4;
+  --tile-line: rgba(0, 0, 0, 0.24);
   /* Ground for the Sandesh block: a dark orange-red, deeper and redder than
      the saffron accent. At 5.1:1 it carries white type comfortably, which the
      bright saffron could not — that one only managed 2.8:1. */
@@ -202,6 +211,35 @@ strong { font-weight: 500; }
 .surface {
   background: var(--surface);
   border: 1px solid var(--line-card);
+}
+
+/* Phones render the app a touch larger — the fixed-px design read small on a
+   real handset, so the whole app column is scaled up a step. zoom reflows (it
+   is not a transform), so nothing overflows sideways and the fixed tab bar
+   still sits on the viewport edge. Desktop is untouched. */
+@media (max-width: 1023px) {
+  main { zoom: 1.08; }
+}
+
+/* Desktop reads as a dashboard, not a phone blown up: the page stays white,
+   the white cards separate with a soft shadow and their hairline, and the
+   headings step up a size. On a phone none of this applies — it stays flat. */
+@media (min-width: 1024px) {
+  .desk-ground { background: var(--bg-0); }
+  .surface {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 18px rgba(0, 0, 0, 0.04);
+  }
+  .section-title { font-size: 15.5px; }
+  .eyebrow { font-size: 11.5px; }
+
+  /* The home bento on desktop: cards are spaced by the grid gaps alone. Each
+     cell also carries the screen gutter (for mobile edges) and its own top
+     padding, which on a wide grid doubled up into big troughs between cards —
+     so inside the bento those are stripped and the gap does the spacing. */
+  .home-bento { column-gap: 8px; row-gap: 8px; }
+  .home-bento .gutter { padding-left: 0; padding-right: 0; padding-top: 0; }
+  .home-bento .gutter-m { margin-left: 0; margin-right: 0; margin-top: 0; }
+  .home-bento .gutter-w { width: 100%; }
 }
 .surface-2 {
   background: var(--surface-2);

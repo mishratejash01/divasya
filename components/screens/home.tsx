@@ -1,16 +1,12 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { CaretRight, List, MagnifyingGlass, Wallet } from "@phosphor-icons/react";
-import {
-  IconAarti, IconBaby, IconBell, IconChat, IconCompass, IconDarshan, IconDiya,
-  IconEye, IconFlower, IconJournal, IconLotus, IconMala, IconMandir, IconShop, IconMore,
-  IconGanesha, IconSandesh, IconShare, IconStar, IconWheel,
-  type IconComponent,
-} from "../icons";
+import { CaretRight } from "@phosphor-icons/react";
+import { IconEye, IconGanesha, IconLotus, IconMala, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER } from "../nav-map";
 import { DeityPortrait, Logomark, cx } from "../ui";
+import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
 import {
   useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope, getTemples,
@@ -23,7 +19,7 @@ let firedOnce = false;
 
 type Block = {
   label: string;
-  icon: IconComponent;
+  icon: string;
   to: ScreenName;
   params?: Record<string, unknown>;
 };
@@ -40,26 +36,25 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
   NAV_ORDER.map((id) => ({
     title: NAV[id].title,
     tab: id,
-    layout: id === "tools" ? "row" : "stack",
-    // three fills the 3-up grid exactly; four fills the 2-up one. Neither
-    // leaves a ragged last row.
-    blocks: NAV[id].entries.slice(0, id === "tools" ? 4 : 3),
+    // Every shelf reads the same way — a mark over the name, three to a row.
+    // Guides used to be a row of pills; it now matches its neighbours.
+    layout: "stack",
+    // three fills the 3-up grid exactly, leaving no ragged last row.
+    blocks: NAV[id].entries.slice(0, 3),
   }));
 
-// A tab earns its place by addressing a section worth jumping to — Sandesh,
-// Japa and Rashi are each a single card, and a tab that scrolls you to one card
-// is a control nobody reaches for.
-//
-// Most tabs jump to a section of this page. Festivals have no section here —
-// that card only renders when one is upcoming — so it opens the festivals
-// screen instead of scrolling to something that may not exist.
-const TABS: { id: string; label: string; to?: ScreenName }[] = [
-  { id: "kundli", label: "My Kundli" },
-  { id: "astro", label: "Astro" },
-  { id: "devotion", label: "Devotion" },
+// Some tabs open their own page; some scroll to a section of this one. The
+// chart, the astrology and devotion shelves, festivals and the guides are
+// places worth leaving home for, so they navigate. Store and Library have their
+// shelf right here, so they scroll to it — a tab with `to` navigates, a tab
+// without it jumps to its section.
+const TABS: { id: string; label: string; to?: ScreenName; params?: Record<string, unknown> }[] = [
+  { id: "kundli", label: "My Kundli", to: "kundli" },
+  { id: "astro", label: "Astro", to: "category", params: { id: "astro" } },
+  { id: "devotion", label: "Devotion", to: "category", params: { id: "devotion" } },
   { id: "festival", label: "Festival", to: "festivals" },
   { id: "store", label: "Store" },
-  { id: "tools", label: "Guides" },
+  { id: "tools", label: "Guides", to: "category", params: { id: "tools" } },
   { id: "library", label: "Library" },
 ];
 
@@ -111,23 +106,20 @@ const DARSHAN_TINTS: [string, string][] = [
 ];
 
 export function HomeScreen() {
-  const { go, sendPush, streak, japaToday, profile } = useApp();
+  const { go, haptic, sendPush, streak, japaToday, profile } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState<string>("kundli");
 
-  // Tabs jump to a section, and the selected one follows the scroll so the
-  // strip keeps telling the truth about where you are.
+  const name = profile?.name || "Devotee";
+  const rashi = rashiLabel(profile || { rashi: null, dob: null });
+
+  // Tabs without a destination scroll to their shelf on this page.
   const scrollToSection = (id: string) => {
     const sc = scrollRef.current;
     const el = sc?.querySelector<HTMLElement>(`[data-section="${id}"]`);
     if (!sc || !el) return;
-    setActiveTab(id);
     sc.scrollTo({ top: Math.max(0, el.offsetTop - 96), behavior: "smooth" });
   };
-
-  const name = profile?.name || "Devotee";
-  const rashi = rashiLabel(profile || { rashi: null, dob: null });
 
   // live panchang from the jyotish-grade engine (server-side Swiss Ephemeris),
   // fetched via /api/panchang and refreshed every 2 min.
@@ -184,29 +176,6 @@ export function HomeScreen() {
     },
   ].filter(Boolean) as { label: string; value: string; title?: string }[];
 
-  // Keep the selected tab honest as the page scrolls. Re-runs when the
-  // sections that render conditionally appear or disappear.
-  useEffect(() => {
-    const sc = scrollRef.current;
-    if (!sc) return;
-    const els = TABS
-      .filter((t) => !t.to)
-      .map((t) => sc.querySelector<HTMLElement>(`[data-section="${t.id}"]`))
-      .filter((el): el is HTMLElement => el !== null);
-    if (!els.length) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const top = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (top) setActiveTab((top.target as HTMLElement).dataset.section || "kundli");
-      },
-      { root: sc, rootMargin: "-104px 0px -60% 0px" }
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [library.length, nextFestival]);
-
   useEffect(() => {
     if (firedOnce || !chog) return;
     firedOnce = true;
@@ -223,8 +192,72 @@ export function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sendPush, chog]);
 
+  // Right-column widgets on desktop — the horoscope prompt above Live Darshan,
+  // set once and placed in the aside. On mobile they render inline instead.
+  const horoCard = (
+    <div className="rounded-2xl surface p-3">
+      <span className="font-display text-[14.5px] text-ink">Today · {rashi.split(" ")[0]}</span>
+      {horoscope ? (
+        <p className="mt-2 measure text-[11.5px] leading-relaxed text-muted">{horoscope}</p>
+      ) : horoscopeReady ? (
+        <p className="mt-2 measure text-[11.5px] leading-relaxed text-muted">
+          Today&apos;s reading isn&apos;t ready yet. Ask the Jyotishi and it will read your chart directly.
+        </p>
+      ) : (
+        <div className="mt-3 space-y-2">
+          <div className="shimmer h-3 w-full rounded-full" style={{ background: "var(--surface-2)" }} />
+          <div className="shimmer h-3 w-4/5 rounded-full" style={{ background: "var(--surface-2)" }} />
+        </div>
+      )}
+      <button
+        onClick={() => go("ai", { mode: "jyotishi" })}
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[6px] py-2.5 text-[12px] btn-saffron"
+      >
+        <IconEye size={14} /> Ask the AI Jyotishi
+      </button>
+    </div>
+  );
+
+  const darshanVertical = temples.length > 0 && (
+    <section className="rounded-2xl surface p-2.5">
+      <div className="mb-2.5 flex items-end justify-between">
+        <h3 className="section-title">Live Darshan</h3>
+        <button onClick={() => go("temple")} className="flex items-center gap-1 text-[11px] text-ink">
+          See all <CaretRight size={12} className="shrink-0" />
+        </button>
+      </div>
+      {/* Compact rows: a small rectangular still, the name and place beside it —
+          a video list, not a stack of tall posters. */}
+      <div className="flex flex-col gap-2.5">
+        {temples.slice(0, 6).map((t, i) => {
+          const [from, to] = DARSHAN_TINTS[i % DARSHAN_TINTS.length];
+          return (
+            <button
+              key={t.id}
+              onClick={() => go("temple")}
+              className="flex items-center gap-2.5 text-left"
+            >
+              <div
+                className="relative h-12 w-[74px] shrink-0 overflow-hidden rounded-lg"
+                style={{ background: `linear-gradient(125deg, ${from}, ${to})` }}
+              >
+                <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
+                  <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[12px] font-medium text-ink">{t.name}</div>
+                <div className="truncate text-[10.5px] text-muted">{t.deity} · {t.location}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar screen-bottom lg:screen-top">
+    <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar screen-bottom lg:pt-3">
       {/* Top bar — mobile only. Haldi ground, black marks, and a strip of text
           tabs beneath that jump to the sections below. The tabs are content,
           not destinations, so they don't repeat what the bottom bar does. */}
@@ -238,7 +271,7 @@ export function HomeScreen() {
           {/* The bar's marks carry more weight than the app default — at this
               size the global "light" stroke went spindly on the yellow. */}
           <button onClick={() => go("menu")} aria-label="Menu" className="shrink-0">
-            <List size={23} weight="regular" className="text-ink" />
+            <Iconify icon="solar:hamburger-menu-linear" width={24} height={24} className="text-ink" />
           </button>
           <span className="font-display text-[19px] tracking-[-0.01em] text-ink">Divasya</span>
           <div className="ml-auto flex shrink-0 items-center gap-3.5">
@@ -254,13 +287,13 @@ export function HomeScreen() {
                 })
               }
             >
-              <IconBell size={22} strokeWidth={1.9} className="text-ink" />
+              <Iconify icon="solar:bell-linear" width={23} height={23} className="text-ink" />
             </button>
             <button onClick={() => go("menu")} aria-label="Wallet" className="shrink-0">
-              <Wallet size={22} weight="bold" className="text-ink" />
+              <Iconify icon="solar:wallet-linear" width={23} height={23} className="text-ink" />
             </button>
             <button onClick={() => go("menu")} aria-label="Search" className="shrink-0">
-              <MagnifyingGlass size={22} weight="bold" className="text-ink" />
+              <Iconify icon="solar:magnifer-linear" width={22} height={22} className="text-ink" />
             </button>
           </div>
         </div>
@@ -269,52 +302,39 @@ export function HomeScreen() {
             justify-between stretches the five tabs right across a wide window
             and leaves them floating apart. */}
         <div className="flex items-end gap-5 gutter overflow-x-auto no-scrollbar">
-          {TABS.map((t) => {
-            const on = activeTab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => (t.to ? go(t.to) : scrollToSection(t.id))}
-                className={cx(
-                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium transition-colors",
-                  on ? "text-ink" : "text-[rgba(23,22,19,0.55)]"
-                )}
-                style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
-              >
-                {t.label}
-              </button>
-            );
-          })}
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => { haptic(6); t.to ? go(t.to, t.params) : scrollToSection(t.id); }}
+              className="shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium text-ink transition-opacity active:opacity-60"
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Bell lives in the top bar on mobile; desktop keeps its own row. */}
-      <div className="hidden items-center justify-end gutter pt-2 lg:flex">
-        <button
-          onClick={() =>
-            chog &&
-            sendPush({
-              title: `${chog.name} Choghadiya ${chog.good ? "· shubh samay" : "chal raha hai"}`,
-              body: `Till ${chog.to}.${pg?.vrat ? ` Aaj ${pg.vrat}.` : ""}`,
-              tone: "auspicious",
-            })
-          }
-          className="grid h-9 w-9 place-items-center rounded-full surface"
-        >
-          <IconBell size={16} className="text-ink" />
-        </button>
-      </div>
+      {/* Desktop: a main feed on the left that itself bentos into two columns,
+          and a fixed widget column on the right holding the AI Jyotishi prompt
+          over Live Darshan. Mobile drops both and stays one plain column. */}
+      <div className="lg:flex lg:items-start lg:gap-2.5 lg:px-2.5">
+      <div className="home-bento min-w-0 lg:flex-1 lg:grid lg:grid-cols-2">
 
       {/* What is running now — the one time-sensitive thing on the screen, so
           it gets a status dot and reads in a single glance. */}
-      <div className="gutter pt-2">
+      <div className="gutter pt-2 lg:col-span-2">
         <button
           onClick={() => go("panchang")}
           className="flex w-full items-center gap-2.5 rounded-2xl surface px-3 py-2.5 text-left"
         >
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ background: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)" }}
+          {/* A cloud stands in for the plain status dot — still tinted shubh
+              green or avoid-red so the reading is legible at a glance. */}
+          <Iconify
+            icon="solar:cloud-bold-duotone"
+            width={20}
+            height={20}
+            className="shrink-0"
+            style={{ color: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)" }}
           />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
@@ -335,8 +355,21 @@ export function HomeScreen() {
                 {pg ? `${pg.weekdayShort} · ${pg.dateLabel}` : ""}
               </span>
             </div>
-            <div className="mt-0.5 truncate text-[10.5px] tnum text-muted">
-              Sunrise {pg?.sunrise ?? "…"} · Sunset {pg?.sunset ?? "…"} · Rahu {pg?.rahuKaal ?? "—"}
+            {/* Sunrise and sunset read as little horizon marks rather than the
+                words — a sun lifting for दिन, dropping for सांझ — with the times
+                beside them. Rahu Kaal stays as a labelled figure. */}
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] tnum text-muted">
+              <span className="inline-flex items-center gap-1">
+                <Iconify icon="meteocons:sunrise-fill" width={20} height={20} className="shrink-0" />
+                {pg?.sunrise ?? "…"}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <Iconify icon="meteocons:sunset-fill" width={20} height={20} className="shrink-0" />
+                {pg?.sunset ?? "…"}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <span className="opacity-70">Rahu</span> {pg?.rahuKaal ?? "—"}
+              </span>
             </div>
           </div>
           <CaretRight size={16} className="shrink-0 text-muted" />
@@ -346,7 +379,7 @@ export function HomeScreen() {
       {/* Aaj ka Sandesh — the anchor. With the day stated once above, this card
           carries only the verse, its reading and the share, so the shloka gets
           the room to actually land. */}
-      <div className="gutter pt-2">
+      <div className="gutter pt-2 lg:col-span-2">
         <div className="rounded-2xl surface p-3">
           <span className="eyebrow text-muted">Aaj ka Sandesh</span>
           <p className="mt-2 measure font-deva text-[18px] leading-[1.85] text-ink">
@@ -446,7 +479,7 @@ export function HomeScreen() {
               <h3 className="section-title">{sec.title}</h3>
               <button
                 onClick={() => go("category", { id: sec.tab })}
-                className="flex items-center gap-0.5 text-[11px] text-gold"
+                className="flex items-center gap-0.5 text-[11px] text-ink"
               >
                 See all <CaretRight size={11} weight="bold" />
               </button>
@@ -454,35 +487,31 @@ export function HomeScreen() {
             <div
               className={cx(
                 "grid gap-2",
-                sec.layout === "row" ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3 lg:grid-cols-6"
+                sec.layout === "row" ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3"
               )}
             >
-              {sec.blocks.map((b) => {
-                const Icon = b.icon;
-                return (
-                  <button
-                    key={b.label}
-                    onClick={() => go(b.to, b.params)}
+              {sec.blocks.map((b) => (
+                <button
+                  key={b.label}
+                  onClick={() => go(b.to, b.params)}
+                  className={cx(
+                    "rounded-xl border border-[var(--tile-line)] bg-[var(--tile-bg)] transition-[filter] hover:brightness-[0.98]",
+                    sec.layout === "row"
+                      ? "flex items-center gap-2.5 px-2.5 py-2.5 text-left"
+                      : "flex flex-col items-center gap-2 px-1 py-3 lg:py-3.5"
+                  )}
+                >
+                  <Iconify icon={b.icon} className="shrink-0 text-[var(--icon-ink)] h-[22px] w-[22px] lg:h-[24px] lg:w-[24px]" />
+                  <span
                     className={cx(
-                      "rounded-xl transition-colors hover:bg-[rgba(222,107,31,0.09)]",
-                      sec.layout === "row"
-                        ? "flex items-center gap-2.5 px-2.5 py-2.5 text-left"
-                        : "flex flex-col items-center gap-2 px-1 py-3"
+                      "text-[11px] leading-tight text-ink lg:text-[13px]",
+                      sec.layout === "row" ? "truncate" : "text-center"
                     )}
-                    style={{ background: "var(--surface-2)" }}
                   >
-                    <Icon size={20} className="shrink-0 text-[var(--bhagwa)]" strokeWidth={1.5} />
-                    <span
-                      className={cx(
-                        "text-[11px] leading-tight text-ink",
-                        sec.layout === "row" ? "truncate" : "text-center"
-                      )}
-                    >
-                      {b.label}
-                    </span>
-                  </button>
-                );
-              })}
+                    {b.label}
+                  </span>
+                </button>
+              ))}
             </div>
           </section>
         </div>
@@ -493,7 +522,7 @@ export function HomeScreen() {
             palette is set here rather than taken from the temple records:
             those tints are near-black greys and go muddy at this size. */}
         {sec.tab === "devotion" && temples.length > 0 && (
-          <div className="gutter pt-1.5">
+          <div className="gutter pt-1.5 lg:hidden">
             <section className="rounded-2xl surface p-2.5">
               <div className="mb-2.5 flex items-end justify-between">
                 <h3 className="section-title">Live Darshan</h3>
@@ -560,36 +589,13 @@ export function HomeScreen() {
         </div>
       )}
 
-      {/* daily horoscope — AI-generated, Supabase-cached */}
-      <div className="gutter pt-1.5">
-        <div className="rounded-2xl surface p-3">
-          <div className="flex items-center justify-between">
-            <span className="font-display text-[14.5px] text-ink">Today · {rashi.split(" ")[0]}</span>
-          </div>
-          {horoscope ? (
-            <p className="mt-2 measure text-[11.5px] leading-relaxed text-muted">{horoscope}</p>
-          ) : horoscopeReady ? (
-            <p className="mt-2 measure text-[11.5px] leading-relaxed text-muted">
-              Today&apos;s reading isn&apos;t ready yet. Ask the Jyotishi below and it will read your chart directly.
-            </p>
-          ) : (
-            <div className="mt-3 space-y-2">
-              <div className="shimmer h-3 w-full rounded-full" style={{ background: "var(--surface-2)" }} />
-              <div className="shimmer h-3 w-4/5 rounded-full" style={{ background: "var(--surface-2)" }} />
-            </div>
-          )}
-          <button
-            onClick={() => go("ai", { mode: "jyotishi" })}
-            className="mt-3 ml-auto flex items-center gap-1.5 rounded-[5px] px-4 py-2.5 text-[12px] btn-saffron"
-          >
-            <IconEye size={14} /> Ask the AI Jyotishi
-          </button>
-        </div>
-      </div>
+      {/* daily horoscope — inline on mobile; on desktop it lives in the right
+          column, so this copy is hidden there. */}
+      <div className="gutter pt-1.5 lg:hidden">{horoCard}</div>
 
       {/* library — in the same panel form as every other section */}
       {library.length > 0 && (
-        <div data-section="library" className="gutter pt-1.5">
+        <div data-section="library" className="gutter pt-1.5 lg:col-span-2">
           <section className="rounded-2xl surface p-2.5">
             <div className="mb-2.5 flex items-end justify-between">
               <h3 className="section-title">Spiritual Library</h3>
@@ -638,7 +644,7 @@ export function HomeScreen() {
           lands harder than five competing for a swipe, and the screen ends on
           something worth reading rather than trailing into a footer. It turns
           over daily, so the page is not identical tomorrow. */}
-      <div className="gutter pt-1.5">
+      <div className="gutter pt-1.5 lg:col-span-2">
         <button
           onClick={() => go("sandesh")}
           className="w-full overflow-hidden rounded-2xl p-4 text-left"
@@ -654,10 +660,20 @@ export function HomeScreen() {
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-2 gutter pb-2 pt-5">
+      <div className="flex items-center justify-center gap-2 gutter pb-2 pt-5 lg:col-span-2">
         <Logomark size={13} className="text-[var(--bhagwa)]" />
         <span className="text-[10.5px] text-muted">Divasya · Spiritual Journey</span>
       </div>
+
+      </div>{/* /main feed */}
+
+      {/* Right column — desktop only. Ask the AI Jyotishi over Live Darshan. */}
+      <aside className="hidden lg:flex lg:w-[320px] lg:shrink-0 lg:flex-col lg:gap-3 lg:pt-2">
+        {horoCard}
+        {darshanVertical}
+      </aside>
+
+      </div>{/* /feed row */}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { CaretRight, Minus, Plus, ShoppingCartSimple, Trash, ShieldCheck, Truck } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { ScreenHeader, cx } from "../ui";
+import { ScreenHeader, FilterChips, cx } from "../ui";
 import {
   IconMala, IconStar, IconWheel, IconLotus, IconFlower, IconJournal, IconComponent,
 } from "../icons";
@@ -77,9 +77,6 @@ export function ShopScreen() {
       <ScreenHeader
         title="Store"
         onBack={back}
-        tabs={chips}
-        activeTab={filter}
-        onTab={(id) => { haptic(4); setFilter(id); }}
         right={
           <button
             onClick={() => { haptic(6); go("cart"); }}
@@ -101,6 +98,9 @@ export function ShopScreen() {
           </button>
         }
       />
+
+      {/* Filter — the shared horizontal chip block, on the white ground. */}
+      <FilterChips chips={chips} active={filter} onSelect={(id) => { haptic(4); setFilter(id); }} />
 
       {/* grid */}
       <div className="gutter pt-3">

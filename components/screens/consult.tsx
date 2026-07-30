@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CaretLeft, Check, Clock, Gift, PaperPlaneTilt, ShieldCheck, Star, Wallet } from "@phosphor-icons/react";
 import { IconChat } from "../icons";
 import { useApp } from "../app-context";
-import { Avatar, cx, Typing } from "../ui";
+import { Avatar, cx, FilterChips, Typing } from "../ui";
 import { ASTROLOGERS } from "@/lib/demo";
 import { useCatalog, getAstrologers } from "@/lib/catalog";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
@@ -34,13 +34,12 @@ export function ConsultScreen() {
   astrologers.forEach((a) => a.tags?.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)));
   const tags = ["All", ...[...counts.entries()].sort((x, y) => y[1] - x[1]).slice(0, 6).map(([t]) => t)];
   const shown = tag === "All" ? astrologers : astrologers.filter((a) => a.tags?.includes(tag));
-  const onlineCount = astrologers.filter((a) => a.status === "online").length;
 
   return (
     <div className="flex h-full flex-col">
-      {/* Yellow header, matching the bar on home. Wallet reads as plain text
-          beside its mark — a pill around a balance implies a button. The skill
-          filter rides the bar as a tab strip, selected black + underlined. */}
+      {/* Yellow header — just the title and wallet. The skill filter used to
+          ride the bar; it reads better on the white ground below the offer, so
+          it now lives there. */}
       <div
         className="shrink-0"
         style={{
@@ -48,7 +47,7 @@ export function ConsultScreen() {
           paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
         }}
       >
-        <div className="flex items-center gap-3 gutter pb-2">
+        <div className="flex items-center gap-3 gutter pb-2.5">
           <button onClick={back} aria-label="Back" className="shrink-0">
             <CaretLeft size={20} weight="regular" className="text-ink" />
           </button>
@@ -57,24 +56,6 @@ export function ConsultScreen() {
             <Wallet size={17} weight="bold" className="text-ink" />
             <span className="text-[13px] tnum font-medium text-ink">₹{wallet}</span>
           </span>
-        </div>
-        <div className="-mb-px flex items-end gap-5 gutter overflow-x-auto no-scrollbar">
-          {tags.map((t) => {
-            const on = t === tag;
-            return (
-              <button
-                key={t}
-                onClick={() => setTag(t)}
-                className={cx(
-                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium transition-colors",
-                  on ? "text-ink" : "text-[rgba(23,22,19,0.55)]",
-                )}
-                style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
-              >
-                {t}
-              </button>
-            );
-          })}
         </div>
       </div>
 
@@ -96,25 +77,22 @@ export function ConsultScreen() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gutter pt-3 text-[10.5px] text-muted">
-          <span>
-            {shown.length} {shown.length === 1 ? "astrologer" : "astrologers"}
-            {tag !== "All" ? ` in ${tag}` : ""}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--good)" }} />
-            {onlineCount} online now
-          </span>
-        </div>
+        {/* Skill filter — the shared chip block, under the offer. */}
+        <FilterChips
+          chips={tags.map((t) => ({ id: t, label: t }))}
+          active={tag}
+          onSelect={setTag}
+        />
 
-        <div className="gutter space-y-2 pt-1.5">
+        <div className="gutter pt-1">
           {shown.map((a) => (
-            // One tap target for the whole card; the Chat block is the visible
-            // affordance, not a nested button.
+            // One tap target for the whole row; the Chat block is the visible
+            // affordance, not a nested button. No card and no divider — the rows
+            // sit on the white ground, separated by their own breathing room.
             <button
               key={a.id}
               onClick={() => go("consultChat", { astrologerId: a.id })}
-              className="w-full rounded-2xl surface p-2.5 text-left"
+              className="w-full py-3.5 text-left"
             >
               <div className="flex gap-2.5">
                 <span className="relative shrink-0">
@@ -148,28 +126,26 @@ export function ConsultScreen() {
                 </div>
               </div>
 
-              {/* Price and availability against the action, divided from the
-                  identity above it — the card now says who, then what it
-                  costs, rather than one flat run of grey. */}
-              <div
-                className="mt-2 flex items-center justify-between gap-2 border-t pt-2"
-                style={{ borderColor: "var(--line)" }}
-              >
-                <span className="flex min-w-0 items-center gap-2 text-[11px] tnum">
+              {/* Price and availability against the action — no divider line
+                  inside the row, so each astrologer reads as one block. */}
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <span className="flex min-w-0 items-center gap-2 text-[11px] tnum lg:text-[12px]">
                   {a.status === "online" ? (
                     <span className="font-medium text-[var(--good)]">Free first chat</span>
                   ) : (
                     <span className="flex items-center gap-1 text-muted">
-                      <Clock size={11} /> {a.wait}
+                      <Clock size={11} weight="bold" className="lg:hidden" />
+                      <Clock size={14} weight="bold" className="hidden lg:inline" /> {a.wait}
                     </span>
                   )}
                   <span className="truncate text-muted">· ₹{a.rate}/min</span>
                 </span>
                 <span
-                  className="flex shrink-0 items-center gap-1.5 rounded-[5px] px-3.5 py-1.5 text-[11.5px] text-white"
+                  className="flex shrink-0 items-center gap-1.5 rounded-[6px] px-3.5 py-1.5 text-[11.5px] text-white lg:gap-2 lg:px-5 lg:py-2.5 lg:text-[13px]"
                   style={{ background: CHAT_BLUE }}
                 >
-                  <IconChat size={14} strokeWidth={1.7} /> Chat
+                  <IconChat size={14} strokeWidth={1.7} className="lg:hidden" />
+                  <IconChat size={17} strokeWidth={1.7} className="hidden lg:block" /> Chat
                 </span>
               </div>
             </button>

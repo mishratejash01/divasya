@@ -62,7 +62,9 @@ export function MoreScreen() {
           birth details are the input to every chart the app computes, so they
           have to be correctable. */}
       <div className="gutter pt-2">
-        <div className="overflow-hidden rounded-2xl surface">
+        {/* Transparent — the profile block sits straight on the ground with no
+            card fill or shadow behind it. */}
+        <div className="overflow-hidden rounded-2xl">
           <button
             onClick={() => { haptic(6); go("profile"); }}
             className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-[var(--surface-2)]"

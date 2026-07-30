@@ -320,6 +320,50 @@ export function ScreenHeader({
   );
 }
 
+/**
+ * The app's one filter control: a horizontal, sideways-scrolling row of
+ * rectangular chips on the white ground, under the header. The selected chip is
+ * filled kumkum with white type; the rest are outlined. Every screen with a
+ * filter uses this, so they cannot drift apart in shape or colour.
+ */
+export function FilterChips({
+  chips,
+  active,
+  onSelect,
+  className,
+}: {
+  chips: HeaderTab[];
+  active: string;
+  onSelect: (id: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cx("gutter pt-3", className)}>
+      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        {chips.map((c) => {
+          const on = c.id === active;
+          return (
+            <button
+              key={c.id}
+              onClick={() => onSelect(c.id)}
+              className={cx(
+                "shrink-0 whitespace-nowrap rounded-lg border px-3.5 py-1.5 text-[12px] font-medium transition-colors lg:text-[13px]",
+                on ? "border-transparent text-white" : "text-ink",
+              )}
+              style={{
+                background: on ? "var(--icon-ink)" : "transparent",
+                borderColor: on ? "transparent" : "var(--tile-line)",
+              }}
+            >
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function SectionLabel({
   children,
   action,

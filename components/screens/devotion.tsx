@@ -5,7 +5,7 @@ import { IconShankh } from "../icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bank, CaretLeft, Check, Drop, Eye, Fire, FlowerLotus, ForkKnife, Leaf, MapPin, Orange, Play, VideoCamera } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { ScreenHeader, cx } from "../ui";
+import { ScreenHeader, FilterChips, cx } from "../ui";
 import { PUJAS, CHADHAVA, TEMPLES } from "@/lib/demo";
 import { useCatalog, getPujas, getChadhava, getTemples } from "@/lib/catalog";
 import { logEvent } from "@/lib/chat";
@@ -82,12 +82,12 @@ export function PujaScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <ScreenHeader
-        title="Online Puja & Chadhava"
-        onBack={back}
-        tabs={[{ id: "puja", label: "Pujas" }, { id: "chadhava", label: "e-Chadhava" }]}
-        activeTab={tab}
-        onTab={(id) => setTab(id as "puja" | "chadhava")}
+      <ScreenHeader title="Online Puja & Chadhava" onBack={back} />
+
+      <FilterChips
+        chips={[{ id: "puja", label: "Pujas" }, { id: "chadhava", label: "e-Chadhava" }]}
+        active={tab}
+        onSelect={(id) => setTab(id as "puja" | "chadhava")}
       />
 
       <div className="flex-1 overflow-y-auto gutter pt-1 screen-bottom no-scrollbar">

@@ -13,17 +13,27 @@ import { DEITIES } from "@/lib/demo";
  * permanent. Saving here recomputes the rashi and janma nakshatra from the
  * engine, exactly as onboarding does.
  */
+// An outlined field on the white ground — the label sits small above the value,
+// and the border warms to kumkum while you're typing in it.
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
-    <label className="block rounded-[6px] px-2.5 py-2" style={{ background: "var(--surface-2)" }}>
+    <label className="block rounded-xl border border-[var(--tile-line)] px-3 py-2.5 transition-colors focus-within:border-[var(--icon-ink)]">
       <span className="eyebrow block text-muted">{label}</span>
       {children}
-      {hint && <span className="mt-0.5 block text-[10px] leading-tight text-[var(--muted-2)]">{hint}</span>}
+      {hint && <span className="mt-1 block text-[10px] leading-tight text-[var(--muted-2)]">{hint}</span>}
     </label>
   );
 }
 
-const input = "mt-0.5 w-full bg-transparent text-[12.5px] text-ink outline-none placeholder:text-[var(--muted-2)]";
+const input = "mt-1 w-full bg-transparent text-[13px] text-ink outline-none placeholder:text-[var(--muted-2)]";
+
+// Selectable chip, same shape and colour as the app's filter chips.
+const chipCls = (on: boolean) =>
+  cx("rounded-lg border px-3.5 py-1.5 text-[12px] font-medium transition-colors", on ? "border-transparent text-white" : "text-ink");
+const chipStyle = (on: boolean) => ({
+  background: on ? "var(--icon-ink)" : "transparent",
+  borderColor: on ? "transparent" : "var(--tile-line)",
+});
 
 export function ProfileScreen() {
   const { back, haptic, profile, completeOnboarding } = useApp();
@@ -70,72 +80,59 @@ export function ProfileScreen() {
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="Your details" onBack={back} />
 
-      <div className="gutter pt-2">
-        <section className="rounded-2xl surface p-2.5">
-          <h3 className="section-title mb-1.5">About you</h3>
-          <div className="grid gap-1.5">
-            <Field label="Name">
-              <input value={name} onChange={(e) => setName(e.target.value)} className={input} placeholder="Your name" />
-            </Field>
-            <Field label="Gender">
-              <div className="mt-1 flex gap-1.5">
-                {[["m", "Male"], ["f", "Female"], ["o", "Other"]].map(([v, l]) => (
-                  <button
-                    key={v}
-                    onClick={() => setGender(v)}
-                    className={cx("rounded-full px-3 py-1.5 text-[11px]", gender === v ? "btn-saffron" : "btn-white")}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-            </Field>
+      <div className="gutter pt-4">
+        <h3 className="section-title mb-2.5 lg:text-[16px]">About you</h3>
+        <div className="grid items-start gap-3 lg:grid-cols-2">
+          <Field label="Name">
+            <input value={name} onChange={(e) => setName(e.target.value)} className={input} placeholder="Your name" />
+          </Field>
+          <div>
+            <span className="eyebrow mb-1.5 block text-muted">Gender</span>
+            <div className="flex gap-2">
+              {[["m", "Male"], ["f", "Female"], ["o", "Other"]].map(([v, l]) => (
+                <button key={v} onClick={() => setGender(v)} className={chipCls(gender === v)} style={chipStyle(gender === v)}>
+                  {l}
+                </button>
+              ))}
+            </div>
           </div>
-        </section>
+        </div>
       </div>
 
-      <div className="gutter pt-1.5">
-        <section className="rounded-2xl surface p-2.5">
-          <h3 className="section-title mb-1.5">Birth details</h3>
-          <div className="grid gap-1.5">
-            <Field label="Date of birth">
-              <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className={input} />
-            </Field>
-            <Field label="Time of birth" hint="The lagna moves a full sign every two hours, so the closer this is, the truer your chart.">
-              <input type="time" value={tob} onChange={(e) => setTob(e.target.value)} className={input} />
-            </Field>
-            <Field label="Place of birth" hint="City is enough. It fixes the lagna and the timezone.">
-              <input value={birthplace} onChange={(e) => setBirthplace(e.target.value)} className={input} placeholder="e.g. Varanasi, Uttar Pradesh" />
-            </Field>
-            <Field label="Where you live now">
-              <input value={current} onChange={(e) => setCurrent(e.target.value)} className={input} placeholder="City" />
-            </Field>
-          </div>
-        </section>
+      <div className="gutter pt-5">
+        <h3 className="section-title mb-2.5 lg:text-[16px]">Birth details</h3>
+        <div className="grid items-start gap-3 lg:grid-cols-2">
+          <Field label="Date of birth">
+            <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className={input} />
+          </Field>
+          <Field label="Time of birth" hint="The lagna moves a full sign every two hours, so the closer this is, the truer your chart.">
+            <input type="time" value={tob} onChange={(e) => setTob(e.target.value)} className={input} />
+          </Field>
+          <Field label="Place of birth" hint="City is enough. It fixes the lagna and the timezone.">
+            <input value={birthplace} onChange={(e) => setBirthplace(e.target.value)} className={input} placeholder="e.g. Varanasi, Uttar Pradesh" />
+          </Field>
+          <Field label="Where you live now">
+            <input value={current} onChange={(e) => setCurrent(e.target.value)} className={input} placeholder="City" />
+          </Field>
+        </div>
       </div>
 
-      <div className="gutter pt-1.5">
-        <section className="rounded-2xl surface p-2.5">
-          <h3 className="section-title mb-1.5">Ishta devta</h3>
-          <div className="flex flex-wrap gap-1.5">
-            {deities.map((d) => (
-              <button
-                key={d.id}
-                onClick={() => setDeityId(d.id)}
-                className={cx("rounded-full px-3 py-1.5 text-[11px]", deityId === d.id ? "btn-saffron" : "btn-white")}
-              >
-                {d.name.split(" ")[0]}
-              </button>
-            ))}
-          </div>
-        </section>
+      <div className="gutter pt-5">
+        <h3 className="section-title mb-2.5 lg:text-[16px]">Ishta devta</h3>
+        <div className="flex flex-wrap gap-2">
+          {deities.map((d) => (
+            <button key={d.id} onClick={() => setDeityId(d.id)} className={chipCls(deityId === d.id)} style={chipStyle(deityId === d.id)}>
+              {d.name.split(" ")[0]}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="gutter pt-2.5">
+      <div className="gutter pt-6 lg:max-w-sm">
         <button
           onClick={save}
           disabled={!changed || saving}
-          className={cx("flex w-full items-center justify-center gap-1.5 rounded-2xl py-3 text-[12.5px]", changed ? "btn-saffron" : "btn-white")}
+          className={cx("flex w-full items-center justify-center gap-1.5 rounded-2xl py-3.5 text-[13px] font-medium", changed ? "btn-saffron" : "btn-white")}
         >
           {saving ? "Saving…" : saved ? <><Check size={14} weight="bold" /> Saved</> : changed ? "Save changes" : "Nothing to save"}
         </button>

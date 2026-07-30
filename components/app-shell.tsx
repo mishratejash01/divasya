@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { IconContext, SidebarSimple } from "@phosphor-icons/react";
+import { IconContext } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
@@ -9,6 +8,7 @@ import { SideNav } from "./side-nav";
 import { CategoryScreen } from "./screens/category";
 import { PushToast } from "./push-toast";
 import { Logomark } from "./ui";
+import { Iconify } from "./iconify";
 
 import { HomeScreen } from "./screens/home";
 import { MalaScreen } from "./screens/mala";
@@ -66,27 +66,51 @@ function Screen() {
   }
 }
 
+/**
+ * The desktop top bar. Haldi yellow to match the rail, so the two together frame
+ * the app like brand chrome. Carries the Divasya wordmark on the left and the
+ * account in the corner. It lives inside the main column, so when the rail blooms
+ * open the bar shifts right along with the page. Desktop only — the phone screens
+ * carry their own headers.
+ */
+function DeskTopBar() {
+  const { go } = useApp();
+  return (
+    <header
+      className="hidden h-14 shrink-0 items-center justify-between px-5 lg:flex"
+      style={{ background: "var(--bar-yellow)", borderBottom: "1px solid rgba(0,0,0,0.10)" }}
+    >
+      <button onClick={() => go("home")} className="text-left">
+        <span className="font-display text-[19px] leading-none tracking-[-0.01em] text-ink">Divasya</span>
+      </button>
+      {/* Account lives here now — the user-circle mark, not an avatar. */}
+      <button
+        onClick={() => go("account")}
+        title="Account"
+        aria-label="Account"
+        className="grid h-9 w-9 place-items-center rounded-full transition-opacity hover:opacity-80"
+      >
+        <Iconify icon="solar:user-circle-bold-duotone" width={27} height={27} className="text-[var(--icon-ink)]" />
+      </button>
+    </header>
+  );
+}
+
 function RoutedApp() {
   const { screen } = useApp();
-  // desktop sidebar visibility — remembered across sessions
-  const [navOpen, setNavOpen] = useState(true);
-  useEffect(() => {
-    try { setNavOpen(localStorage.getItem("divasya-nav") !== "closed"); } catch { /* ssr */ }
-  }, []);
-  const toggleNav = () => {
-    setNavOpen((v) => {
-      try { localStorage.setItem("divasya-nav", v ? "closed" : "open"); } catch { /* private mode */ }
-      return !v;
-    });
-  };
   return (
     <div className="flex h-full w-full">
-      <SideNav open={navOpen} onToggle={toggleNav} />
-      <main className="relative h-full min-w-0 flex-1 overflow-hidden">
-        {/* Content column. Screens own their own gutter (--gutter), so this
-            wrapper adds none — it only caps the line length on very wide
-            displays. Below 1200px it simply fills the space beside the nav. */}
-        <div className="relative mx-auto h-full w-full max-w-[1200px] overflow-hidden">
+      <SideNav />
+      <main className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        {/* The yellow bar is home's header only. Every other screen carries its
+            own ScreenHeader, so stacking this above them made two headers and
+            pushed each screen's title down a row. */}
+        {screen.name === "home" && <DeskTopBar />}
+        {/* Fills the space beside the rail. Home spreads into a feed-plus-widget
+            dashboard that uses the width without stretching any one card; the
+            other screens carry their own gutter. The warm ground only shows on
+            desktop, where the white cards lift off it. */}
+        <div className="desk-ground relative w-full flex-1 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={screen.name + JSON.stringify(screen.params || {})}
@@ -101,16 +125,6 @@ function RoutedApp() {
           </AnimatePresence>
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
         </div>
-        {/* reopen handle when the sidebar is hidden */}
-        {!navOpen && (
-          <button
-            onClick={toggleNav}
-            aria-label="Show sidebar"
-            className="absolute left-4 top-4 z-40 hidden h-9 w-9 place-items-center rounded-full surface lg:grid"
-          >
-            <SidebarSimple size={15} className="text-[var(--bhagwa)]" />
-          </button>
-        )}
       </main>
     </div>
   );

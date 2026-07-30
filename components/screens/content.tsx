@@ -252,7 +252,7 @@ export function FestivalsScreen() {
           are lunar and cannot be guessed, and a wrong date in a jyotish app is
           worse than none. Say so rather than showing a blank screen. */}
       {!list.length && (
-        <div className="gutter-m rounded-2xl surface p-3 text-center">
+        <div className="gutter-m mt-2 rounded-2xl p-3 text-center">
           <div className="text-[12.5px] text-ink">No festival dates loaded</div>
           <p className="mx-auto mt-1 measure text-[11px] leading-relaxed text-muted">
             The calendar is served from the backend. Check your connection, or open Panchang
@@ -266,44 +266,46 @@ export function FestivalsScreen() {
           </button>
         </div>
       )}
+      {/* No boxed hero and no empty faded band — the festival opens straight
+          under the header, its details on the plain ground. */}
       {hero && (
-        <div className="gutter-m overflow-hidden rounded-2xl surface">
-          {/* Flat faded band. A large glyph centred in a box read as a stock
-              placeholder for a photo that was never coming. */}
-          <div className="h-16 w-full" style={{ background: "var(--surface-2)" }} />
-          <div className="p-4">
-            <div className="eyebrow text-muted">{fmtFestivalDate(hero.date)}</div>
-            <div className="font-display text-xl text-ink">{hero.name}</div>
-            {hero.deva && <div className="mt-0.5 font-deva text-[13.5px] text-gold">{hero.deva}</div>}
-            {hero.about && <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">{hero.about}</p>}
-            {hero.muhurat && <div className="mt-2 text-[11px] text-gold">Muhurat · {hero.muhurat}</div>}
-          </div>
+        <div className="gutter pt-3">
+          <div className="eyebrow text-muted">{fmtFestivalDate(hero.date)}</div>
+          <div className="font-display text-xl text-ink">{hero.name}</div>
+          {hero.deva && <div className="mt-0.5 font-deva text-[13.5px] text-gold">{hero.deva}</div>}
+          {hero.about && <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">{hero.about}</p>}
+          {hero.muhurat && <div className="mt-2 text-[11px] text-gold">Muhurat · {hero.muhurat}</div>}
         </div>
       )}
 
-      <div className="gutter pt-2">
-        <h3 className="mb-2 section-title">Required Samagri · tick to shop</h3>
-        <div className="grid grid-cols-2 gap-2">
+      <div className="gutter pt-4">
+        <h3 className="mb-2 section-title lg:text-[17px]">Required Samagri · tick to shop</h3>
+        {/* Wider windows fit four across, with a larger tick and label, so the
+            list uses the room instead of stranding a column of white. */}
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
           {samagri.map((s) => (
             <button key={s} onClick={() => setDone((d) => ({ ...d, [s]: !d[s] }))}
-              className="flex items-center gap-2.5 rounded-xl surface px-3 py-2.5 text-left">
-              <span className={cx("grid h-5 w-5 place-items-center rounded-md border", done[s] ? "btn-saffron border-transparent" : "")}
-                style={{ borderColor: done[s] ? "transparent" : "var(--line-strong)" }}>
-                {done[s] && <Check size={12} />}
+              className="flex items-center gap-2.5 rounded-xl px-1 py-2.5 text-left lg:gap-3 lg:py-3.5">
+              <span className={cx("grid h-5 w-5 shrink-0 place-items-center rounded-full border lg:h-6 lg:w-6")}
+                style={{
+                  background: done[s] ? "var(--good)" : "transparent",
+                  borderColor: done[s] ? "transparent" : "var(--line-strong)",
+                }}>
+                {done[s] && <Check size={12} weight="bold" className="text-white" />}
               </span>
-              <span className={cx("text-[11.5px]", done[s] ? "text-muted line-through" : "text-ink")}>{s}</span>
+              <span className={cx("text-[11.5px] lg:text-[13.5px]", done[s] ? "text-muted line-through" : "text-ink")}>{s}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="gutter pt-2">
+      <div className="gutter pt-4">
         {hero && hero.vidhi?.length > 0 && (
           <>
             <h3 className="mb-2 section-title">Pooja Vidhi</h3>
-            <div className="space-y-2">
+            <div>
               {hero.vidhi.map((v, i) => (
-                <div key={i} className="flex gap-3 rounded-2xl surface p-3">
+                <div key={i} className="flex gap-3 border-t border-[var(--line)] py-3 first:border-t-0">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] btn-saffron">{i + 1}</span>
                   <span className="text-[11.5px] leading-relaxed text-ink">{v}</span>
                 </div>
@@ -315,14 +317,14 @@ export function FestivalsScreen() {
       </div>
 
       {rest.length > 0 && (
-        <div className="gutter pt-2">
+        <div className="gutter pt-4">
           <h3 className="mb-2 section-title">Upcoming</h3>
-          <div className="overflow-hidden rounded-2xl surface">
+          <div className="overflow-hidden">
             {rest.map((f, i) => {
               const Icon = festivalIcon(f.icon);
               return (
-                <div key={f.id} className="flex items-center gap-3 px-4 py-3.5" style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ background: "var(--surface-2)" }}>
+                <div key={f.id} className="flex items-center gap-3 border-t border-[var(--line)] py-3 first:border-t-0">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--tile-line)]">
                     <Icon size={15} className="text-[var(--bhagwa)]" />
                   </span>
                   <span className="flex-1 text-[12.5px] text-ink">{f.name}</span>
