@@ -186,68 +186,92 @@ export function ProductScreen() {
     <div className="flex h-full flex-col">
       <ScreenHeader title={p.name} onBack={back} />
 
-      {/* Everything scrolls; the buy bar does not. */}
+      {/* Everything scrolls; the phone buy bar does not. */}
       <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: 14 }}>
-        {/* No cards, no dividers — everything sits directly on the page. Image,
-            then name and price, then description and shipping, spaced apart. */}
+        {/* Desktop is a Flipkart split — the image and the About copy on the
+            left, the title, price, delivery and buy actions on the right. A
+            phone keeps one column with the buy bar pinned below. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,400px)_1fr] lg:gap-7 lg:px-5 lg:pt-4">
 
-        {/* Padded frame, image contained on plain white. object-cover cropped
-            the item to the box edges before; the whole object sits inside its
-            padding now. */}
-        <div className="aspect-[4/3] w-full p-6">
-          <ProductMark product={p} size={64} fit="contain" />
-        </div>
-
-        <div className="gutter pt-1">
-          <h1 className="font-display text-[19px] leading-tight tracking-[-0.02em] text-ink">{p.name}</h1>
-          {p.subtitle && <div className="mt-1 text-[11.5px] text-muted">{p.subtitle}</div>}
-          <div className="mt-2.5"><Price p={p} big /></div>
-
-          {p.badges?.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
-              {p.badges.map((b) => (
-                <span
-                  key={b}
-                  className="flex items-center gap-1 rounded-[4px] px-2 py-1 text-[10px] text-ink"
-                  style={{ background: "var(--surface-2)" }}
-                >
-                  <ShieldCheck size={11} className="text-[var(--good)]" /> {b}
-                </span>
-              ))}
+          {/* LEFT — image, and on desktop the About beneath it */}
+          <div className="lg:self-start">
+            <div className="aspect-[4/3] w-full p-6 lg:aspect-square lg:rounded-xl lg:border lg:border-[var(--tile-line)] lg:p-5">
+              <ProductMark product={p} size={64} fit="contain" />
             </div>
-          )}
-        </div>
-
-        {p.description && (
-          <div className="gutter pt-5">
-            <h2 className="section-title mb-1.5">About this product</h2>
-            <p className="measure text-[11.5px] leading-relaxed text-ink">{p.description}</p>
+            {p.description && (
+              <div className="hidden lg:block lg:pt-4">
+                <h2 className="section-title mb-1 lg:text-[15px]">About this product</h2>
+                <p className="text-[12.5px] leading-relaxed text-ink">{p.description}</p>
+              </div>
+            )}
           </div>
-        )}
 
-        <div className="gutter pt-4">
-          <div className="flex items-center gap-2 text-[11px] text-muted">
-            <Truck size={13} className="shrink-0 text-[var(--bhagwa)]" />
-            {p.is_digital
-              ? "Delivered to your account as soon as the payment clears."
-              : cfg?.copy?.shipping_note || "Ships across India."}
-          </div>
-          {!p.is_digital && cfg && (
-            <div className="mt-1.5 text-[10.5px] text-[var(--muted-2)]">
-              Free delivery on orders above {money(cfg.shipping.free_above)}, else {money(cfg.shipping.flat_fee)}.
+          {/* RIGHT — the detail column, held to a readable width */}
+          <div className="gutter pt-1 lg:max-w-xl lg:px-0 lg:pt-0">
+            <h1 className="font-display text-[19px] leading-tight tracking-[-0.02em] text-ink lg:text-[22px]">{p.name}</h1>
+            {p.subtitle && <div className="mt-1 text-[11.5px] text-muted lg:text-[12.5px]">{p.subtitle}</div>}
+            <div className="mt-2.5 lg:mt-2.5"><Price p={p} big /></div>
+
+            {p.badges?.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {p.badges.map((b) => (
+                  <span
+                    key={b}
+                    className="flex items-center gap-1 rounded-[4px] border border-[var(--tile-line)] px-2 py-1 text-[10px] text-ink lg:text-[11px]"
+                  >
+                    <ShieldCheck size={11} className="text-[var(--good)]" /> {b}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* About — phone flow only; desktop shows it on the left */}
+            {p.description && (
+              <div className="pt-5 lg:hidden">
+                <h2 className="section-title mb-1.5">About this product</h2>
+                <p className="measure text-[11.5px] leading-relaxed text-ink">{p.description}</p>
+              </div>
+            )}
+
+            <div className="pt-4">
+              <div className="flex items-center gap-2 text-[11px] text-muted lg:text-[12.5px]">
+                <Truck size={13} className="shrink-0 text-[var(--bhagwa)]" />
+                {p.is_digital
+                  ? "Delivered to your account as soon as the payment clears."
+                  : cfg?.copy?.shipping_note || "Ships across India."}
+              </div>
+              {!p.is_digital && cfg && (
+                <div className="mt-1.5 text-[10.5px] text-[var(--muted-2)] lg:text-[11.5px]">
+                  Free delivery on orders above {money(cfg.shipping.free_above)}, else {money(cfg.shipping.flat_fee)}.
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Buy actions — desktop inline; the phone uses the pinned bar */}
+            <div className="hidden gap-3 pt-5 lg:flex">
+              <button
+                onClick={added ? () => { haptic(6); go("cart"); } : addToCart}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] font-medium text-ink"
+                style={{ background: "var(--bhagwa-soft)" }}
+              >
+                <ShoppingCartSimple size={18} weight="bold" />
+                {added ? `Go to cart · ${cart.count}` : "Add to Cart"}
+              </button>
+              <button
+                onClick={buyNow}
+                className="flex flex-1 items-center justify-center rounded-2xl py-3.5 text-[14px] font-medium text-white"
+                style={{ background: "var(--bhagwa-deep)" }}
+              >
+                Buy Now
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Buy bar, Flipkart-style: two actions side by side, pinned above the
-          tab bar so they are always in the thumb's path. Add to Cart takes the
-          lighter orange with dark type; Buy Now takes the deep orange with
-          white — two shades of the same bhagwa, each legible, the primary one
-          heavier. above-tabbar clears the fixed tab bar and collapses on
-          desktop. */}
+      {/* Buy bar — phone only, pinned above the tab bar. */}
       <div
-        className="shrink-0 flex gap-2.5 gutter above-tabbar pt-2.5"
+        className="shrink-0 flex gap-2.5 gutter above-tabbar pt-2.5 lg:hidden"
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
         <button
