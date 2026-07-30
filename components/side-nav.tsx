@@ -51,11 +51,18 @@ export function SideNav() {
       className="group relative z-40 hidden h-full w-16 shrink-0 flex-col overflow-hidden px-2 pb-4 pt-3 transition-[width] duration-200 ease-out hover:w-60 lg:flex"
       style={{ background: "var(--bar-yellow)", borderRight: "1px solid rgba(0,0,0,0.10)" }}
     >
-      {/* brand — just the mark; the Divasya wordmark now sits in the top bar */}
+      {/* brand — the mark always; the wordmark rides beside it only off home,
+          where the top bar (which otherwise carries Divasya) is hidden. It fades
+          in as the rail blooms open. */}
       <button onClick={() => go("home")} className="mb-3 flex h-10 shrink-0 items-center text-left">
         <span className="grid w-12 shrink-0 place-items-center">
           <Logomark size={26} className="text-ink" />
         </span>
+        {screen.name !== "home" && (
+          <span className="min-w-0 whitespace-nowrap font-display text-[17px] leading-none tracking-[-0.01em] text-ink opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+            Divasya
+          </span>
+        )}
       </button>
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden no-scrollbar">
