@@ -12,6 +12,7 @@ export type Deity = {
   color: string; // accent used to theme the deity chat
   glow: string;
   tagline: string;
+  tagline_hi?: string; // Hindi tagline for the language switch
   persona: string; // fed to Claude
   suggestedMantraId: string;
   aarti: string; // label of aarti

@@ -19,13 +19,16 @@ export type ChadhavaItem = { id: string; name: string; price: number; icon: stri
 export type Festival = {
   id: string; name: string; date: string; deva: string | null; about: string | null;
   muhurat: string | null; samagri: string[]; vidhi: string[]; icon: string;
+  name_hi: string | null; about_hi: string | null; muhurat_hi: string | null;
+  samagri_hi: string[]; vidhi_hi: string[];
 };
 export type Article = {
   id: string; title: string; sub: string; read: string; kind: string;
   content: string; tint: string; grad: [string, string];
+  title_hi: string; sub_hi: string; content_hi: string; category: string;
 };
-export type Shloka = { id: number; deva: string; translit: string; meaning: string; source: string; deity: string };
-export type VastuZone = { dir: string; zone: string; use: string; tip: string };
+export type Shloka = { id: number; deva: string; translit: string; meaning: string; meaning_hi: string | null; source: string; deity: string };
+export type VastuZone = { dir: string; zone: string; use: string; tip: string; zone_hi: string; use_hi: string; tip_hi: string };
 export type NakshatraSyl = {
   name: string; deva: string; syl: string[]; syld: string[];
   deity: string; deityh: string; planet: string; planeth: string;
@@ -62,7 +65,7 @@ export const getDeities = () =>
     const r = await rows<Record<string, string>>("deities");
     return r.map((d) => ({
       id: d.id, name: d.name, deva: d.deva, symbol: "", color: d.color,
-      glow: `${d.color}4d`, tagline: d.tagline, persona: d.persona,
+      glow: `${d.color}4d`, tagline: d.tagline, tagline_hi: d.tagline_hi ?? d.tagline, persona: d.persona,
       suggestedMantraId: d.suggested_mantra_id, aarti: d.aarti,
     }));
   }, DEITIES);
@@ -128,10 +131,13 @@ export const getLibrary = () =>
     return r.map((l) => ({
       id: l["id"], title: l["title"], sub: l["sub"], read: l["read_time"], kind: l["kind"],
       content: l["content"], tint: l["tint"], grad: [l["tint"], shade(l["tint"])] as [string, string],
+      title_hi: l["title_hi"] ?? l["title"], sub_hi: l["sub_hi"] ?? l["sub"],
+      content_hi: l["content_hi"] ?? l["content"], category: l["category"] ?? "wisdom",
     }));
   }, LIBRARY.map((l) => ({
     id: l.id, title: l.title, sub: l.sub, read: l.read, kind: "read",
     content: l.content ?? "", tint: l.grad[0], grad: l.grad as [string, string],
+    title_hi: l.title, sub_hi: l.sub, content_hi: l.content ?? "", category: "wisdom",
   })));
 
 export const getShlokas = () =>
@@ -139,6 +145,7 @@ export const getShlokas = () =>
     id: 1, deva: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।",
     translit: "Karmanye vadhikaraste, ma phaleshu kadachana",
     meaning: "You have the right to action alone, never to its fruits.",
+    meaning_hi: "तुम्हारा अधिकार केवल कर्म करने में है, उसके फल में कभी नहीं।",
     source: "Bhagavad Gita 2.47", deity: "krishna",
   }]);
 
@@ -153,7 +160,10 @@ export async function getShlokaOfDay(date = new Date()): Promise<Shloka> {
 export const getVastuZones = () =>
   cached<VastuZone[]>("vastu", async () => {
     const r = await rows<Record<string, never>>("vastu_zones");
-    return r.map((z) => ({ dir: z["dir"], zone: z["zone"], use: z["use_for"], tip: z["tip"] }));
+    return r.map((z) => ({
+      dir: z["dir"], zone: z["zone"], use: z["use_for"], tip: z["tip"],
+      zone_hi: z["zone_hi"] ?? z["zone"], use_hi: z["use_for_hi"] ?? z["use_for"], tip_hi: z["tip_hi"] ?? z["tip"],
+    }));
   }, []);
 
 export const getNakshatraSyllables = () =>
@@ -185,6 +195,11 @@ export async function getDailyHoroscope(rashi: string): Promise<string | null> {
     const j = await res.json();
     return j.text ?? null;
   } catch { return null; }
+}
+
+/** Pick the field for the active language, falling back to English when the Hindi is missing. */
+export function tr(lang: "en" | "hi", en: string | null | undefined, hi: string | null | undefined): string {
+  return ((lang === "hi" ? (hi || en) : en) ?? "");
 }
 
 // ---------------------------------------------------------------- hook

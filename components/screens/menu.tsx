@@ -2,7 +2,7 @@
 
 import { CaretRight } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { Logomark, ScreenHeader } from "../ui";
+import { Logomark, ScreenHeader, cx } from "../ui";
 import { Iconify } from "../iconify";
 import { NAV, NAV_ORDER } from "../nav-map";
 
@@ -15,7 +15,7 @@ import { NAV, NAV_ORDER } from "../nav-map";
  * things are. Both read from the same nav map, so neither can drift.
  */
 export function MenuScreen() {
-  const { back, go, haptic } = useApp();
+  const { back, go, haptic, lang, setLang } = useApp();
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
@@ -45,6 +45,22 @@ export function MenuScreen() {
           </div>
         );
       })}
+
+      {/* language — every content screen reads this preference */}
+      <div className="gutter pt-4">
+        <h3 className="section-title mb-1">Language · भाषा</h3>
+        <div className="mt-1 grid w-fit grid-cols-2 gap-1 rounded-full p-1" style={{ background: "var(--surface-2)" }}>
+          {(["en", "hi"] as const).map((code) => (
+            <button
+              key={code}
+              onClick={() => { haptic(6); setLang(code); }}
+              className={cx("rounded-full px-4 py-1 text-[11px]", lang === code ? "btn-saffron" : "text-muted")}
+            >
+              {code === "en" ? "English" : "हिंदी"}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-5 text-[10px] text-[var(--muted-2)]">
         <Logomark size={13} className="text-[var(--bhagwa)]" /> Divasya · Spiritual Journey

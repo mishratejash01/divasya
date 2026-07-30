@@ -9,7 +9,7 @@ import { DeityGlyph, Pill, ScreenHeader, Wordmark, cx } from "../ui";
 import { deityById } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 import {
-  useCatalog, getFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
+  useCatalog, getFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope, tr,
   type Festival, type Shloka,
 } from "@/lib/catalog";
 import { useFullPanchang, usePanchang, type ChoghadiyaSlot } from "@/lib/use-panchang";
@@ -225,17 +225,18 @@ export function PanchangScreen() {
 
 /* ---------------- Festivals ---------------- */
 const SAMAGRI = ["Fresh fruits", "Flowers", "Milk", "Incense sticks", "Curd", "Diya (lamp)", "Honey", "Sweets", "Rice"];
+const SAMAGRI_HI = ["ताज़े फल", "फूल", "दूध", "अगरबत्ती", "दही", "दीया", "शहद", "मिठाई", "चावल"];
 
 const FESTIVAL_ICONS: Record<string, Icon> = {
   sun: Sun, flame: Fire, heart: Heart, shield: Shield, landmark: Bank,
   flower: FlowerLotus, sword: Sword, moon: Moon, coins: Coins, sparkles: Sparkle,
 };
 const festivalIcon = (icon?: string) => (icon && FESTIVAL_ICONS[icon]) || FlowerLotus;
-const fmtFestivalDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+const fmtFestivalDate = (iso: string, lang: "en" | "hi" = "en") =>
+  new Date(iso).toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric" });
 
 export function FestivalsScreen() {
-  const { go } = useApp();
+  const { go, lang } = useApp();
   const [done, setDone] = useState<Record<string, boolean>>({});
   const festivals = useCatalog(getFestivals, []);
   const todayISO = new Date().toISOString().slice(0, 10);
@@ -243,26 +244,32 @@ export function FestivalsScreen() {
   const list = upcoming.length ? upcoming : festivals;
   const hero: Festival | undefined = list[0];
   const rest = list.slice(1, 7);
-  const samagri = hero?.samagri?.length ? hero.samagri : SAMAGRI;
-  const HeroIcon = festivalIcon(hero?.icon);
+  // Prefer the Hindi list only when one was actually seeded; otherwise show the
+  // English items rather than a blank grid.
+  const heroSamagri = hero?.samagri?.length ? hero.samagri : SAMAGRI;
+  const samagri = lang === "hi"
+    ? (hero?.samagri_hi?.length ? hero.samagri_hi : (hero?.samagri?.length ? hero.samagri : SAMAGRI_HI))
+    : heroSamagri;
+  const vidhi = hero ? (lang === "hi" && hero.vidhi_hi?.length ? hero.vidhi_hi : hero.vidhi) : [];
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <Header title="Festivals & Pooja" />
-      {/* Festival dates come from the database and have no local seed — they
-          are lunar and cannot be guessed, and a wrong date in a jyotish app is
-          worse than none. Say so rather than showing a blank screen. */}
+      <Header title={lang === "hi" ? "पर्व एवं पूजा" : "Festivals & Pooja"} />
+      <div className="flex items-center justify-end gutter-m"><LangToggle /></div>
+      {/* Festival dates are served from the database — lunar, so they cannot be
+          guessed. Say so rather than showing a blank screen. */}
       {!list.length && (
         <div className="gutter-m mt-2 rounded-2xl p-3 text-center">
-          <div className="text-[12.5px] text-ink">No festival dates loaded</div>
+          <div className="text-[12.5px] text-ink">{lang === "hi" ? "अभी कोई तिथि उपलब्ध नहीं" : "No festival dates loaded"}</div>
           <p className="mx-auto mt-1 measure text-[11px] leading-relaxed text-muted">
-            The calendar is served from the backend. Check your connection, or open Panchang
-            for today&apos;s tithi and muhurat in the meantime.
+            {lang === "hi"
+              ? "पंचांग बैकएंड से आता है। अपना कनेक्शन जाँचें, या तब तक आज की तिथि और मुहूर्त के लिए पंचांग खोलें।"
+              : "The calendar is served from the backend. Check your connection, or open Panchang for today's tithi and muhurat in the meantime."}
           </p>
           <button
             onClick={() => go("panchang")}
             className="mt-3 rounded-[5px] px-4 py-2 text-[11.5px] btn-saffron"
           >
-            Open Panchang
+            {lang === "hi" ? "पंचांग खोलें" : "Open Panchang"}
           </button>
         </div>
       )}
@@ -270,41 +277,44 @@ export function FestivalsScreen() {
           under the header, its details on the plain ground. */}
       {hero && (
         <div className="gutter pt-3">
-          <div className="eyebrow text-muted">{fmtFestivalDate(hero.date)}</div>
-          <div className="font-display text-xl text-ink">{hero.name}</div>
+          <div className="eyebrow text-muted">{fmtFestivalDate(hero.date, lang)}</div>
+          <div className="font-display text-xl text-ink">{tr(lang, hero.name, hero.name_hi)}</div>
           {hero.deva && <div className="mt-0.5 font-deva text-[13.5px] text-gold">{hero.deva}</div>}
-          {hero.about && <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">{hero.about}</p>}
-          {hero.muhurat && <div className="mt-2 text-[11px] text-gold">Muhurat · {hero.muhurat}</div>}
+          {(hero.about || hero.about_hi) && <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">{tr(lang, hero.about, hero.about_hi)}</p>}
+          {(hero.muhurat || hero.muhurat_hi) && <div className="mt-2 text-[11px] text-gold">{lang === "hi" ? "मुहूर्त" : "Muhurat"} · {tr(lang, hero.muhurat, hero.muhurat_hi)}</div>}
         </div>
       )}
 
       <div className="gutter pt-4">
-        <h3 className="mb-2 section-title lg:text-[17px]">Required Samagri · tick to shop</h3>
+        <h3 className="mb-2 section-title lg:text-[17px]">{lang === "hi" ? "आवश्यक सामग्री" : "Required Samagri · tick to shop"}</h3>
         {/* Wider windows fit four across, with a larger tick and label, so the
             list uses the room instead of stranding a column of white. */}
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
-          {samagri.map((s) => (
-            <button key={s} onClick={() => setDone((d) => ({ ...d, [s]: !d[s] }))}
+          {samagri.map((s, i) => {
+            const key = String(i);
+            return (
+            <button key={key} onClick={() => setDone((d) => ({ ...d, [key]: !d[key] }))}
               className="flex items-center gap-2.5 rounded-xl px-1 py-2.5 text-left lg:gap-3 lg:py-3.5">
               <span className={cx("grid h-5 w-5 shrink-0 place-items-center rounded-full border lg:h-6 lg:w-6")}
                 style={{
-                  background: done[s] ? "var(--good)" : "transparent",
-                  borderColor: done[s] ? "transparent" : "var(--line-strong)",
+                  background: done[key] ? "var(--good)" : "transparent",
+                  borderColor: done[key] ? "transparent" : "var(--line-strong)",
                 }}>
-                {done[s] && <Check size={12} weight="bold" className="text-white" />}
+                {done[key] && <Check size={12} weight="bold" className="text-white" />}
               </span>
-              <span className={cx("text-[11.5px] lg:text-[13.5px]", done[s] ? "text-muted line-through" : "text-ink")}>{s}</span>
+              <span className={cx("text-[11.5px] lg:text-[13.5px]", done[key] ? "text-muted line-through" : "text-ink")}>{s}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       <div className="gutter pt-4">
-        {hero && hero.vidhi?.length > 0 && (
+        {vidhi.length > 0 && (
           <>
-            <h3 className="mb-2 section-title">Pooja Vidhi</h3>
+            <h3 className="mb-2 section-title">{lang === "hi" ? "पूजा विधि" : "Pooja Vidhi"}</h3>
             <div>
-              {hero.vidhi.map((v, i) => (
+              {vidhi.map((v, i) => (
                 <div key={i} className="flex gap-3 border-t border-[var(--line)] py-3 first:border-t-0">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] btn-saffron">{i + 1}</span>
                   <span className="text-[11.5px] leading-relaxed text-ink">{v}</span>
@@ -313,12 +323,12 @@ export function FestivalsScreen() {
             </div>
           </>
         )}
-        <button onClick={() => go("puja")} className="mt-4 w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron">Book this Puja with a Pandit</button>
+        <button onClick={() => go("puja")} className="mt-4 w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron">{lang === "hi" ? "पंडित से यह पूजा बुक करें" : "Book this Puja with a Pandit"}</button>
       </div>
 
       {rest.length > 0 && (
         <div className="gutter pt-4">
-          <h3 className="mb-2 section-title">Upcoming</h3>
+          <h3 className="mb-2 section-title">{lang === "hi" ? "आगामी" : "Upcoming"}</h3>
           <div className="overflow-hidden">
             {rest.map((f, i) => {
               const Icon = festivalIcon(f.icon);
@@ -327,8 +337,8 @@ export function FestivalsScreen() {
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--tile-line)]">
                     <Icon size={15} className="text-[var(--bhagwa)]" />
                   </span>
-                  <span className="flex-1 text-[12.5px] text-ink">{f.name}</span>
-                  <span className="text-[11px] text-muted">{fmtFestivalDate(f.date)}</span>
+                  <span className="flex-1 text-[12.5px] text-ink">{tr(lang, f.name, f.name_hi)}</span>
+                  <span className="text-[11px] text-muted">{fmtFestivalDate(f.date, lang)}</span>
                 </div>
               );
             })}
@@ -340,10 +350,43 @@ export function FestivalsScreen() {
 }
 
 /* ---------------- Library ---------------- */
+// Shelves group the library so it reads as a curated collection, not one long
+// grid. The id matches library_articles.category; labels carry both languages.
+const LIBRARY_SHELVES: { id: string; en: string; hi: string }[] = [
+  { id: "all", en: "All", hi: "सभी" },
+  { id: "deities", en: "Deities", hi: "देव" },
+  { id: "festivals", en: "Festivals", hi: "पर्व" },
+  { id: "practice", en: "Practice", hi: "साधना" },
+  { id: "wisdom", en: "Wisdom", hi: "ज्ञान" },
+  { id: "jyotish", en: "Jyotish", hi: "ज्योतिष" },
+];
+
+function LangToggle() {
+  const { lang, setLang, haptic } = useApp();
+  return (
+    <div className="grid grid-cols-2 gap-1 rounded-full p-1" style={{ background: "var(--surface-2)" }}>
+      {(["en", "hi"] as const).map((code) => (
+        <button
+          key={code}
+          onClick={() => { haptic(6); setLang(code); }}
+          className={cx("rounded-full px-3 py-1 text-[10.5px]", lang === code ? "btn-saffron" : "text-muted")}
+        >
+          {code === "en" ? "EN" : "हिं"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function LibraryScreen() {
+  const { lang } = useApp();
   const [open, setOpen] = useState<string | null>(null);
+  const [shelf, setShelf] = useState("all");
   const items = useCatalog(getLibrary, []);
   const article = open ? items.find((x) => x.id === open) : undefined;
+  const heading = lang === "hi" ? "आध्यात्मिक पुस्तकालय" : "Spiritual Library";
+  const readWord = lang === "hi" ? "पढ़ने का समय" : "read";
+
   if (article) {
     return (
       // Read like a broadsheet: a kicker, a centred masthead headline under a
@@ -351,7 +394,7 @@ export function LibraryScreen() {
       // arrow up top returns to the shelf, so the old "Back to library" line at
       // the foot is gone.
       <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-        <ScreenHeader title="Spiritual Library" onBack={() => setOpen(null)} />
+        <ScreenHeader title={heading} onBack={() => setOpen(null)} />
 
         {/* hero frame — read time straddles the bottom edge, centred */}
         <div className="gutter pt-3">
@@ -361,16 +404,16 @@ export function LibraryScreen() {
               className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 whitespace-nowrap rounded-[3px] px-2 py-[2.5px] text-[9.5px] tnum text-ink"
               style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
             >
-              {article.read} read
+              {article.read} {readWord}
             </span>
           </div>
         </div>
 
         {/* masthead */}
         <div className="gutter pt-8 text-center">
-          <div className="text-[9.5px] tracking-[0.2em] text-[var(--muted-2)]">Divasya · Spiritual Library</div>
+          <div className="text-[9.5px] tracking-[0.2em] text-[var(--muted-2)]">Divasya · {heading}</div>
           <h1 className="mx-auto mt-2 max-w-[22ch] font-display text-[25px] leading-[1.12] tracking-[-0.02em] text-ink">
-            {article.title}
+            {tr(lang, article.title, article.title_hi)}
           </h1>
         </div>
 
@@ -383,19 +426,34 @@ export function LibraryScreen() {
         {/* body — justified, with a dropped initial on the first letter */}
         <div className="gutter pt-4">
           <p className="whitespace-pre-wrap text-justify text-[12.5px] leading-[1.7] text-ink first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:font-display first-letter:text-[42px] first-letter:leading-[0.72] first-letter:text-[var(--bhagwa-deep)]">
-            {article.content}
+            {tr(lang, article.content, article.content_hi)}
           </p>
         </div>
       </div>
     );
   }
+
+  const shown = shelf === "all" ? items : items.filter((l) => l.category === shelf);
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <Header title="Spiritual Library" />
+      <Header title={heading} />
+      <div className="flex items-center justify-end gutter-m"><LangToggle /></div>
+      {/* shelves */}
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar gutter pb-1">
+        {LIBRARY_SHELVES.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => setShelf(s.id)}
+            className={cx("shrink-0 rounded-full px-3 py-1.5 text-[11px]", shelf === s.id ? "btn-saffron" : "surface text-muted")}
+          >
+            {lang === "hi" ? s.hi : s.en}
+          </button>
+        ))}
+      </div>
       {/* Same card as the home shelf: an inset picture with the read time as a
           chip straddling its lower edge, the title beneath. */}
       <div className="grid grid-cols-2 gap-2.5 gutter pt-3">
-        {items.map((l) => (
+        {shown.map((l) => (
           <button
             key={l.id}
             onClick={() => setOpen(l.id)}
@@ -408,12 +466,12 @@ export function LibraryScreen() {
                 className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[9px] tnum text-ink"
                 style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
               >
-                {l.read} read
+                {l.read} {readWord}
               </span>
             </div>
             <div className="px-1 pb-1 pt-4">
               <div className="line-clamp-2 min-h-[2.3em] text-[11.5px] font-medium leading-tight text-ink">
-                {l.title}
+                {tr(lang, l.title, l.title_hi)}
               </div>
             </div>
           </button>
@@ -425,7 +483,7 @@ export function LibraryScreen() {
 
 /* ---------------- Sandesh share card ---------------- */
 export function SandeshScreen() {
-  const { deityId, haptic, profile } = useApp();
+  const { deityId, haptic, profile, lang } = useApp();
   const deity = deityById(deityId);
   const card = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
@@ -448,7 +506,7 @@ export function SandeshScreen() {
     } catch {} finally { setBusy(false); }
   }
   function whatsapp() {
-    const text = `Aaj ka Sandesh · ${pg?.dateLabel ?? ""}\n\n${shloka?.deva ?? ""}\n${shloka?.translit ?? ""}\n"${shloka?.meaning ?? ""}"\n\nA blessing for ${name} · ${rashi.split(" ")[0]}\nShared via Divasya`;
+    const text = `Aaj ka Sandesh · ${pg?.dateLabel ?? ""}\n\n${shloka?.deva ?? ""}\n${shloka?.translit ?? ""}\n"${tr(lang, shloka?.meaning, shloka?.meaning_hi)}"\n\nA blessing for ${name} · ${rashi.split(" ")[0]}\nShared via Divasya`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 

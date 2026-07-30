@@ -17,6 +17,7 @@ export type ScreenName =
 
 export type ScreenState = { name: ScreenName; params?: Record<string, unknown> };
 export type PushPayload = { title: string; body: string; tone?: "auspicious" | "info" };
+export type Lang = "en" | "hi";
 
 type Ctx = {
   // auth / profile
@@ -51,6 +52,9 @@ type Ctx = {
   sendPush: (p: PushPayload) => void;
   clearPush: () => void;
   haptic: (pattern?: number | number[]) => void;
+  // language
+  lang: Lang;
+  setLang: (l: Lang) => void;
 };
 
 const AppCtx = createContext<Ctx | null>(null);
@@ -121,6 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [screen, setScreen] = useState<ScreenState>({ name: "home" });
   const [history, setHistory] = useState<ScreenState[]>([]);
   const [push, setPush] = useState<PushPayload | null>(null);
+  const [lang, setLangState] = useState<Lang>("en");
 
   const statsRef = useRef<UserState>(EMPTY_STATE);
   const userRef = useRef<User | null>(null);
@@ -286,6 +291,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { navigator.vibrate?.(pattern); } catch {}
   }, []);
 
+  // Language preference (EN / हिं) — remembered across sessions. Read after mount
+  // so server and first client render agree; localStorage is not available on SSR.
+  useEffect(() => {
+    try { const v = localStorage.getItem("divasya-lang"); if (v === "hi" || v === "en") setLangState(v); } catch {}
+  }, []);
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l);
+    try { localStorage.setItem("divasya-lang", l); } catch {}
+  }, []);
+
   const addJapa = useCallback((n = 1) => {
     apply((s) => {
       const today = todayStr();
@@ -373,6 +388,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         punya: stats.punya, wallet: stats.wallet,
         addJapa, addPunya, addWallet, spendWallet,
         push, sendPush, clearPush: () => setPush(null), haptic,
+        lang, setLang,
       }}
     >
       {children}
