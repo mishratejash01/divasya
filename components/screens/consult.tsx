@@ -290,20 +290,24 @@ export function ConsultChatScreen() {
         </div>
       )}
 
-      {/* Transcript on its own ground so the white bubbles read as bubbles. */}
+      {/* Transcript on its own ground so the white bubbles read as bubbles. On
+          desktop it is a centred, readable column rather than messages stranded
+          against the left edge of a very wide window. */}
       <div
         ref={scroller}
-        className="relative flex-1 space-y-2 overflow-y-auto gutter py-3 no-scrollbar"
+        className="relative flex-1 overflow-y-auto py-3 no-scrollbar"
         style={{ background: "var(--surface)" }}
       >
-        <Row role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>{greet}</Row>
-        {messages.map((m, i) =>
-          m.role === "user"
-            ? <Row key={i} role="user">{m.content}</Row>
-            : <Row key={i} role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>
-                {m.content || <Typing />}
-              </Row>
-        )}
+        <div className="mx-auto flex w-full flex-col gap-2 gutter lg:max-w-3xl">
+          <Row role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>{greet}</Row>
+          {messages.map((m, i) =>
+            m.role === "user"
+              ? <Row key={i} role="user">{m.content}</Row>
+              : <Row key={i} role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>
+                  {m.content || <Typing />}
+                </Row>
+          )}
+        </div>
       </div>
 
       {/* recharge overlay */}
@@ -333,20 +337,22 @@ export function ConsultChatScreen() {
       {/* Composer, pinned. Its own ground and a top rule so it reads as a fixed
           bar rather than the last thing on the page. */}
       <div
-        className="sticky bottom-0 z-20 flex items-center gap-2 gutter pt-2 above-tabbar"
+        className="sticky bottom-0 z-20 gutter pt-2 above-tabbar"
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
-        <input value={input} onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder={phase === "ended" ? "Recharge to continue…" : "Type your question…"}
-          disabled={phase === "ended"}
-          className="flex-1 rounded-[6px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted disabled:opacity-50"
-          style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
-        <button onClick={() => send(input)} disabled={streaming || phase === "ended"}
-          aria-label="Send"
-          className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[6px] btn-saffron disabled:opacity-50">
-          <PaperPlaneTilt size={15} weight="fill" />
-        </button>
+        <div className="mx-auto flex w-full items-center gap-2 lg:max-w-3xl">
+          <input value={input} onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send(input)}
+            placeholder={phase === "ended" ? "Recharge to continue…" : "Type your question…"}
+            disabled={phase === "ended"}
+            className="flex-1 rounded-[8px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted disabled:opacity-50 lg:py-3 lg:text-[13.5px]"
+            style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
+          <button onClick={() => send(input)} disabled={streaming || phase === "ended"}
+            aria-label="Send"
+            className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[8px] btn-saffron disabled:opacity-50 lg:h-11 lg:w-11">
+            <PaperPlaneTilt size={15} weight="fill" />
+          </button>
+        </div>
       </div>
     </div>
   );

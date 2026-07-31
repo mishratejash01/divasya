@@ -121,39 +121,46 @@ export function JyotishiScreen() {
         </div>
       )}
 
-      <div ref={scroller} className="flex-1 space-y-2 overflow-y-auto gutter py-3 no-scrollbar">
-        <Bubble role="assistant" mode={mode} deity={deity}><Rich text={greet} /></Bubble>
-        {messages.map((m, i) =>
-          m.role === "user"
-            ? <Bubble key={i} role="user"><Rich text={m.content} /></Bubble>
-            : <Bubble key={i} role="assistant" mode={mode} deity={deity}>{m.content ? <Rich text={m.content} /> : <Typing />}</Bubble>
-        )}
-        {mode === "deity" && (
-          <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
-            className="mx-auto mt-1 flex items-center gap-2 rounded-[5px] surface px-3 py-1.5 text-[11px] text-[var(--bhagwa-deep)]">
-            <CircleDashed size={13} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
-          </button>
-        )}
+      {/* Desktop keeps the thread in a centred, readable column. */}
+      <div ref={scroller} className="flex-1 overflow-y-auto py-3 no-scrollbar">
+        <div className="mx-auto flex w-full flex-col gap-2 gutter lg:max-w-3xl">
+          <Bubble role="assistant" mode={mode} deity={deity}><Rich text={greet} /></Bubble>
+          {messages.map((m, i) =>
+            m.role === "user"
+              ? <Bubble key={i} role="user"><Rich text={m.content} /></Bubble>
+              : <Bubble key={i} role="assistant" mode={mode} deity={deity}>{m.content ? <Rich text={m.content} /> : <Typing />}</Bubble>
+          )}
+          {mode === "deity" && (
+            <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
+              className="mx-auto mt-1 flex items-center gap-2 rounded-[5px] surface px-3 py-1.5 text-[11px] text-[var(--bhagwa-deep)]">
+              <CircleDashed size={13} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
+            </button>
+          )}
+        </div>
       </div>
 
       {messages.length === 0 && (
-        <div className="-mx-1 flex gap-2 overflow-x-auto gutter pb-2 no-scrollbar">
-          {SUGGEST[mode].map((s) => (
-            <button key={s} onClick={() => send(s)} className="shrink-0 rounded-[5px] surface px-2.5 py-1.5 text-[11px] text-ink-dim">{s}</button>
-          ))}
+        <div className="mx-auto w-full lg:max-w-3xl">
+          <div className="-mx-1 flex gap-2 overflow-x-auto gutter pb-2 no-scrollbar">
+            {SUGGEST[mode].map((s) => (
+              <button key={s} onClick={() => send(s)} className="shrink-0 rounded-[5px] surface px-2.5 py-1.5 text-[11px] text-ink-dim">{s}</button>
+            ))}
+          </div>
         </div>
       )}
 
       <div
-        className="sticky bottom-0 z-20 flex items-center gap-2 gutter pt-2 above-tabbar"
+        className="sticky bottom-0 z-20 gutter pt-2 above-tabbar"
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
-        <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder={mode === "jyotishi" ? "Apna prashn poochhiye…" : `${deity.name.split(" ")[0]} se baat karein…`}
-          className="flex-1 rounded-[6px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted"
-          style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
-        <button onClick={() => send(input)} disabled={streaming} aria-label="Send"
-          className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[6px] btn-saffron disabled:opacity-50"><PaperPlaneTilt size={15} weight="fill" /></button>
+        <div className="mx-auto flex w-full items-center gap-2 lg:max-w-3xl">
+          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
+            placeholder={mode === "jyotishi" ? "Apna prashn poochhiye…" : `${deity.name.split(" ")[0]} se baat karein…`}
+            className="flex-1 rounded-[8px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted lg:py-3 lg:text-[13.5px]"
+            style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
+          <button onClick={() => send(input)} disabled={streaming} aria-label="Send"
+            className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[8px] btn-saffron disabled:opacity-50 lg:h-11 lg:w-11"><PaperPlaneTilt size={15} weight="fill" /></button>
+        </div>
       </div>
     </div>
   );
