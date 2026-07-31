@@ -23,6 +23,13 @@ export function PushToast() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -90, opacity: 0 }}
           transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          drag
+          dragElastic={0.5}
+          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+          onDragEnd={(_, info) => {
+            // a flick or a firm swipe in any direction sends it away
+            if (info.offset.y < -32 || Math.abs(info.offset.x) > 90 || info.velocity.y < -450 || Math.abs(info.velocity.x) > 500) clearPush();
+          }}
           onClick={clearPush}
           className="absolute left-1/2 top-5 z-50 flex w-[calc(100%-1.5rem)] max-w-[420px] -translate-x-1/2 items-start gap-3 rounded-2xl px-3.5 py-3 text-left"
           style={{

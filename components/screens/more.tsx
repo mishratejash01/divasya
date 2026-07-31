@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Check, EnvelopeSimple, PencilSimple, ShareNetwork, SignOut } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bag, Check, PencilSimple, ShareNetwork, SignOut, Star } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { Avatar, Logomark, ScreenHeader } from "../ui";
+import { Iconify } from "../iconify";
+import { Logomark, ScreenHeader } from "../ui";
 import { rashiLabel } from "@/lib/astro";
 
 /**
@@ -23,7 +25,7 @@ function prettyDob(iso: string) {
 }
 
 export function MoreScreen() {
-  const { back, go, haptic, profile, user, logout } = useApp();
+  const { back, go, haptic, profile, user, logout, wallet } = useApp();
   const [shared, setShared] = useState(false);
 
   const name = profile?.name || "Devotee";
@@ -58,89 +60,119 @@ export function MoreScreen() {
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="Account" onBack={back} />
 
-      {/* Who you are, and which login this is. The card now opens the editor —
-          birth details are the input to every chart the app computes, so they
-          have to be correctable. */}
-      <div className="gutter pt-2">
-        {/* Transparent — the profile block sits straight on the ground with no
-            card fill or shadow behind it. */}
-        <div className="overflow-hidden rounded-2xl">
-          <button
-            onClick={() => { haptic(6); go("profile"); }}
-            className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-[var(--surface-2)]"
-          >
-            <Avatar name={name} size={44} tint="#C88131" />
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-display text-[15px] text-ink">{name}</div>
-              <div className="truncate text-[11px] text-ink">{rashi}</div>
-            </div>
-            <PencilSimple size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
-          </button>
-          {signedInWith && (
-            <div className="flex items-center gap-3 px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
-              <EnvelopeSimple size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
+      <div className="gutter pt-3">
+        <div className="lg:flex lg:items-start lg:gap-5">
+
+          {/* account — one common block: image + details + actions together */}
+          <div className="flex-1 overflow-hidden rounded-2xl surface p-4">
+            <div className="flex items-center gap-4 text-left lg:gap-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/user-rishi.png" alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover lg:h-36 lg:w-36"
+                style={{ border: "1px solid var(--line-gold)" }} />
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] leading-none text-[var(--muted-2)]">
-                  Signed in{providerLabel ? ` with ${providerLabel}` : ""}
-                </div>
-                <div className="mt-1 truncate text-[12px] leading-none text-ink">{signedInWith}</div>
+                <div className="truncate font-display text-[19px] text-ink lg:text-[22px]">{name}</div>
+                <div className="truncate text-[12px] text-muted">{rashi}</div>
+                {signedInWith && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <Iconify icon="logos:google-gmail" width={16} height={13} />
+                    <span className="truncate text-[12.5px] text-ink">{signedInWith}</span>
+                  </div>
+                )}
+                {profile?.dob && (
+                  <div className="mt-1 truncate text-[11.5px] text-muted">
+                    {prettyDob(profile.dob)}{profile.tob ? `, ${profile.tob}` : ""}{profile.birthplace ? ` · ${profile.birthplace}` : ""}
+                  </div>
+                )}
               </div>
             </div>
-          )}
-          {profile?.dob && (
-            <button
-              onClick={() => { haptic(6); go("profile"); }}
-              className="block w-full px-3 py-2.5 text-left transition-colors hover:bg-[var(--surface-2)]"
-              style={{ borderTop: "1px solid var(--line)" }}>
-              <div className="text-[10px] leading-none text-[var(--muted-2)]">Birth details</div>
-              {/* Read as a date, not as an ISO string. */}
-              <div className="mt-1 truncate text-[12px] leading-none text-ink">
-                {prettyDob(profile.dob)}{profile.tob ? `, ${profile.tob}` : ""}
-                {profile.birthplace ? ` · ${profile.birthplace}` : ""}
+
+            {/* wallet */}
+            <button onClick={() => { haptic(6); go("wallet"); }} className="mt-4 flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left" style={{ background: "rgba(206,185,118,0.18)", border: "1px solid var(--line-gold)" }}>
+              <Iconify icon="solar:wallet-bold-duotone" width={24} height={24} className="shrink-0 text-[var(--icon-ink)]" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[10.5px] leading-none text-muted">Divasya Wallet</div>
+                <div className="mt-1 text-[17px] font-medium leading-none text-ink tnum">₹{wallet.toLocaleString("en-IN")}</div>
               </div>
+              <span className="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium btn-saffron">Add money</span>
             </button>
-          )}
+
+            {/* actions — tiles, no divider lines between them */}
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {[
+                { label: "Edit profile", Icon: PencilSimple, run: () => { haptic(6); go("profile"); } },
+                { label: "My Kundli", Icon: Star, run: () => { haptic(6); go("kundli"); } },
+                { label: "My Orders", Icon: Bag, run: () => { haptic(6); go("orders"); } },
+                { label: "Share app", Icon: ShareNetwork, run: share },
+                { label: "Sign out", Icon: SignOut, run: () => { haptic(8); logout(); } },
+              ].map(({ label, Icon, run }) => (
+                <button key={label} onClick={run} className="flex items-center gap-2.5 rounded-xl px-3 py-3 text-left transition-colors hover:bg-[var(--surface-2)]">
+                  <Icon size={16} weight="regular" className="shrink-0 text-ink" />
+                  <span className="flex-1 truncate text-[12.5px] font-medium text-ink">{label}</span>
+                </button>
+              ))}
+            </div>
+            {shared && <div className="mt-1 flex items-center gap-1 px-1 text-[10.5px] text-[var(--good)]"><Check size={11} weight="bold" /> Link copied</div>}
+          </div>
+
+          {/* what Divasya gives you — desktop promo */}
+          <FeaturesPromo />
         </div>
-      </div>
 
-      <div className="gutter pt-2">
-        <div className="overflow-hidden rounded-2xl surface">
-          <button
-            onClick={() => { haptic(6); go("profile"); }}
-            className="flex w-full items-center gap-3 px-3 py-3 text-left"
-          >
-            <PencilSimple size={16} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
-            <span className="flex-1 text-[12.5px] text-ink">Edit your details</span>
-          </button>
-
-          <button
-            onClick={share}
-            style={{ borderTop: "1px solid var(--line)" }}
-            className="flex w-full items-center gap-3 px-3 py-3 text-left"
-          >
-            <ShareNetwork size={16} weight="light" className="shrink-0 text-[var(--bhagwa)]" />
-            <span className="flex-1 text-[12.5px] text-ink">Share app</span>
-            {shared && (
-              <span className="flex items-center gap-1 text-[10.5px] text-[var(--good)]">
-                <Check size={11} weight="bold" /> Link copied
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => { haptic(8); logout(); }}
-            className="flex w-full items-center gap-3 px-3 py-3 text-left"
-            style={{ borderTop: "1px solid var(--line)" }}
-          >
-            <SignOut size={16} weight="light" className="shrink-0 text-[var(--avoid)]" />
-            <span className="flex-1 text-[12.5px] text-[var(--avoid)]">Sign out</span>
-          </button>
+        <div className="flex items-center justify-center gap-1.5 pb-2 pt-5 text-[10px] text-[var(--muted-2)]">
+          <Logomark size={13} className="text-[var(--bhagwa)]" /> Divasya · Spiritual Journey
         </div>
-      </div>
-
-      <div className="flex items-center justify-center gap-1.5 gutter pb-2 pt-5 text-[10px] text-[var(--muted-2)]">
-        <Logomark size={13} className="text-[var(--bhagwa)]" /> Divasya · Spiritual Journey
       </div>
     </div>
+  );
+}
+
+// What Divasya gives you — a warm, user-facing promo carousel shown beside the
+// account on desktop. Copy stays inviting and plain, never technical.
+function FeaturesPromo() {
+  const slides = [
+    { t: "Your day, perfectly timed", d: "Panchang, tithi and the day's shubh muhurat every morning, so you always begin at the right moment." },
+    { t: "Guidance whenever you seek it", d: "Sit with your own Jyotishi at any hour and find calm, clear answers to what's on your mind." },
+    { t: "Darshan, wherever you are", d: "Live aarti from India's most loved temples, brought gently to your screen each day." },
+    { t: "A mandir of your own", d: "Light a diya, ring the bell and offer flowers to your beloved deity, right at home." },
+  ];
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((v) => (v + 1) % slides.length), 3800);
+    return () => clearInterval(t);
+  }, []); // eslint-disable-line
+
+  return (
+    <aside
+      className="relative mt-4 hidden shrink-0 self-start overflow-hidden rounded-2xl lg:mt-0 lg:flex lg:w-[300px] lg:flex-col"
+      style={{ background: "linear-gradient(165deg, #E0902E 0%, #B23A1E 100%)", color: "#fff" }}
+    >
+      <div className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }} />
+      <div className="relative p-5">
+        <div className="text-[11px] font-medium tracking-[0.16em]" style={{ color: "rgba(255,255,255,0.85)" }}>DIVASYA</div>
+        <div className="mt-1 font-display text-[19px] leading-tight">Everything for your devotion, in one place</div>
+
+        <div className="relative mt-4 h-[128px] overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="text-[14.5px] font-medium">{slides[i].t}</div>
+              <p className="mt-1.5 text-[12.5px] font-normal leading-relaxed" style={{ color: "rgba(255,255,255,0.9)" }}>{slides[i].d}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="mt-1 flex gap-1.5">
+          {slides.map((_, k) => (
+            <span key={k} className="h-1.5 rounded-full transition-all duration-300"
+              style={{ width: k === i ? 18 : 6, background: k === i ? "#fff" : "rgba(255,255,255,0.4)" }} />
+          ))}
+        </div>
+      </div>
+    </aside>
   );
 }

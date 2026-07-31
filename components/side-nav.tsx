@@ -1,10 +1,8 @@
 "use client";
 
-import { CaretRight } from "@phosphor-icons/react";
 import { Iconify } from "./iconify";
 import { useApp, ScreenName } from "./app-context";
-import { Avatar, Logomark, cx } from "./ui";
-import { rashiLabel } from "@/lib/astro";
+import { Logomark, cx } from "./ui";
 
 type NavItem = {
   id: string;
@@ -37,9 +35,7 @@ const ITEMS: NavItem[] = [
  * in the top bar. Haldi yellow, kumkum marks. Desktop only.
  */
 export function SideNav() {
-  const { screen, go, haptic, profile, logout } = useApp();
-  const name = profile?.name || "Devotee";
-  const rashi = rashiLabel(profile || { rashi: null, dob: null });
+  const { screen, go, haptic, logout } = useApp();
   // The rail items carry no background chip — the ground stays haldi throughout.
   // Selection reads from a kumkum accent bar and a solid mark instead, and the
   // unselected marks sit back at reduced strength. Only the footer rows take a
@@ -106,23 +102,8 @@ export function SideNav() {
         })}
       </nav>
 
-      {/* account + the way out */}
+      {/* the way out — the account itself lives under the Menu item above */}
       <div className="mt-2 shrink-0" style={{ borderTop: "1px solid rgba(0,0,0,0.12)", paddingTop: 8 }}>
-        <button
-          onClick={() => go("menu")}
-          onMouseEnter={(e) => (e.currentTarget.style.background = HOVER)}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          className="flex h-11 w-full items-center rounded-[9px] text-left transition-colors"
-        >
-          <span className="grid w-12 shrink-0 place-items-center">
-            <Avatar name={name} size={28} tint="#D98A16" />
-          </span>
-          <span className="min-w-0 flex-1 whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-            <span className="block truncate font-display text-[12px] leading-tight text-ink">{name}</span>
-            <span className="block truncate text-[10px] leading-tight text-ink/60">{rashi}</span>
-          </span>
-          <CaretRight size={13} className="mr-2 shrink-0 text-ink opacity-0 transition-opacity group-hover:opacity-100" />
-        </button>
         <button
           onClick={logout}
           title="Sign out"

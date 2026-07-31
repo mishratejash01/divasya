@@ -218,6 +218,13 @@ export function HomeScreen() {
     </div>
   );
 
+  const darshanEmbed = (t: { youtubeChannel?: string; youtubeId?: string }) =>
+    t.youtubeChannel
+      ? `https://www.youtube.com/embed/live_stream?channel=${t.youtubeChannel}&autoplay=1&mute=1&playsinline=1&controls=0&rel=0`
+      : t.youtubeId
+      ? `https://www.youtube.com/embed/${t.youtubeId}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0`
+      : null;
+
   const darshanVertical = temples.length > 0 && (
     <section className="rounded-2xl surface p-2.5">
       <div className="mb-2.5 flex items-end justify-between">
@@ -241,7 +248,10 @@ export function HomeScreen() {
                 className="relative h-12 w-[74px] shrink-0 overflow-hidden rounded-lg"
                 style={{ background: `linear-gradient(125deg, ${from}, ${to})` }}
               >
-                <span className="absolute left-1 top-1 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
+                {darshanEmbed(t) && (
+                  <iframe className="pointer-events-none absolute inset-0 h-full w-full" src={darshanEmbed(t)!} title={t.name} allow="autoplay; encrypted-media" loading="lazy" />
+                )}
+                <span className="absolute left-1 top-1 z-10 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
                   <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
                 </span>
               </div>
@@ -413,6 +423,8 @@ export function HomeScreen() {
         >
           <div className="flex items-center gap-3">
             <DeityPortrait
+              src="/user-rishi.png"
+              alt="Rishi"
               fallback={<IconGanesha size={44} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
             />
             <div className="min-w-0 flex-1">
@@ -543,6 +555,9 @@ export function HomeScreen() {
                       className="relative h-[112px] w-[172px] shrink-0 overflow-hidden rounded-xl text-left"
                       style={{ background: `linear-gradient(152deg, ${from}, ${to})` }}
                     >
+                      {darshanEmbed(t) && (
+                        <iframe className="pointer-events-none absolute inset-0 h-full w-full" src={darshanEmbed(t)!} title={t.name} allow="autoplay; encrypted-media" loading="lazy" />
+                      )}
                       {/* scrim so the name holds against the lighter top stop */}
                       <span
                         className="pointer-events-none absolute inset-0"

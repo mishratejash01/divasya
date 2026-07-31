@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CaretLeft, CircleDashed, PaperPlaneTilt, Sparkle } from "@phosphor-icons/react";
+import { CircleDashed, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DeityGlyph, ScreenHeader, Typing, cx } from "../ui";
 import { DEITIES, mantraById, Deity } from "@/lib/demo";
@@ -46,8 +46,9 @@ function Rich({ text }: { text: string }) {
 
 export function JyotishiScreen() {
   const { back, deityId, setDeity, go, screen, profile, user } = useApp();
-  const initialMode = ((screen.params?.mode as Mode) || "jyotishi") as Mode;
-  const [mode, setMode] = useState<Mode>(initialMode);
+  // The mode is fixed by how you arrived — the AI Jyotishi entry or the Talk to
+  // Devta entry — so the two are separate chats, not one screen with a toggle.
+  const mode = ((screen.params?.mode as Mode) || "jyotishi") as Mode;
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -100,24 +101,21 @@ export function JyotishiScreen() {
         onBack={back}
       />
 
-      <div className="gutter-m mt-1.5 grid grid-cols-2 gap-1 rounded-[7px] p-1 surface">
-        {(["jyotishi", "deity"] as Mode[]).map((m) => (
-          <button key={m} onClick={() => setMode(m)}
-            className={cx("rounded-[5px] py-2 text-[11.5px] transition-colors", mode === m ? "btn-saffron" : "text-muted")}>
-            {m === "jyotishi" ? "AI Jyotishi" : "Ishta Devta"}
-          </button>
-        ))}
-      </div>
-
+      {/* No mode toggle — the chat you opened is the chat you get. For a devta
+          chat, a strip lets you choose which devta to sit with. */}
       {mode === "deity" && (
-        <div className="-mx-1 mt-2 flex gap-2 overflow-x-auto gutter no-scrollbar">
-          {deities.map((d) => (
-            <button key={d.id} onClick={() => setDeity(d.id)}
-              className={cx("flex shrink-0 items-center gap-1.5 rounded-[5px] py-1 pl-1 pr-2.5 text-[11px]", d.id === deityId ? "text-ink" : "surface text-muted")}
-              style={d.id === deityId ? { background: "var(--surface-2)", border: "1px solid var(--bhagwa)" } : undefined}>
-              <DeityGlyph deity={d} size={20} /> {d.name.split(" ")[0]}
-            </button>
-          ))}
+        <div className="shrink-0" style={{ borderBottom: "1px solid var(--line)" }}>
+          <div className="mx-auto w-full lg:max-w-3xl">
+            <div className="flex gap-2 overflow-x-auto gutter py-2.5 no-scrollbar">
+              {deities.map((d) => (
+                <button key={d.id} onClick={() => setDeity(d.id)}
+                  className={cx("flex shrink-0 items-center gap-1.5 rounded-[5px] py-1 pl-1 pr-2.5 text-[11px]", d.id === deityId ? "text-ink" : "surface text-muted")}
+                  style={d.id === deityId ? { background: "var(--surface-2)", border: "1px solid var(--bhagwa)" } : undefined}>
+                  <DeityGlyph deity={d} size={20} /> {d.name.split(" ")[0]}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -166,6 +164,42 @@ export function JyotishiScreen() {
   );
 }
 
+// A front-facing baba/jyotishi — the AI Jyotishi's face in the thread. Drawn so
+// it reads at avatar size: saffron ground, a white beard, tripundra tilak and a
+// jata knot. Kept as an SVG so it renders identically everywhere.
+function GuruAvatar({ size = 28 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 48 48" width={size} height={size} className="shrink-0" aria-hidden>
+      <defs>
+        <clipPath id="guruClip"><circle cx="24" cy="24" r="24" /></clipPath>
+        <radialGradient id="guruBg" cx="50%" cy="34%" r="78%">
+          <stop offset="0" stopColor="#FFE7BE" />
+          <stop offset="1" stopColor="#F2C271" />
+        </radialGradient>
+      </defs>
+      <g clipPath="url(#guruClip)">
+        <rect width="48" height="48" fill="url(#guruBg)" />
+        <path d="M6 48 Q8 33 24 33 Q40 33 42 48 Z" fill="#D9772E" />
+        <path d="M20 32 h8 v6 h-8 Z" fill="#E7B98C" />
+        <path d="M12 24 Q12 9 24 9 Q36 9 36 24 Q33 15 24 15 Q15 15 12 24 Z" fill="#5b4636" />
+        <circle cx="24" cy="8.5" r="3.6" fill="#5b4636" />
+        <ellipse cx="24" cy="22" rx="9.2" ry="10" fill="#EAC098" />
+        <path d="M14.8 21 Q15.5 37 24 39 Q32.5 37 33.2 21 Q30 31 24 31 Q18 31 14.8 21 Z" fill="#F3F1ED" />
+        <circle cx="20.4" cy="21.4" r="1.15" fill="#33241a" />
+        <circle cx="27.6" cy="21.4" r="1.15" fill="#33241a" />
+        <path d="M18.6 18.9 q1.8 -1 3.6 0" stroke="#5b4636" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+        <path d="M25.8 18.9 q1.8 -1 3.6 0" stroke="#5b4636" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+        <g stroke="#E0761B" strokeWidth="1.1" strokeLinecap="round">
+          <line x1="21" y1="14.4" x2="27" y2="14.4" />
+          <line x1="21.2" y1="16" x2="26.8" y2="16" />
+          <line x1="21.5" y1="17.6" x2="26.5" y2="17.6" />
+        </g>
+      </g>
+      <circle cx="24" cy="24" r="23.3" fill="none" stroke="rgba(0,0,0,0.10)" />
+    </svg>
+  );
+}
+
 function Bubble({ role, children, mode, deity }: {
   role: "user" | "assistant"; children: React.ReactNode; mode?: Mode; deity?: Deity;
 }) {
@@ -183,12 +217,9 @@ function Bubble({ role, children, mode, deity }: {
   return (
     <div className="flex items-end gap-1.5">
       {mode === "deity" && deity ? (
-        <DeityGlyph deity={deity} size={24} />
+        <DeityGlyph deity={deity} size={26} />
       ) : (
-        <div className="grid h-6 w-6 shrink-0 place-items-center rounded-full"
-          style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>
-          <Sparkle size={11} className="text-[var(--bhagwa)]" />
-        </div>
+        <GuruAvatar size={28} />
       )}
       <div
         className="max-w-[80%] rounded-xl rounded-bl-[3px] px-3 py-2 text-[12px] leading-relaxed text-ink"

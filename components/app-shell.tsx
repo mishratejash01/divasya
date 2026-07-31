@@ -19,6 +19,7 @@ import { CheckoutScreen } from "./screens/checkout";
 import { MenuScreen } from "./screens/menu";
 import { ProfileScreen } from "./screens/profile";
 import { OrdersScreen } from "./screens/orders";
+import { WalletScreen } from "./screens/wallet";
 import { JyotishiScreen } from "./screens/jyotishi";
 import { ConsultScreen, ConsultChatScreen } from "./screens/consult";
 import { MoreScreen } from "./screens/more";
@@ -53,6 +54,7 @@ function Screen() {
     case "account": return <MoreScreen />;
     case "profile": return <ProfileScreen />;
     case "orders": return <OrdersScreen />;
+    case "wallet": return <WalletScreen />;
     case "category": return <CategoryScreen />;
     case "panchang": return <PanchangScreen />;
     case "festivals": return <FestivalsScreen />;

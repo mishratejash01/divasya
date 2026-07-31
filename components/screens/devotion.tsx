@@ -92,37 +92,38 @@ export function PujaScreen() {
 
       <div className="flex-1 overflow-y-auto gutter pt-1 screen-bottom no-scrollbar">
         {tab === "puja" ? (
-          // No card around each puja and no rule between them — image, title and
-          // the price button just flow down the page.
-          <div className="pt-2">
+          // A flat list of rows on a phone; a grid of cards on desktop so the
+          // price sits with its puja rather than stranded across a wide row.
+          <div className="pt-2 lg:grid lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
             {pujas.map((p) => (
-              <div
+              <button
                 key={p.id}
-                className="flex items-center gap-3 py-2.5"
+                onClick={() => open({ kind: "puja", id: p.id, name: p.name, price: p.price, benefit: p.benefit })}
+                className="flex w-full items-center gap-3 py-2.5 text-left transition-colors lg:flex-col lg:items-start lg:gap-3 lg:rounded-xl lg:border lg:border-[var(--tile-line)] lg:p-4 lg:hover:bg-[var(--surface-2)]"
               >
                 <ItemMark item={{ kind: "puja", name: p.name, price: p.price }} />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[12.5px] font-medium text-ink">{p.name}</div>
-                  <div className="text-[10.5px] text-muted">{p.benefit}</div>
+                <div className="min-w-0 flex-1 lg:w-full lg:flex-none">
+                  <div className="text-[12.5px] font-medium text-ink lg:text-[14px]">{p.name}</div>
+                  <div className="text-[10.5px] text-muted lg:mt-0.5 lg:text-[12px]">{p.benefit}</div>
                 </div>
-                <button onClick={() => open({ kind: "puja", id: p.id, name: p.name, price: p.price, benefit: p.benefit })}
-                  className="shrink-0 rounded-[6px] px-3.5 py-2 text-[11px] btn-saffron">₹{p.price}</button>
-              </div>
+                <span className="shrink-0 rounded-[6px] px-3.5 py-2 text-[11px] btn-saffron lg:mt-1 lg:w-full lg:py-2.5 lg:text-center lg:text-[13px]">₹{p.price}</span>
+              </button>
             ))}
           </div>
         ) : (
-          // Same row as Pujas — the offering's mark, its name, and a price
-          // button, one under the next.
-          <div className="pt-2">
+          <div className="pt-2 lg:grid lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
             {chadhava.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 py-2.5">
+              <button
+                key={c.id}
+                onClick={() => open({ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon })}
+                className="flex w-full items-center gap-3 py-2.5 text-left transition-colors lg:flex-col lg:items-start lg:gap-3 lg:rounded-xl lg:border lg:border-[var(--tile-line)] lg:p-4 lg:hover:bg-[var(--surface-2)]"
+              >
                 <ItemMark item={{ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon }} />
-                <div className="min-w-0 flex-1">
-                  <div className="text-[12.5px] font-medium text-ink">{c.name}</div>
+                <div className="min-w-0 flex-1 lg:w-full lg:flex-none">
+                  <div className="text-[12.5px] font-medium text-ink lg:text-[14px]">{c.name}</div>
                 </div>
-                <button onClick={() => open({ kind: "chadhava", id: c.id, name: c.name, price: c.price, icon: c.icon })}
-                  className="shrink-0 rounded-[6px] px-3.5 py-2 text-[11px] btn-saffron">₹{c.price}</button>
-              </div>
+                <span className="shrink-0 rounded-[6px] px-3.5 py-2 text-[11px] btn-saffron lg:mt-1 lg:w-full lg:py-2.5 lg:text-center lg:text-[13px]">₹{c.price}</span>
+              </button>
             ))}
           </div>
         )}
@@ -219,44 +220,68 @@ export function TempleScreen() {
           onBack={() => { setOpen(null); setAarti(false); }}
         />
 
-        {/* live player */}
-        <div className="relative gutter-m overflow-hidden rounded-2xl" style={{ aspectRatio: "16/10", background: "var(--surface-2)" }}>
-          {darshanEmbed(t) ? (
-            <iframe
-              className="h-full w-full"
-              src={darshanEmbed(t)!}
-              title={`${t.name} live darshan`}
-              // mute=1 in the URL *and* autoplay in allow — browsers block
-              // autoplay outright unless the player is muted.
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          ) : (
-            // No stream yet — say so, rather than pulsing a decorative glyph.
-            <div className="relative grid h-full w-full place-items-center">
-              <span className="text-[11.5px] text-muted">Darshan begins at {t.timing}</span>
-              <div className="absolute inset-0 shimmer opacity-25" />
+        {/* On desktop the player sits on the left and everything else — place,
+            timing, about and the actions — stacks in a column on the right. */}
+        <div className="flex-1 overflow-y-auto no-scrollbar screen-bottom lg:flex lg:items-start lg:gap-6 lg:px-4 lg:pt-5">
+          {/* live player */}
+          <div className="relative mt-3 gutter-m overflow-hidden rounded-2xl lg:mx-0 lg:mt-0 lg:min-w-0 lg:flex-1" style={{ aspectRatio: "16/9", background: "var(--surface-2)" }}>
+            {darshanEmbed(t) ? (
+              <iframe
+                className="h-full w-full"
+                src={darshanEmbed(t)!}
+                title={`${t.name} live darshan`}
+                // mute=1 in the URL *and* autoplay in allow — browsers block
+                // autoplay outright unless the player is muted.
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            ) : (
+              // No stream yet — say so, rather than pulsing a decorative glyph.
+              <div className="relative grid h-full w-full place-items-center">
+                <span className="text-[11.5px] text-muted">Darshan begins at {t.timing}</span>
+                <div className="absolute inset-0 shimmer opacity-25" />
+              </div>
+            )}
+            <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-[10px] font-medium text-white" style={{ background: "#E11900" }}>
+              <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live
             </div>
-          )}
-          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-[10px] font-medium text-white" style={{ background: "#E11900" }}>
-            <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live
+            <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-white"><Eye size={12} /> {(12480).toLocaleString("en-IN")} watching</div>
+            <button onClick={() => { setAarti((v) => !v); if (!aarti) { bell(540, 1.6, 0.18); } }}
+              className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-black/45 px-3 py-1.5 text-[11px] text-white">
+              <Play size={12} /> {aarti ? "Aarti playing" : "Play Aarti"}
+            </button>
           </div>
-          <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[10px] text-white"><Eye size={12} /> {(12480).toLocaleString("en-IN")} watching</div>
-          <button onClick={() => { setAarti((v) => !v); if (!aarti) { bell(540, 1.6, 0.18); } }}
-            className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full bg-black/45 px-3 py-1.5 text-[11px] text-white">
-            <Play size={12} /> {aarti ? "Aarti playing" : "Play Aarti"}
-          </button>
-        </div>
 
-        <div className="gutter pt-4">
-          <div className="flex items-center gap-1.5 text-[11px] text-muted"><MapPin size={12} /> {t.location} · {t.deity}</div>
-          <div className="mt-1 text-[11px] text-gold">{t.timing}</div>
-          <p className="mt-3 text-[12px] leading-relaxed text-muted">{t.about}</p>
-          <button onClick={() => go("puja")} className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
-            <FlowerLotus size={14} /> Book Puja / Chadhava here
-          </button>
-          <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-[11.5px] btn-ghost"><IconShankh size={14} /> Offer a virtual Shankhnaad</button>
+          <div className="gutter pt-4 lg:mx-0 lg:w-[340px] lg:shrink-0 lg:px-0 lg:pt-0">
+            {/* Title + live status — the phone shows the name in its header, so
+                this repeats only on desktop. */}
+            <div className="hidden lg:block">
+              <h1 className="font-display text-[19px] leading-snug text-ink">{t.name}</h1>
+              <div className="mt-2 flex items-center gap-2 text-[11.5px]">
+                <span className="flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-white" style={{ background: "#E11900" }}>
+                  <span className="h-1 w-1 rounded-full bg-white" /> LIVE
+                </span>
+                <span className="tnum text-muted">{(12480).toLocaleString("en-IN")} watching now</span>
+              </div>
+            </div>
+
+            {/* Deity and place. */}
+            <div className="mt-3 lg:mt-4">
+              <div className="text-[12.5px] font-medium text-ink">{t.deity}</div>
+              <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted"><MapPin size={11} /> {t.location}</div>
+            </div>
+
+            {/* Description panel — schedule then the note, the way a video page
+                keeps its details in one box. */}
+            <div className="mt-3 rounded-xl p-3" style={{ background: "var(--surface-2)" }}>
+              <div className="text-[11px] font-medium text-gold">Aarti · {t.timing}</div>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-ink-dim">{t.about}</p>
+            </div>
+
+            <button onClick={() => go("puja")} className="mt-4 w-full rounded-2xl py-3.5 text-center text-[12.5px] btn-saffron">Book Puja / Chadhava here</button>
+            <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 w-full rounded-2xl py-3 text-center text-[11.5px] btn-ghost">Offer a virtual Shankhnaad</button>
+          </div>
         </div>
       </div>
     );
@@ -265,28 +290,58 @@ export function TempleScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="Live Temple Darshan" onBack={back} />
-      {/* No card and no rule around each temple — a 16:9 thumbnail like a video
-          list, the name and timing beside it, straight on the page. */}
-      <div className="gutter pt-1">
-        {temples.map((t) => (
-          <button key={t.id} onClick={() => { setOpen(t.id); haptic(8); }} className="flex w-full items-center gap-3 py-2.5 text-left transition-opacity hover:opacity-80">
-            <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-lg" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)` }}>
-              <div className="grid h-full w-full place-items-center">
-                <Bank size={22} className="text-[var(--bhagwa-deep)]" />
+      {/* On a phone, a 16:9 thumbnail with the name beside it, like a video
+          list. On desktop it opens up into a gallery of large stream cards —
+          full-width frames with a play badge — that fill the page. */}
+      <div className="gutter pt-1 lg:pt-3">
+        <div>
+          {temples.map((t) => {
+            const embed = darshanEmbed(t);
+            return (
+            <button
+              key={t.id}
+              onClick={() => { setOpen(t.id); haptic(8); }}
+              className="flex w-full items-center gap-3 py-2.5 text-left transition-opacity hover:opacity-80 lg:gap-6 lg:py-4"
+            >
+              <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-lg lg:w-[360px]" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)` }}>
+                {embed ? (
+                  // The live stream plays right in the card; the click still opens
+                  // the full player, so the iframe itself ignores the pointer.
+                  <iframe
+                    className="pointer-events-none h-full w-full"
+                    src={embed}
+                    title={`${t.name} live darshan`}
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    loading="lazy"
+                  />
+                ) : (
+                  <>
+                    <div className="grid h-full w-full place-items-center" style={{ color: "var(--bhagwa-deep)" }}>
+                      <Bank size={22} className="lg:hidden" />
+                      <Bank size={46} className="hidden lg:block" />
+                    </div>
+                    {/* play badge on the placeholder, desktop only */}
+                    <div className="absolute inset-0 hidden place-items-center lg:grid">
+                      <span className="grid h-12 w-12 place-items-center rounded-full" style={{ background: "rgba(0,0,0,0.34)" }}>
+                        <Play size={18} weight="fill" className="ml-0.5 text-white" />
+                      </span>
+                    </div>
+                  </>
+                )}
+                <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-[3px] px-1.5 py-0.5 text-[9px] font-medium text-white lg:left-2.5 lg:top-2.5 lg:text-[10.5px]" style={{ background: "#E11900" }}>
+                  <span className="h-1 w-1 rounded-full bg-white" />Live
+                </span>
               </div>
-              {/* Red Live badge, like a live stream — a green dot did not read
-                  as "on air". */}
-              <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-[3px] px-1.5 py-0.5 text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
-                <span className="h-1 w-1 rounded-full bg-white" />Live
-              </span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[12.5px] font-medium text-ink">{t.name}</div>
-              <div className="truncate text-[10.5px] text-muted">{t.location} · {t.deity}</div>
-              <div className="text-[10px] text-gold">{t.timing}</div>
-            </div>
-          </button>
-        ))}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[12.5px] font-semibold text-ink lg:text-[17px]">{t.name}</div>
+                <div className="truncate text-[10.5px] text-muted lg:mt-1 lg:text-[12.5px]">{t.location} · {t.deity}</div>
+                <div className="text-[10px] text-gold lg:mt-1 lg:text-[12px]">{t.timing}</div>
+              </div>
+            </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

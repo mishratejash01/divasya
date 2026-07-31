@@ -10,7 +10,7 @@ const TABS: { id: ScreenName; label: string; line: string; fill: string; match: 
   { id: "home", label: "Home", line: "solar:home-2-linear", fill: "solar:home-2-bold-duotone", match: ["home"] },
   { id: "ai", label: "Jyotishi", line: "solar:eye-scan-linear", fill: "solar:eye-scan-bold-duotone", match: ["ai"] },
   { id: "shop", label: "Store", line: "solar:cart-large-2-linear", fill: "solar:cart-large-2-bold-duotone", match: ["shop", "product", "cart", "checkout", "orders"] },
-  { id: "menu", label: "Menu", line: "solar:hamburger-menu-linear", fill: "solar:widget-2-bold-duotone", match: ["menu", "account", "profile", "category", "vastu", "naamkaran", "library", "festivals", "puja", "temple", "panchang", "mala", "mandir", "sandesh", "consult", "consultChat", "kundli"] },
+  { id: "account", label: "Account", line: "solar:user-circle-linear", fill: "solar:user-circle-bold-duotone", match: ["account", "menu", "profile", "category", "vastu", "naamkaran", "library", "festivals", "puja", "temple", "panchang", "mala", "mandir", "sandesh", "consult", "consultChat", "kundli"] },
 ];
 
 export function BottomNav() {

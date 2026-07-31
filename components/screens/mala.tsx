@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowCounterClockwise, CaretLeft, Check, Fire, Pause, Play } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, Check, Fire } from "@phosphor-icons/react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
 import { ScreenHeader, cx } from "../ui";
@@ -10,10 +10,9 @@ import { MANTRAS, TARGETS } from "@/lib/demo";
 import { useCatalog, getMantras } from "@/lib/catalog";
 import { bell, ting } from "@/lib/sound";
 
-const SIZE = 280;
-const R = 116;
+const SIZE = 288;
 const CENTER = SIZE / 2;
-const BEADS = 27;
+const R = 112; // radius of the bead cord
 
 export function MalaScreen() {
   const { back, addJapa, japaLifetime, streak, addPunya, haptic } = useApp();
@@ -31,6 +30,10 @@ export function MalaScreen() {
 
   const progress = count / target;
   const circ = 2 * Math.PI * R;
+
+  // bead geometry — one bead per repetition, beads nearly touching like a real mala
+  const spacing = circ / target;
+  const beadR = Math.max(2.6, Math.min(spacing * 0.56, 7));
 
   function chant() {
     setDone(false);
@@ -73,6 +76,12 @@ export function MalaScreen() {
     setCount(0); setDone(false); setAuto(false); haptic(8);
   }
 
+  const stats: [string, string][] = [
+    ["This mala", String(count)],
+    ["Malas today", String(malas)],
+    ["Lifetime", japaLifetime.toLocaleString("en-IN")],
+  ];
+
   return (
     <div className="flex h-full flex-col">
       <ScreenHeader
@@ -85,135 +94,169 @@ export function MalaScreen() {
         }
       />
 
-      {/* Everything below the header scrolls. This screen was a fixed
-          full-height column with no scroller, so on anything shorter than
-          760px the auto-jaap controls and the japa counts were simply cut off
-          the bottom with no way to reach them — 70px gone at 640px, 150px at
-          560px. min-h-full keeps the mala centred when there is room to spare,
-          and lets the column grow past the viewport when there isn't. */}
+      {/* Everything lives inside one section block — mala on the left, all the
+          text on the right — so the screen reads as a single card, not sprawl. */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div
-          className="flex min-h-full flex-col"
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
-        >
-      {/* mantra selector */}
-      <div className="gutter pt-2">
-        <section className="rounded-2xl surface p-2.5">
-          <h3 className="section-title mb-2">Mantra</h3>
-          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 no-scrollbar">
-            {mantras.slice(0, 6).map((m) => (
-              <button
-                key={m.id}
-                onClick={() => { setMantraId(m.id); reset(); }}
-                className={cx(
-                  "shrink-0 rounded-[5px] px-2.5 py-1.5 text-[11px] transition-colors",
-                  m.id === mantraId ? "btn-saffron" : "text-ink"
-                )}
-                style={m.id === mantraId ? undefined : { background: "var(--surface-2)" }}
-              >
-                {m.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")}
-              </button>
-            ))}
-          </div>
-        </section>
-      </div>
+        <div className="gutter py-3" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}>
+          <section className="rounded-2xl surface ring-gold p-3.5 lg:p-5">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:gap-8">
 
-      {/* the mala */}
-      <div className="relative mt-4 flex flex-1 flex-col items-center justify-center">
-        <p className="px-8 text-center font-deva text-[13.5px] leading-relaxed text-muted">{mantra.deva}</p>
-
-        <button onClick={chant} className="relative mt-4 active:scale-[0.99]" style={{ width: SIZE, height: SIZE }}>
-          {/* decorative rotating bead ring */}
-          <div className="animate-spinSlow absolute inset-0">
-            {Array.from({ length: BEADS }).map((_, i) => {
-              const a = (i / BEADS) * Math.PI * 2 - Math.PI / 2;
-              const x = CENTER + (R + 14) * Math.cos(a);
-              const y = CENTER + (R + 14) * Math.sin(a);
-              return (
-                <span
-                  key={i}
-                  className="absolute h-2 w-2 rounded-full"
-                  style={{ left: x - 4, top: y - 4, background: i === 0 ? "var(--bhagwa-deep)" : "rgba(0,0,0,0.14)" }}
+          {/* the mala — the tap surface, sitting to the left on desktop */}
+          <div className="relative flex flex-col items-center lg:shrink-0">
+            <button onClick={chant} className="relative active:scale-[0.99]" style={{ width: SIZE, height: SIZE }}>
+              {/* the cord — a soft wooden thread the beads are strung on */}
+              <svg width={SIZE} height={SIZE} className="absolute inset-0 -rotate-90">
+                <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(122,74,44,0.22)" strokeWidth={beadR * 2 + 3} />
+                <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(255,244,225,0.35)" strokeWidth={1} />
+                {/* a whisper-thin gold progress arc riding the cord */}
+                <motion.circle
+                  cx={CENTER} cy={CENTER} r={R} fill="none"
+                  stroke="var(--bhagwa)" strokeWidth={2} strokeLinecap="round"
+                  strokeDasharray={circ}
+                  initial={{ strokeDashoffset: circ }}
+                  animate={{ strokeDashoffset: circ * (1 - progress) }}
+                  transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                  opacity={0.5}
                 />
-              );
-            })}
-          </div>
+              </svg>
 
-          {/* progress ring */}
-          <svg width={SIZE} height={SIZE} className="absolute inset-0 -rotate-90">
-            <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth={6} />
-            <motion.circle
-              cx={CENTER} cy={CENTER} r={R} fill="none"
-              stroke="var(--bhagwa)" strokeWidth={6} strokeLinecap="round"
-              strokeDasharray={circ}
-              animate={{ strokeDashoffset: circ * (1 - progress) }}
-              transition={{ type: "spring", stiffness: 120, damping: 20 }}
-            />
-          </svg>
+              {/* the 108 beads (or `target` beads) — chanted ones warm to gold */}
+              {Array.from({ length: target }).map((_, i) => {
+                const a = (i / target) * Math.PI * 2 - Math.PI / 2;
+                const x = CENTER + R * Math.cos(a);
+                const y = CENTER + R * Math.sin(a);
+                const lit = i < count;
+                return (
+                  <span
+                    key={i}
+                    className="absolute rounded-full"
+                    style={{
+                      left: x - beadR, top: y - beadR, width: beadR * 2, height: beadR * 2,
+                      background: lit
+                        ? "radial-gradient(circle at 34% 28%, #FCEBC6, var(--bhagwa-soft) 52%, var(--bhagwa-deep))"
+                        : "radial-gradient(circle at 34% 28%, #C79B5E, #7A4A2C 82%)",
+                      boxShadow: lit ? "0 0 6px rgba(214,84,3,0.45)" : "inset 0 -1px 1px rgba(0,0,0,0.25)",
+                    }}
+                  />
+                );
+              })}
 
-          {/* Meru bead (top) — glows as progress nears completion */}
-          <motion.span
-            className="absolute rounded-full"
-            style={{
-              left: CENTER - 11, top: CENTER - R - 11, width: 22, height: 22,
-              background: "radial-gradient(circle at 35% 30%, #F0DFB2, var(--ochre))",
-            }}
-            animate={{ boxShadow: `0 0 ${10 + progress * 26}px ${2 + progress * 6}px rgba(200,129,49,${0.25 + progress * 0.5})` }}
-          />
+              {/* the moving edge — the next bead to tell, gently pulsing */}
+              {!done && count < target && (() => {
+                const a = (count / target) * Math.PI * 2 - Math.PI / 2;
+                const x = CENTER + R * Math.cos(a);
+                const y = CENTER + R * Math.sin(a);
+                return (
+                  <motion.span
+                    className="absolute rounded-full"
+                    style={{ left: x - beadR - 3, top: y - beadR - 3, width: beadR * 2 + 6, height: beadR * 2 + 6, border: "1.5px solid var(--bhagwa)" }}
+                    animate={{ scale: [1, 1.35, 1], opacity: [0.9, 0.3, 0.9] }}
+                    transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                );
+              })()}
 
-          {/* center */}
-          <div className="absolute inset-0 grid place-items-center">
-            {done ? (
-              <div className="flex flex-col items-center">
-                <Check size={36} className="text-[var(--good)]" />
-                <span className="mt-1 font-deva text-[13.5px] text-ink">माला पूर्ण</span>
+              {/* sumeru / guru bead — the crown of the mala, with a tassel */}
+              <div className="absolute" style={{ left: CENTER, top: CENTER - R, transform: "translate(-50%,-50%)" }}>
+                {/* tassel above the guru bead */}
+                <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: "100%" }}>
+                  <div className="mx-auto h-3 w-[2px]" style={{ background: "var(--bhagwa-deep)" }} />
+                  <div className="mx-auto h-2.5 w-3 rounded-b-full" style={{ background: "linear-gradient(180deg, var(--bhagwa), var(--bhagwa-deep))" }} />
+                </div>
+                <motion.span
+                  className="block rounded-full"
+                  style={{
+                    width: 24, height: 24,
+                    background: "radial-gradient(circle at 34% 28%, #F5E3B4, #C88131 60%, #8A5A22)",
+                    border: "1px solid rgba(121,82,31,0.55)",
+                  }}
+                  animate={{ boxShadow: `0 0 ${8 + progress * 24}px ${2 + progress * 5}px rgba(200,129,49,${0.28 + progress * 0.5})` }}
+                />
               </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <span className="font-display text-6xl text-ink tabular-nums">{count}</span>
-                <span className="text-[11.5px] text-muted">/ {target}</span>
-                <span className="mt-1 eyebrow text-muted">tap to chant</span>
-              </div>
-            )}
-          </div>
-        </button>
 
-        {/* target chips */}
-        <div className="mt-4 flex gap-1.5">
-          {TARGETS.map((t) => (
-            <button
-              key={t}
-              onClick={() => { setTarget(t); reset(); }}
-              className={cx("rounded-[5px] px-3 py-1.5 text-[11px] tnum", t === target ? "btn-saffron" : "text-ink")}
-              style={t === target ? undefined : { background: "var(--surface-2)" }}
-            >
-              {t}
+              {/* the count — floating inside the ring, no plate */}
+              <div className="absolute inset-0 grid place-items-center">
+                {done ? (
+                  <div className="flex flex-col items-center">
+                    <Check size={36} className="text-[var(--good)]" />
+                    <span className="mt-1 font-deva text-[13.5px] text-ink">माला पूर्ण</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <span className="font-display text-6xl leading-none text-ink tabular-nums">{count}</span>
+                    <span className="mt-0.5 text-[11.5px] tnum text-muted">of {target}</span>
+                    <span className="mt-1.5 eyebrow text-[var(--bhagwa-deep)]">tap to chant</span>
+                  </div>
+                )}
+              </div>
             </button>
-          ))}
-        </div>
-      </div>
 
-      {/* controls + stats */}
-      <div className="gutter pt-4">
-        <section className="mb-2 rounded-2xl surface p-2.5">
-          <h3 className="section-title mb-2">Your japa</h3>
-          <div className="grid grid-cols-3 gap-1.5 text-center">
-            {[["This mala", String(count)], ["Malas today", String(malas)], ["Lifetime", japaLifetime.toLocaleString("en-IN")]].map(([l, v]) => (
-              <div key={l} className="rounded-[6px] py-2" style={{ background: "var(--surface-2)" }}>
-                <div className="font-display text-[16px] tnum text-ink">{v}</div>
-                <div className="mt-0.5 text-[9.5px] text-muted">{l}</div>
-              </div>
-            ))}
+            {/* target chips */}
+            <div className="mt-4 flex gap-1.5">
+              {TARGETS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => { setTarget(t); reset(); }}
+                  className={cx("rounded-[5px] px-3 py-1.5 text-[11px] tnum", t === target ? "text-white" : "ring-gold text-muted")}
+                  style={t === target ? { background: "var(--icon-ink)" } : undefined}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
-        </section>
-        <div className="flex gap-3">
-          <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[12.5px] btn-saffron">
-            {auto ? <><Pause size={15} /> Pause auto-jaap</> : <><Play size={15} /> Hands-free auto-jaap</>}
-          </button>
-          <button onClick={reset} className="grid h-[52px] w-[52px] place-items-center rounded-2xl btn-ghost"><ArrowCounterClockwise size={16} /></button>
-        </div>
-        <p className="mt-2 text-center text-[10px] text-muted">Audio continues with screen off · haptic at every 27</p>
-      </div>
+
+          {/* all the text, gathered in one open column */}
+          <div className="mt-4 lg:mt-0 lg:flex-1">
+
+            {/* the chant */}
+            <div className="text-center lg:text-left">
+              <p className="eyebrow text-muted">{mantra.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")} · {mantra.deity}</p>
+              <p className="mt-1.5 font-deva text-[20px] leading-snug text-ink lg:text-[24px]">{mantra.deva}</p>
+              <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13.5px]">{mantra.translit}</p>
+            </div>
+
+            {/* mantra selector */}
+            <div className="mt-2.5 flex flex-wrap justify-center gap-1.5 lg:justify-start">
+              {mantras.slice(0, 6).map((m) => {
+                const on = m.id === mantraId;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => { setMantraId(m.id); reset(); }}
+                    className={cx(
+                      "shrink-0 rounded-[5px] px-2.5 py-1 text-[11px] transition-colors lg:px-3 lg:py-1.5 lg:text-[12.5px]",
+                      on ? "text-white" : "ring-gold text-muted"
+                    )}
+                    style={on ? { background: "var(--icon-ink)" } : undefined}
+                  >
+                    {m.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* japa tally — hairline row, no boxes */}
+            <div className="mt-4 grid grid-cols-3 border-y py-2.5 text-center" style={{ borderColor: "var(--line)" }}>
+              {stats.map(([l, v], i) => (
+                <div key={l} className={cx("px-1", i > 0 && "border-l")} style={i > 0 ? { borderColor: "var(--line)" } : undefined}>
+                  <div className="font-display text-[18px] tnum text-ink lg:text-[22px]">{v}</div>
+                  <div className="mt-0.5 text-[10px] text-muted lg:text-[11.5px]">{l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* controls */}
+            <div className="mt-3 flex gap-2.5 lg:ml-auto lg:max-w-xs">
+              <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center rounded-2xl py-3 text-[12.5px] font-medium text-white lg:text-[13.5px]" style={{ background: "var(--icon-ink)" }}>
+                {auto ? "Pause auto-jaap" : "Hands-free auto-jaap"}
+              </button>
+              <button onClick={reset} className="grid h-[48px] w-[48px] place-items-center rounded-2xl btn-ghost lg:h-[52px] lg:w-[52px]"><ArrowCounterClockwise size={16} /></button>
+            </div>
+            <p className="mt-2 text-center text-[10px] text-muted lg:text-left">Audio continues with screen off · haptic at every 27</p>
+          </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

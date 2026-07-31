@@ -43,22 +43,10 @@ function Panel({ title, note, children }: { title: string; note?: string; childr
   );
 }
 
-/** Label left, value right, and the time it runs out underneath — which is the
- *  part people actually came for. */
-function Row({ label, value, until, gloss }: { label: string; value: string; until?: string | null; gloss?: string }) {
-  return (
-    <div className="flex items-start justify-between gap-3 px-3 py-2.5" style={{ borderTop: "1px solid var(--line)" }}>
-      <div className="min-w-0">
-        <div className="text-[12px] text-ink">{label}</div>
-        {gloss && <div className="mt-0.5 text-[10px] leading-relaxed text-[var(--muted-2)]">{gloss}</div>}
-      </div>
-      <div className="shrink-0 text-right">
-        <div className="text-[12.5px] text-ink">{value}</div>
-        {until && <div className="mt-0.5 text-[10px] tnum text-[var(--muted-2)]">till {until}</div>}
-      </div>
-    </div>
-  );
-}
+// Choghadiya names in Devanagari — a panchang lists them by name, not "Loss".
+const CHOG_SA: Record<string, string> = {
+  Amrit: "अमृत", Shubh: "शुभ", Labh: "लाभ", Char: "चर", Udveg: "उद्वेग", Rog: "रोग", Kaal: "काल",
+};
 
 /**
  * What each choghadiya is for. The old row said only "Shubh" or "Avoid", which
@@ -108,6 +96,27 @@ function ChoghadiyaRow({ slot }: { slot: ChoghadiyaSlot }) {
   );
 }
 
+// Almanac palette + ornaments — the panchang is styled like a printed panchang
+// page: cream paper, a gold frame, Devanagari headings and ◆ dividers.
+const P_GOLD = "#B98A2E", P_INK = "#5A2A14", P_MUT = "#8a5a2a", P_LINE = "rgba(185,138,46,.35)", P_CREAM = "#F4E4BE";
+function GoldRule() {
+  return (
+    <div className="mx-4 my-0.5 flex items-center justify-center gap-2" style={{ color: P_GOLD }}>
+      <span className="h-px flex-1" style={{ background: "rgba(185,138,46,.45)" }} />
+      <span className="text-[9px] leading-none">◆</span>
+      <span className="h-px flex-1" style={{ background: "rgba(185,138,46,.45)" }} />
+    </div>
+  );
+}
+function PSection({ sa, en }: { sa: string; en: string }) {
+  return (
+    <div className="px-4 pb-1 pt-2.5 text-center">
+      <div className="font-deva text-[14.5px] leading-tight" style={{ color: P_GOLD }}>{sa}</div>
+      <div className="text-[8.5px] uppercase tracking-[0.16em]" style={{ color: P_MUT }}>{en}</div>
+    </div>
+  );
+}
+
 export function PanchangScreen() {
   const { data: p } = useFullPanchang();
   if (!p) return <div className="h-full pt-24 text-center text-muted">Computing panchang…</div>;
@@ -120,105 +129,132 @@ export function PanchangScreen() {
     ["gulika", "Gulika Kaal", "Avoid travel and signing"],
   ];
   const paksha = p.tithi.paksha === "shukla" ? "Shukla" : "Krishna";
+  const limbs: { sa: string; label: string; value: string; until: string | null }[] = [
+    { sa: "तिथि", label: "Tithi", value: `${paksha} ${p.tithi.name}`, until: p.tithi.endsAt },
+    { sa: "वार", label: "Vaar", value: p.vaara.name_sa, until: null },
+    { sa: "नक्षत्र", label: "Nakshatra", value: p.nakshatra.name, until: p.nakshatra.endsAt },
+    { sa: "योग", label: "Yoga", value: p.yoga.name, until: p.yoga.endsAt },
+    { sa: "करण", label: "Karana", value: p.karana.name, until: p.karana.endsAt },
+    { sa: "मास", label: "Masa", value: `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`, until: null },
+  ];
+  const sunmoon: { sa: string; en: string; value: string; kind: "rise" | "set" | "moon" }[] = [
+    { sa: "सूर्योदय", en: "Sunrise", value: p.sun.rise, kind: "rise" },
+    { sa: "सूर्यास्त", en: "Sunset", value: p.sun.set, kind: "set" },
+    { sa: "चन्द्रोदय", en: "Moonrise", value: p.moon.rise, kind: "moon" },
+    { sa: "चन्द्रास्त", en: "Moonset", value: p.moon.set, kind: "moon" },
+  ];
+  const ganesha = deityById("ganesha");
+  // A panchang names each choghadiya and marks it shubh (green) or ashubh (red);
+  // it does not spell out "Loss · postpone anything". Name, marker, timing.
+  const chogRows = (slots: ChoghadiyaSlot[]) =>
+    slots.map((c, i) => (
+      <div key={i} className="flex items-baseline justify-between gap-3 px-4 py-2 first:border-t-0"
+        style={{ borderTop: `1px solid ${P_LINE}`, background: c.active ? "rgba(185,138,46,.2)" : undefined }}>
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-deva text-[14.5px] leading-none" style={{ color: c.good ? "#2E7A34" : "#B23A2E" }}>{CHOG_SA[c.name] ?? c.name}</span>
+          <span className="text-[9px]" style={{ color: P_MUT }}>{c.good ? "शुभ" : "अशुभ"}</span>
+          {c.active && <span className="rounded-[3px] px-1.5 py-px text-[8.5px] btn-saffron">अभी</span>}
+        </div>
+        <span className="shrink-0 text-[10.5px] tnum" style={{ color: P_INK }}>{c.from} – {c.to}</span>
+      </div>
+    ));
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom" style={{ background: "var(--surface)" }}>
       <Header title="Panchang" />
+      {/* A printed-panchang page — cream paper in a gold frame, Devanagari
+          headings, ◆ dividers. Left-aligned, not floated in the middle. */}
+      <div className="gutter pt-3 lg:mx-auto lg:max-w-3xl">
+        <div className="relative overflow-hidden rounded-2xl"
+          style={{ background: P_CREAM, border: `1.5px solid ${P_GOLD}`, boxShadow: "inset 0 0 0 3px rgba(185,138,46,.16)" }}>
 
-      <Panel
-        title="Today"
-        note="The five limbs of the day — vaar, tithi, nakshatra, yoga and karana. Each ends at its own hour, not at midnight."
-      >
-        {/* The date and samvat used to sit loose above the first card, left of a
-            pill and aligned to nothing. They belong to this panel. */}
-        <div className="px-3 pb-2.5" style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
-          <div className="flex items-baseline justify-between gap-3">
-            <div className="font-display text-[15px] leading-tight text-ink">{p.home.dateLabel}</div>
-            <div className="shrink-0 text-[11px] text-ink">{p.vaara.name_en}</div>
-          </div>
-          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[10.5px] text-[var(--muted-2)]">
-            <span>{p.masa.amanta} {paksha} paksha</span>
-            <span>·</span>
-            <span className="tnum">Vikram Samvat {p.samvat.vikram}</span>
-            <span>·</span>
-            <span className="tnum">Shaka {p.samvat.shaka}</span>
-          </div>
-          {p.home.vrat && <div className="mt-2"><Pill tone="gold">{p.home.vrat}</Pill></div>}
-        </div>
-
-        {/* Sun and moon on one strip — four times that belong together. */}
-        <div className="grid grid-cols-2" style={{ borderTop: "1px solid var(--line)" }}>
-          {([
-            [IconSunrise, "Sunrise", p.sun.rise],
-            [IconSunset, "Sunset", p.sun.set],
-            [null, "Moonrise", p.moon.rise],
-            [null, "Moonset", p.moon.set],
-          ] as const).map(([Icon, label, value], i) => (
-            <div
-              key={label}
-              className="flex items-center gap-2 px-3 py-2.5"
-              style={{
-                borderTop: i > 1 ? "1px solid var(--line)" : undefined,
-                borderLeft: i % 2 ? "1px solid var(--line)" : undefined,
-              }}
-            >
-              {Icon
-                ? <Icon size={15} className="shrink-0 text-[var(--bhagwa)]" strokeWidth={1.7} />
-                : <Moon size={15} weight="light" className="shrink-0 text-[var(--bhagwa)]" />}
-              <div className="min-w-0">
-                <div className="text-[10px] leading-none text-[var(--muted-2)]">{label}</div>
-                <div className="mt-1 text-[12.5px] leading-none tnum text-ink">{value}</div>
-              </div>
-            </div>
+          {/* an inner rule, corner stars and a faint Om watermark — the frame a
+              printed panchang carries. */}
+          <div className="pointer-events-none absolute inset-[7px] rounded-[13px]" style={{ border: "1px solid rgba(185,138,46,.5)" }} />
+          {(["left-[10px] top-[9px]", "right-[10px] top-[9px]", "left-[10px] bottom-[9px]", "right-[10px] bottom-[9px]"] as const).map((pos) => (
+            <span key={pos} className={`pointer-events-none absolute ${pos} text-[11px] leading-none`} style={{ color: P_GOLD }}>✦</span>
           ))}
-        </div>
+          <div className="pointer-events-none absolute inset-x-0 top-7 flex justify-center" style={{ opacity: 0.05 }}>
+            <span className="font-deva leading-none" style={{ color: P_GOLD, fontSize: 150 }}>ॐ</span>
+          </div>
 
-        <Row label="Tithi" gloss="Lunar day" value={`${paksha} ${p.tithi.name}`} until={p.tithi.endsAt} />
-        <Row label="Nakshatra" gloss="The moon's constellation" value={p.nakshatra.name} until={p.nakshatra.endsAt} />
-        <Row label="Yoga" gloss="Sun and moon combined" value={p.yoga.name} until={p.yoga.endsAt} />
-        <Row label="Karana" gloss="Half a tithi" value={p.karana.name} until={p.karana.endsAt} />
-        <Row label="Vaar" gloss="Weekday" value={p.vaara.name_sa} />
-        <Row
-          label="Masa"
-          gloss="Lunar month"
-          value={`${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`}
-        />
-      </Panel>
-
-      <Panel
-        title="Choghadiya · Day"
-        note="Sunrise to sunset split into eight parts. Green is a good window to begin something; red is one to let pass."
-      >
-        {daySlots.map((c, i) => <ChoghadiyaRow key={i} slot={c} />)}
-      </Panel>
-
-      <Panel
-        title="Choghadiya · Night"
-        note="Sunset to the next sunrise, split the same way."
-      >
-        {nightSlots.map((c, i) => <ChoghadiyaRow key={i} slot={c} />)}
-      </Panel>
-
-      <Panel
-        title="Hours to avoid"
-        note="Fixed inauspicious windows. They fall at a different hour each weekday."
-      >
-        {AVOID.map(([code, label, why]) => {
-          const k = kaal(code);
-          return (
-            <div key={code} className="flex items-center justify-between gap-3 px-3 py-2.5"
-              style={{ borderTop: "1px solid var(--line)" }}>
-              <div className="min-w-0">
-                <div className="text-[12.5px] text-ink">{label}</div>
-                <div className="mt-0.5 text-[10.5px] text-ink">{why}</div>
-              </div>
-              <div className="shrink-0 text-right text-[11px] tnum" style={{ color: "var(--avoid)" }}>
-                {k ? <>{k.from}<br />{k.to}</> : "—"}
-              </div>
+          {/* masthead — a Ganesha invocation, then the title and the day */}
+          <div className="relative px-5 pb-3 pt-5 text-center">
+            {ganesha && <div className="flex justify-center"><DeityGlyph deity={ganesha} size={46} /></div>}
+            <div className="mt-2 font-deva text-[11px]" style={{ color: P_MUT }}>॥ श्री गणेशाय नमः ॥</div>
+            <div className="mt-1.5 flex items-center justify-center gap-3">
+              <span className="font-deva text-[15px] leading-none" style={{ color: P_GOLD }}>ॐ</span>
+              <span className="font-deva text-[23px] leading-none tracking-wide" style={{ color: P_GOLD }}>पंचांग</span>
+              <span className="font-deva text-[15px] leading-none" style={{ color: P_GOLD }}>ॐ</span>
             </div>
-          );
-        })}
-      </Panel>
+            <div className="mt-1.5 font-display text-[18px] leading-tight lg:text-[21px]" style={{ color: P_INK }}>{p.home.dateLabel} · {p.vaara.name_en}</div>
+            <div className="mt-1 text-[10.5px]" style={{ color: P_MUT }}>{p.masa.amanta} {paksha} पक्ष · विक्रम संवत् {p.samvat.vikram} · शक {p.samvat.shaka}</div>
+            {p.home.vrat && <div className="mt-2 flex justify-center"><Pill tone="gold">{p.home.vrat}</Pill></div>}
+          </div>
+
+          <GoldRule />
+          <PSection sa="पञ्चाङ्ग" en="The Five Limbs" />
+          <div className="mx-4 grid grid-cols-1 gap-px overflow-hidden rounded-md sm:grid-cols-2 lg:grid-cols-3" style={{ background: P_LINE }}>
+            {limbs.map((l) => (
+              <div key={l.label} className="px-4 py-2.5" style={{ background: P_CREAM }}>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-deva text-[14px] leading-none" style={{ color: P_INK }}>{l.sa}</span>
+                  <span className="text-[8.5px] uppercase tracking-wide" style={{ color: P_MUT }}>{l.label}</span>
+                </div>
+                <div className="mt-1 text-[13px] font-medium leading-tight" style={{ color: P_INK }}>{l.value}</div>
+                {l.until && <div className="mt-0.5 text-[9.5px] tnum" style={{ color: P_GOLD }}>till {l.until}</div>}
+              </div>
+            ))}
+          </div>
+
+          <GoldRule />
+          <PSection sa="सूर्य व चन्द्र" en="Sun & Moon" />
+          <div className="mx-4 grid grid-cols-2 gap-px overflow-hidden rounded-md lg:grid-cols-4" style={{ background: P_LINE }}>
+            {sunmoon.map((s) => (
+              <div key={s.en} className="flex items-center gap-2 px-4 py-2.5" style={{ background: P_CREAM }}>
+                {s.kind === "rise" ? <IconSunrise size={16} strokeWidth={1.7} className="shrink-0" style={{ color: P_GOLD }} />
+                  : s.kind === "set" ? <IconSunset size={16} strokeWidth={1.7} className="shrink-0" style={{ color: P_GOLD }} />
+                  : <Moon size={16} weight="light" className="shrink-0" style={{ color: P_GOLD }} />}
+                <div className="min-w-0">
+                  <div className="font-deva text-[11px] leading-none" style={{ color: P_MUT }}>{s.sa}</div>
+                  <div className="mt-1 text-[12.5px] leading-none tnum" style={{ color: P_INK }}>{s.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <GoldRule />
+          <PSection sa="चौघड़िया" en="Choghadiya" />
+          <div className="mx-4 grid grid-cols-1 gap-px overflow-hidden rounded-md lg:grid-cols-2" style={{ background: P_LINE }}>
+            {([["दिन", "Day", daySlots], ["रात्रि", "Night", nightSlots]] as const).map(([sa, en, slots]) => (
+              <div key={en} style={{ background: P_CREAM }}>
+                <div className="px-4 pt-2.5 font-deva text-[12.5px]" style={{ color: P_GOLD }}>{sa} <span className="text-[9px]" style={{ color: P_MUT }}>{en}</span></div>
+                <div className="pt-1">{chogRows(slots)}</div>
+              </div>
+            ))}
+          </div>
+
+          <GoldRule />
+          <PSection sa="अशुभ काल" en="Hours to avoid" />
+          <div className="mx-4 mb-3 grid grid-cols-1 gap-px overflow-hidden rounded-md sm:grid-cols-3" style={{ background: P_LINE }}>
+            {AVOID.map(([code, label, why]) => {
+              const k = kaal(code);
+              const sa = code === "rahu_kaal" ? "राहुकाल" : code === "yamaganda" ? "यमगण्ड" : "गुलिक";
+              return (
+                <div key={code} className="px-4 py-2.5" style={{ background: P_CREAM }}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-deva text-[13px]" style={{ color: P_INK }}>{sa}</span>
+                    <span className="shrink-0 text-right text-[10px] tnum" style={{ color: "var(--avoid)" }}>{k ? `${k.from}–${k.to}` : "—"}</span>
+                  </div>
+                  <div className="mt-0.5 text-[9.5px]" style={{ color: P_MUT }}>{label} · {why}</div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="h-3" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -234,6 +270,37 @@ const FESTIVAL_ICONS: Record<string, Icon> = {
 const festivalIcon = (icon?: string) => (icon && FESTIVAL_ICONS[icon]) || FlowerLotus;
 const fmtFestivalDate = (iso: string, lang: "en" | "hi" = "en") =>
   new Date(iso).toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+// A lit diya for the empty state — a glowing lamp rather than a bare line of
+// grey text, so a screen with no festival still feels tended.
+function DiyaArtifact() {
+  return (
+    <svg viewBox="0 0 140 116" width="132" height="110" aria-hidden>
+      <defs>
+        <radialGradient id="diyaGlow" cx="50%" cy="42%" r="55%">
+          <stop offset="0" stopColor="#FFD98A" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#FFD98A" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="diyaFlame" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#FFB020" />
+          <stop offset="1" stopColor="#F26B0F" />
+        </linearGradient>
+        <linearGradient id="diyaBowl" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#C4611F" />
+          <stop offset="1" stopColor="#7A340E" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="70" cy="46" rx="48" ry="46" fill="url(#diyaGlow)" />
+      <path d="M70 20 C 79 40, 83 51, 70 62 C 57 51, 61 40, 70 20 Z" fill="url(#diyaFlame)" />
+      <path d="M70 33 C 74 46, 75 53, 70 59 C 65 53, 66 46, 70 33 Z" fill="#FFE9A8" />
+      <rect x="69" y="59" width="2" height="8" rx="1" fill="#5b3a1c" />
+      <path d="M30 74 Q70 110 110 74 Z" fill="url(#diyaBowl)" />
+      <ellipse cx="70" cy="74" rx="41" ry="8" fill="#D46A22" />
+      <ellipse cx="70" cy="73" rx="35" ry="5.5" fill="#7A340E" />
+      <path d="M31 73 Q70 85 109 73" stroke="#E98C3E" strokeWidth="1.5" fill="none" opacity="0.55" />
+    </svg>
+  );
+}
 
 export function FestivalsScreen() {
   const { go, lang } = useApp();
@@ -258,23 +325,25 @@ export function FestivalsScreen() {
       {/* Festival dates are served from the database — lunar, so they cannot be
           guessed. Say so rather than showing a blank screen. */}
       {!list.length && (
-        <div className="gutter-m mt-2 rounded-2xl p-3 text-center">
-          <div className="text-[12.5px] text-ink">{lang === "hi" ? "अभी कोई तिथि उपलब्ध नहीं" : "No festival dates loaded"}</div>
-          <p className="mx-auto mt-1 measure text-[11px] leading-relaxed text-muted">
+        <div className="gutter-m mt-8 flex flex-col items-center text-center lg:mt-14">
+          <DiyaArtifact />
+          <div className="mt-4 text-[14px] font-medium text-ink">{lang === "hi" ? "अभी कोई तिथि उपलब्ध नहीं" : "No festival dates loaded"}</div>
+          <p className="mx-auto mt-1.5 measure text-[11.5px] leading-relaxed text-muted">
             {lang === "hi"
-              ? "पंचांग बैकएंड से आता है। अपना कनेक्शन जाँचें, या तब तक आज की तिथि और मुहूर्त के लिए पंचांग खोलें।"
-              : "The calendar is served from the backend. Check your connection, or open Panchang for today's tithi and muhurat in the meantime."}
+              ? "आगामी पर्व यहाँ जल्द ही दिखेंगे। तब तक आज की तिथि और मुहूर्त के लिए पंचांग देखें।"
+              : "Upcoming festivals will appear here soon. Open Panchang for today's tithi and muhurat in the meantime."}
           </p>
           <button
             onClick={() => go("panchang")}
-            className="mt-3 rounded-[5px] px-4 py-2 text-[11.5px] btn-saffron"
+            className="mt-4 rounded-[6px] px-5 py-2.5 text-[12px] btn-saffron"
           >
             {lang === "hi" ? "पंचांग खोलें" : "Open Panchang"}
           </button>
         </div>
       )}
-      {/* No boxed hero and no empty faded band — the festival opens straight
-          under the header, its details on the plain ground. */}
+      {/* Content is left-aligned and uses the width; the hero opens straight
+          under the header. */}
+      <div>
       {hero && (
         <div className="gutter pt-3">
           <div className="eyebrow text-muted">{fmtFestivalDate(hero.date, lang)}</div>
@@ -323,7 +392,7 @@ export function FestivalsScreen() {
             </div>
           </>
         )}
-        <button onClick={() => go("puja")} className="mt-4 w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron">{lang === "hi" ? "पंडित से यह पूजा बुक करें" : "Book this Puja with a Pandit"}</button>
+        <button onClick={() => go("puja")} className="mt-4 block w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron lg:max-w-sm">{lang === "hi" ? "पंडित से यह पूजा बुक करें" : "Book this Puja with a Pandit"}</button>
       </div>
 
       {rest.length > 0 && (
@@ -345,6 +414,7 @@ export function FestivalsScreen() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

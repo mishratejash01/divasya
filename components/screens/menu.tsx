@@ -49,12 +49,12 @@ export function MenuScreen() {
       {/* language — every content screen reads this preference */}
       <div className="gutter pt-4">
         <h3 className="section-title mb-1">Language · भाषा</h3>
-        <div className="mt-1 grid w-fit grid-cols-2 gap-1 rounded-full p-1" style={{ background: "var(--surface-2)" }}>
+        <div className="mt-2 grid grid-cols-2 gap-2 rounded-2xl p-1.5" style={{ background: "var(--surface-2)" }}>
           {(["en", "hi"] as const).map((code) => (
             <button
               key={code}
               onClick={() => { haptic(6); setLang(code); }}
-              className={cx("rounded-full px-4 py-1 text-[11px]", lang === code ? "btn-saffron" : "text-muted")}
+              className={cx("rounded-xl py-2.5 text-[13.5px] font-medium transition-colors", lang === code ? "btn-saffron" : "text-ink")}
             >
               {code === "en" ? "English" : "हिंदी"}
             </button>
