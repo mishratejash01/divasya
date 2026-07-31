@@ -253,7 +253,7 @@ export function MalaScreen() {
               </button>
               <button onClick={reset} className="grid h-[48px] w-[48px] place-items-center rounded-2xl btn-ghost lg:h-[52px] lg:w-[52px]"><ArrowCounterClockwise size={16} /></button>
             </div>
-            <p className="mt-2 text-center text-[10px] text-muted lg:text-left">Audio continues with screen off · haptic at every 27</p>
+            <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-muted lg:text-left">Chant at your own pace — Divasya keeps the count for you, even with the screen off.</p>
           </div>
             </div>
           </section>
