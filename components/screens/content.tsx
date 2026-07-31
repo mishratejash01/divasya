@@ -5,7 +5,7 @@ import { IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
 import { Bank, Check, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword, WhatsappLogo } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { DeityGlyph, Pill, ScreenHeader, Wordmark, cx } from "../ui";
+import { DeityGlyph, Logomark, Pill, ScreenHeader, cx } from "../ui";
 import { deityById } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 import {
@@ -510,37 +510,186 @@ export function SandeshScreen() {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
+  // ── Scroll pieces, shared between the portrait (phone) and landscape
+  //    (desktop) compositions so neither can drift. ──────────────────────
+  const GOLD = "#B98A2E", GOLD_D = "#9A6B1E", INK_M = "#5A2A14", INK_S = "#8a5a2a";
+  const FINIAL_H = "linear-gradient(180deg,#E7C874,#B9863A 52%,#7d571e)";
+  const FINIAL_V = "linear-gradient(90deg,#E7C874,#B9863A 52%,#7d571e)";
+
+  const tassel = (
+    <div className="flex flex-col items-center">
+      <div style={{ width: 2, height: 20, background: "linear-gradient(#7d571e,#8a2f18)" }} />
+      <div style={{ width: 12, height: 10, borderRadius: "6px 6px 4px 4px", background: "linear-gradient(180deg,#a83a1c,#6e2410)", boxShadow: "inset 0 1px 1px rgba(255,205,155,.45)" }} />
+      <div style={{ width: 14, height: 13, marginTop: "-1px", background: "repeating-linear-gradient(90deg,#7d2414 0 1.5px,#B9863A 1.5px 3px)", clipPath: "polygon(0 0,100% 0,86% 100%,50% 88%,14% 100%)" }} />
+    </div>
+  );
+
+  const titleBlock = (
+    <div>
+      <div className="font-deva text-[13.5px] tracking-wide" style={{ color: GOLD_D }}>॥ आज का सन्देश ॥</div>
+      <div className="mt-1 text-[9.5px]" style={{ color: INK_S }}>{pg ? `${pg.weekdayShort} · ${pg.tithiDisplay}` : ""}</div>
+    </div>
+  );
+
+  const deityMark = (
+    <div className="flex justify-center">
+      <span className="rounded-full p-[3px]" style={{ background: GOLD }}><DeityGlyph deity={deity} size={58} /></span>
+    </div>
+  );
+
+  const verseBlock = (
+    <div>
+      <div className="font-deva text-[20px] leading-[2] lg:text-[23px]" style={{ color: INK_M }}>{shloka?.deva}</div>
+      <div className="mt-1.5 text-[11px] italic" style={{ color: INK_S }}>{shloka?.translit}</div>
+    </div>
+  );
+
+  const divider = (
+    <div className="flex items-center justify-center gap-2.5" style={{ color: GOLD }}>
+      <span className="h-px w-12" style={{ background: GOLD, opacity: 0.55 }} />
+      <span className="text-[11px] leading-none">◆</span>
+      <span className="h-px w-12" style={{ background: GOLD, opacity: 0.55 }} />
+    </div>
+  );
+
+  const blessingLine = (
+    <div className="mx-auto max-w-[32ch] text-[12px] leading-relaxed" style={{ color: INK_M }}>
+      {horo ?? `Aaj ka din shubh ho · ${pg?.tithiDisplay ?? ""}`}
+    </div>
+  );
+
+  const astroReadout = (
+    <div className="mx-auto flex max-w-[19rem] justify-center rounded-[6px] py-2.5" style={{ border: "1px solid rgba(185,138,46,.4)", background: "rgba(185,138,46,.07)" }}>
+      {([["Rashi", rashi.split(" ")[0]], ["Nakshatra", profile?.nakshatra || "—"], ["Tithi", pg?.tithiDisplay || "—"]] as const).map(([l, v], i) => (
+        <div key={l} className="flex-1 px-2" style={{ borderLeft: i ? "1px solid rgba(185,138,46,.3)" : undefined }}>
+          <div className="text-[8px] uppercase tracking-[0.12em]" style={{ color: GOLD_D }}>{l}</div>
+          <div className="mt-0.5 text-[10.5px] font-medium leading-tight" style={{ color: INK_M }}>{v}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const brandSeal = (
+    <div className="flex flex-col items-center gap-1.5">
+      <span className="grid h-14 w-14 place-items-center rounded-full" style={{ background: "radial-gradient(circle at 35% 28%, #9a3a1e, #571a08)", boxShadow: "0 3px 8px rgba(0,0,0,.32), inset 0 1px 2px rgba(255,205,155,.45)", border: `1.5px solid ${GOLD}` }}>
+        <Logomark size={30} className="text-[#F3E4BE]" />
+      </span>
+      <span className="font-display text-[16px] leading-none tracking-[0.01em]" style={{ color: INK_M }}>Divasya</span>
+      <span className="font-deva text-[8.5px] tracking-[0.2em]" style={{ color: GOLD_D }}>आध्यात्मिक यात्रा</span>
+    </div>
+  );
+
   return (
     <div className="flex h-full flex-col">
       <Header title="Aaj ka Sandesh" />
 
-      {/* The poster scrolls; the actions are pinned below. */}
+      {/* The poster is a share card — held to a portrait width and centred, not
+          stretched across the page. On desktop the actions sit right under it;
+          a phone keeps them pinned to the bottom edge. */}
       <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: 14 }}>
-        <div className="gutter pt-3">
-          <div ref={card} className="card-temple overflow-hidden rounded-3xl p-6">
-            <div className="flex items-center justify-between">
-              <Wordmark size={14} />
-              <span className="text-[10px] text-muted">{pg ? `${pg.weekdayShort} · ${pg.tithiDisplay}` : ""}</span>
+        <div className="gutter pt-3 lg:pt-8">
+          <div className="mx-auto w-full max-w-[440px] lg:max-w-[1140px]">
+            {/* A royal proclamation on a scroll — portrait on a phone (rods top
+                and bottom), landscape on desktop (rods left and right). */}
+            <div ref={card} className="relative flex flex-col lg:flex-row">
+              {/* phone top rod (horizontal) with hanging tassels */}
+              <div className="relative z-10 h-[22px] lg:hidden">
+                <div className="absolute inset-x-1.5 top-1/2 h-[15px] -translate-y-1/2" style={{ borderRadius: 8, background: "linear-gradient(180deg,#8a5a2a,#5a3618 46%,#331d0d 56%,#6e4620)", boxShadow: "0 3px 6px rgba(50,25,8,.35), inset 0 1.5px 0 rgba(255,225,175,.35), inset 0 -2px 3px rgba(0,0,0,.45)" }} />
+                <div className="absolute left-0 top-1/2 h-[22px] w-[14px] -translate-y-1/2" style={{ borderRadius: 7, background: FINIAL_H, boxShadow: "0 2px 4px rgba(50,25,8,.4), inset 0 1px 1px rgba(255,240,200,.6), inset 0 -1px 2px rgba(90,55,20,.5)" }} />
+                <div className="absolute right-0 top-1/2 h-[22px] w-[14px] -translate-y-1/2" style={{ borderRadius: 7, background: FINIAL_H, boxShadow: "0 2px 4px rgba(50,25,8,.4), inset 0 1px 1px rgba(255,240,200,.6), inset 0 -1px 2px rgba(90,55,20,.5)" }} />
+                <div className="absolute left-[2px] top-[15px]">{tassel}</div>
+                <div className="absolute right-[2px] top-[15px]">{tassel}</div>
+              </div>
+
+              {/* desktop left rod (vertical) with a hanging tassel */}
+              <div className="relative z-10 hidden w-[22px] shrink-0 self-stretch lg:block">
+                <div className="absolute inset-y-1.5 left-1/2 w-[15px] -translate-x-1/2" style={{ borderRadius: 8, background: "linear-gradient(90deg,#8a5a2a,#5a3618 46%,#331d0d 56%,#6e4620)", boxShadow: "3px 0 6px rgba(50,25,8,.35), inset 1.5px 0 0 rgba(255,225,175,.35), inset -2px 0 3px rgba(0,0,0,.45)" }} />
+                <div className="absolute left-1/2 top-0 h-[14px] w-[22px] -translate-x-1/2" style={{ borderRadius: 7, background: FINIAL_V, boxShadow: "0 2px 4px rgba(50,25,8,.4)" }} />
+                <div className="absolute bottom-0 left-1/2 h-[14px] w-[22px] -translate-x-1/2" style={{ borderRadius: 7, background: FINIAL_V, boxShadow: "0 2px 4px rgba(50,25,8,.4)" }} />
+                <div className="absolute left-1/2 top-[12px] -translate-x-1/2">{tassel}</div>
+              </div>
+
+              {/* parchment */}
+              <div
+                className="relative z-0 -my-1 mx-3.5 min-w-0 flex-1 px-4 py-6 lg:mx-0 lg:my-0 lg:px-10 lg:py-9"
+                style={{
+                  background: "radial-gradient(130% 120% at 50% -10%, #FCF3DD, #F3E4BE 55%, #E7D2A4)",
+                  boxShadow: "inset 0 0 46px rgba(120,80,30,.14)",
+                }}
+              >
+                <div
+                  className="rounded-[8px] px-5 py-6 text-center lg:px-10 lg:py-8"
+                  style={{ border: "1.5px solid #B98A2E", boxShadow: "inset 0 0 0 3px rgba(185,138,46,.16)" }}
+                >
+                  {/* portrait (phone) */}
+                  <div className="space-y-4 lg:hidden">
+                    {titleBlock}
+                    {deityMark}
+                    {verseBlock}
+                    {divider}
+                    {blessingLine}
+                    {astroReadout}
+                    {brandSeal}
+                  </div>
+
+                  {/* landscape (desktop) */}
+                  <div className="hidden lg:grid lg:grid-cols-[1fr_1px_1fr] lg:items-center lg:gap-14">
+                    <div className="space-y-4">
+                      {deityMark}
+                      {verseBlock}
+                    </div>
+                    <div className="mx-auto h-[78%] w-px" style={{ background: "rgba(185,138,46,.4)" }} />
+                    <div className="space-y-4">
+                      {titleBlock}
+                      {blessingLine}
+                      {astroReadout}
+                      {brandSeal}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* desktop right rod (vertical) with a hanging tassel */}
+              <div className="relative z-10 hidden w-[22px] shrink-0 self-stretch lg:block">
+                <div className="absolute inset-y-1.5 left-1/2 w-[15px] -translate-x-1/2" style={{ borderRadius: 8, background: "linear-gradient(90deg,#6e4620,#331d0d 44%,#5a3618 54%,#8a5a2a)", boxShadow: "-3px 0 6px rgba(50,25,8,.35), inset -1.5px 0 0 rgba(255,225,175,.32), inset 2px 0 3px rgba(0,0,0,.45)" }} />
+                <div className="absolute left-1/2 top-0 h-[14px] w-[22px] -translate-x-1/2" style={{ borderRadius: 7, background: FINIAL_V, boxShadow: "0 2px 4px rgba(50,25,8,.4)" }} />
+                <div className="absolute bottom-0 left-1/2 h-[14px] w-[22px] -translate-x-1/2" style={{ borderRadius: 7, background: FINIAL_V, boxShadow: "0 2px 4px rgba(50,25,8,.4)" }} />
+                <div className="absolute left-1/2 top-[12px] -translate-x-1/2">{tassel}</div>
+              </div>
+
+              {/* phone bottom rod (horizontal) */}
+              <div className="relative z-10 h-[22px] lg:hidden">
+                <div className="absolute inset-x-1.5 top-1/2 h-[15px] -translate-y-1/2" style={{ borderRadius: 8, background: "linear-gradient(180deg,#6e4620,#331d0d 44%,#5a3618 54%,#8a5a2a)", boxShadow: "0 3px 6px rgba(50,25,8,.35), inset 0 -1.5px 0 rgba(255,225,175,.32), inset 0 2px 3px rgba(0,0,0,.45)" }} />
+                <div className="absolute left-0 top-1/2 h-[22px] w-[14px] -translate-y-1/2" style={{ borderRadius: 7, background: FINIAL_H, boxShadow: "0 2px 4px rgba(50,25,8,.4), inset 0 1px 1px rgba(255,240,200,.6), inset 0 -1px 2px rgba(90,55,20,.5)" }} />
+                <div className="absolute right-0 top-1/2 h-[22px] w-[14px] -translate-y-1/2" style={{ borderRadius: 7, background: FINIAL_H, boxShadow: "0 2px 4px rgba(50,25,8,.4), inset 0 1px 1px rgba(255,240,200,.6), inset 0 -1px 2px rgba(90,55,20,.5)" }} />
+              </div>
             </div>
-            <div className="mt-5 flex justify-center"><DeityGlyph deity={deity} size={58} /></div>
-            <div className="mt-3 text-center font-deva text-[18px] leading-relaxed text-ink">{shloka?.deva}</div>
-            <div className="mt-2 text-center text-[11px] text-muted">{shloka?.translit}</div>
-            <div className="my-4 h-px w-full" style={{ background: "var(--line)" }} />
-            <div className="text-center text-[11.5px] leading-relaxed text-ink-dim">
-              {horo ?? `Aaj ka din shubh ho · ${pg?.tithiDisplay ?? ""}`}
-            </div>
-            <div className="mt-5 text-center">
-              <div className="text-[11px] text-muted">A blessing for</div>
-              <div className="font-display text-lg text-gold">{name} · {rashi.split(" ")[0]}</div>
+
+            {/* Desktop actions — a compact row centred under the scroll */}
+            <div className="mt-5 hidden gap-2.5 lg:mx-auto lg:flex lg:max-w-[420px]">
+              <button
+                onClick={whatsapp}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 text-[13px] font-medium text-white"
+                style={{ background: "#25D366" }}
+              >
+                <WhatsappLogo size={17} weight="fill" /> Share to WhatsApp
+              </button>
+              <button
+                onClick={download}
+                disabled={busy}
+                aria-label="Download poster"
+                className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-2xl btn-ghost disabled:opacity-50"
+              >
+                <DownloadSimple size={20} weight="bold" />
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Actions pinned above the tab bar. Share is WhatsApp green with its own
-          mark; download takes a heavier icon so it reads at a glance. */}
+      {/* Actions — phone only, pinned above the tab bar. */}
       <div
-        className="shrink-0 flex gap-2.5 gutter above-tabbar pt-2.5"
+        className="shrink-0 flex gap-2.5 gutter above-tabbar pt-2.5 lg:hidden"
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
         <button

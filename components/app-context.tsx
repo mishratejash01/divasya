@@ -127,6 +127,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [push, setPush] = useState<PushPayload | null>(null);
   const [lang, setLangState] = useState<Lang>("en");
 
+  // Keep the current screen across a refresh. The first render stays on home to
+  // match the server HTML (no hydration mismatch); the screen you were on is
+  // restored right after mount, and re-saved as you navigate. sessionStorage —
+  // it survives a reload but doesn't hijack a fresh visit.
+  const navRestored = useRef(false);
+  useEffect(() => {
+    if (navRestored.current) return;
+    navRestored.current = true;
+    try {
+      const raw = sessionStorage.getItem("divasya:nav");
+      if (raw) {
+        const saved = JSON.parse(raw) as { screen?: ScreenState; history?: ScreenState[] };
+        if (saved?.screen?.name) {
+          setScreen(saved.screen);
+          if (Array.isArray(saved.history)) setHistory(saved.history);
+        }
+      }
+    } catch { /* private mode / bad JSON — start on home */ }
+  }, []);
+  useEffect(() => {
+    if (!navRestored.current) return;
+    try {
+      sessionStorage.setItem("divasya:nav", JSON.stringify({ screen, history }));
+    } catch { /* storage full or blocked — navigation still works */ }
+  }, [screen, history]);
+
   const statsRef = useRef<UserState>(EMPTY_STATE);
   const userRef = useRef<User | null>(null);
   const profileLoadedRef = useRef(false);
