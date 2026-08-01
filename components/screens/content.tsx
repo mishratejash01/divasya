@@ -211,10 +211,10 @@ export function PanchangScreen() {
           <PSection sa="सूर्य व चन्द्र" en="Sun & Moon" />
           <div className="mx-4 grid grid-cols-2 gap-px overflow-hidden rounded-md lg:grid-cols-4" style={{ background: P_LINE }}>
             {sunmoon.map((s) => (
-              <div key={s.en} className="flex items-center gap-2 px-4 py-2.5" style={{ background: P_CREAM }}>
-                {s.kind === "rise" ? <IconSunrise size={16} strokeWidth={1.7} className="shrink-0" style={{ color: P_GOLD }} />
-                  : s.kind === "set" ? <IconSunset size={16} strokeWidth={1.7} className="shrink-0" style={{ color: P_GOLD }} />
-                  : <Moon size={16} weight="light" className="shrink-0" style={{ color: P_GOLD }} />}
+              <div key={s.en} className="flex items-center gap-2 px-4 py-2.5" style={{ background: P_CREAM, color: P_GOLD }}>
+                {s.kind === "rise" ? <IconSunrise size={16} strokeWidth={1.7} className="shrink-0" />
+                  : s.kind === "set" ? <IconSunset size={16} strokeWidth={1.7} className="shrink-0" />
+                  : <Moon size={16} weight="light" className="shrink-0" />}
                 <div className="min-w-0">
                   <div className="font-deva text-[11px] leading-none" style={{ color: P_MUT }}>{s.sa}</div>
                   <div className="mt-1 text-[12.5px] leading-none tnum" style={{ color: P_INK }}>{s.value}</div>
