@@ -1,7 +1,7 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
-import { CaretDown } from "@phosphor-icons/react";
+import { type ReactNode, useEffect, useState } from "react";
+import { CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { ScreenHeader } from "../ui";
 import { Iconify } from "../iconify";
@@ -217,201 +217,194 @@ function Layer({
   );
 }
 
+/* The full Gita — chapters + all 700 verses (Sanskrit, transliteration, English
+   & Hindi) — is bundled at /public/gita.json and fetched on open. The four
+   authored verses above stay as the "Go deeper" experience where they match. */
+type GVerse = { s: string; t: string; e: string; h: string };
+type GChapter = { n: number; count: number; deva: string; name: string; meaning: string };
+type GitaData = { chapters: GChapter[]; verses: Record<string, GVerse> };
+
+/* Turn the source's danda pipes into clean Devanagari punctuation. */
+function cleanShlok(s: string): string {
+  return s.replace(/\s*\|\|[^|]*\|\|\s*/g, " ॥").replace(/\s*\|\s*/g, " । ").trim();
+}
+
 export function GitaScreen() {
   const { back, haptic } = useApp();
-  const [active, setActive] = useState(VERSES[0].id);
-  // Which accordion layer is open — one at a time keeps the verse calm.
+  const [data, setData] = useState<GitaData | null>(null);
+  const [ch, setCh] = useState(2);
+  const [v, setV] = useState(47);
   const [open, setOpen] = useState<string | null>("simple");
-  const verse = VERSES.find((v) => v.id === active) ?? VERSES[0];
 
-  const selectVerse = (id: string) => {
-    haptic(6);
-    setActive(id);
-    setOpen("simple"); // reset to the gentlest layer on each new verse
+  useEffect(() => {
+    let on = true;
+    fetch("/gita.json").then((r) => r.json()).then((d: GitaData) => { if (on) setData(d); }).catch(() => {});
+    return () => { on = false; };
+  }, []);
+
+  const chapter = data?.chapters.find((c) => c.n === ch) ?? null;
+  const gv = data?.verses[`${ch}.${v}`] ?? null;
+  const deep = VERSES.find((x) => x.id === `${ch}.${v}`) ?? null;
+
+  const pickChapter = (n: number) => { haptic(6); setCh(n); setV(1); setOpen("simple"); };
+  const pickVerse = (n: number) => { haptic(6); setV(n); setOpen("simple"); };
+  const toggle = (key: string) => { haptic(5); setOpen((cur) => (cur === key ? null : key)); };
+  const step = (dir: number) => {
+    if (!data) return;
+    const cur = data.chapters.find((c) => c.n === ch);
+    if (!cur) return;
+    let nc = ch, nv = v + dir;
+    if (nv < 1) { nc = ch - 1; if (nc < 1) return; nv = data.chapters.find((c) => c.n === nc)!.count; }
+    else if (nv > cur.count) { nc = ch + 1; if (nc > data.chapters.length) return; nv = 1; }
+    haptic(6); setCh(nc); setV(nv); setOpen("simple");
   };
-  const toggle = (key: string) => {
-    haptic(5);
-    setOpen((cur) => (cur === key ? null : key));
-  };
+
+  const chipStyle = (on: boolean) =>
+    on
+      ? { background: GOLD, color: "#fff", fontWeight: 500 as const }
+      : { background: "var(--surface-2)", color: "var(--ink)", border: "1px solid var(--line)" };
+
+  const shlokLines = gv?.s ? cleanShlok(gv.s).split("\n").map((l) => l.trim()).filter(Boolean) : [];
+  const translitLines = gv?.t ? gv.t.replace(/\s*\|\|[^|]*\|\|\s*/g, "").split("\n").map((l) => l.trim()).filter(Boolean) : [];
 
   return (
     <div className="flex h-full flex-col">
       <ScreenHeader title="Gita Wisdom" sub="श्रीमद्भगवद्गीता" onBack={back} />
 
-      {/* verse filter — rectangular chips on a bar that rides right under the
-          header, so on a phone it reads as part of the header */}
-      <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto gutter pb-2 pt-2 no-scrollbar lg:mx-auto lg:w-full lg:max-w-5xl">
-        <span className="mr-0.5 shrink-0 text-[10.5px] uppercase tracking-[0.14em] text-[var(--muted-2)]">Verse</span>
-        {VERSES.map((v) => {
-          const on = v.id === active;
-          return (
-            <button
-              key={v.id}
-              onClick={() => selectVerse(v.id)}
-              className="shrink-0 rounded-md px-3 py-1.5 text-[12px] tnum transition-colors"
-              style={
-                on
-                  ? { background: GOLD, color: "#fff", fontWeight: 500 }
-                  : { background: "var(--surface-2)", color: "var(--muted)", border: "1px solid var(--line)" }
-              }
-            >
-              {v.id}
-            </button>
-          );
-        })}
+      {/* chapter + verse filter — rectangular chips riding under the header */}
+      <div className="shrink-0 gutter pt-2 lg:mx-auto lg:w-full lg:max-w-5xl">
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.14em] text-ink">Adhyaya</span>
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+            {(data?.chapters ?? []).map((c) => (
+              <button key={c.n} onClick={() => pickChapter(c.n)} className="shrink-0 rounded-md px-2.5 py-1 text-[12px] tnum transition-colors" style={chipStyle(c.n === ch)}>{c.n}</button>
+            ))}
+          </div>
+        </div>
+        <div className="mt-1.5 flex items-center gap-2 pb-2">
+          <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.14em] text-ink">Shloka</span>
+          <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+            {Array.from({ length: chapter?.count ?? 0 }).map((_, i) => {
+              const nv = i + 1;
+              return <button key={nv} onClick={() => pickVerse(nv)} className="shrink-0 rounded-md px-2.5 py-1 text-[12px] tnum transition-colors" style={chipStyle(nv === v)}>{nv}</button>;
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar screen-bottom">
         <div className="gutter pt-1 lg:mx-auto lg:max-w-5xl">
-          {/* two-column reading on desktop: scripture on the left, the deeper
-              layers on the right; a single stacked column on mobile */}
-          <div className="lg:flex lg:items-start lg:gap-6">
-          {/* ── The Sanskrit, in a gold-framed scripture card ── */}
-          <div className="mt-3 lg:flex-1 lg:min-w-0">
-            <div
-              className="relative overflow-hidden rounded-2xl"
-              style={{
-                background: CREAM,
-                border: `1.5px solid ${GOLD}`,
-                boxShadow: "inset 0 0 0 3px rgba(185,138,46,.16)",
-              }}
-            >
-              {/* inner rule, corner stars and a faint Om watermark */}
-              <div
-                className="pointer-events-none absolute inset-[7px] rounded-[13px]"
-                style={{ border: "1px solid rgba(185,138,46,.5)" }}
-              />
-              {(
-                ["left-[10px] top-[9px]", "right-[10px] top-[9px]", "left-[10px] bottom-[9px]", "right-[10px] bottom-[9px]"] as const
-              ).map((pos) => (
-                <span
-                  key={pos}
-                  className={`pointer-events-none absolute ${pos} text-[11px] leading-none`}
-                  style={{ color: GOLD }}
-                >
-                  ✦
-                </span>
-              ))}
-              <div className="pointer-events-none absolute inset-x-0 top-8 flex justify-center" style={{ opacity: 0.05 }}>
-                <span className="font-deva leading-none" style={{ color: GOLD, fontSize: 150 }}>ॐ</span>
+          {/* chapter line + prev/next */}
+          {chapter && (
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="min-w-0 truncate">
+                <span className="font-deva text-[12px]" style={{ color: GOLD_D }}>{chapter.deva}</span>
+                <span className="ml-2 text-[12px] text-muted">Ch {chapter.n} · {chapter.name}{chapter.meaning ? ` — ${chapter.meaning}` : ""}</span>
               </div>
-
-              {/* reference + theme masthead */}
-              <div className="relative px-5 pb-3 pt-6 text-center">
-                <div className="font-deva text-[10.5px]" style={{ color: INK_S }}>॥ श्रीमद्भगवद्गीता ॥</div>
-                <div className="mt-1.5 flex items-center justify-center gap-3">
-                  <span className="font-deva text-[14px] leading-none" style={{ color: GOLD }}>ॐ</span>
-                  <span className="text-[12px] uppercase tracking-[0.18em]" style={{ color: GOLD_D }}>{verse.ref}</span>
-                  <span className="font-deva text-[14px] leading-none" style={{ color: GOLD }}>ॐ</span>
-                </div>
-                <div className="mx-auto mt-1.5 max-w-[26ch] font-display text-[15px] leading-tight" style={{ color: INK_M }}>
-                  {verse.theme}
-                </div>
+              <div className="flex shrink-0 gap-1.5">
+                <button onClick={() => step(-1)} aria-label="Previous verse" className="grid h-8 w-8 place-items-center rounded-md surface"><CaretLeft size={14} weight="bold" className="text-ink" /></button>
+                <button onClick={() => step(1)} aria-label="Next verse" className="grid h-8 w-8 place-items-center rounded-md surface"><CaretRight size={14} weight="bold" className="text-ink" /></button>
               </div>
+            </div>
+          )}
 
-              <div className="px-4 pb-1"><GoldRule /></div>
+          {!data && <div className="py-16 text-center text-[12.5px] text-muted">Opening the Gita…</div>}
 
-              {/* the shloka itself — prominent, sacred */}
-              <div className="relative px-5 pb-5 pt-3 text-center">
-                <div className="font-deva leading-[2.05]" style={{ color: INK_M }}>
-                  {verse.deva.map((line, i) => (
-                    <div key={i} className="text-[19px] lg:text-[22px]">{line}</div>
+          {gv && (
+            <div className="lg:flex lg:items-start lg:gap-6">
+              {/* left — scripture frame + art */}
+              <div className="mt-1 lg:flex-1 lg:min-w-0">
+                <div className="relative overflow-hidden rounded-2xl" style={{ background: CREAM, border: `1.5px solid ${GOLD}`, boxShadow: "inset 0 0 0 3px rgba(185,138,46,.16)" }}>
+                  <div className="pointer-events-none absolute inset-[7px] rounded-[13px]" style={{ border: "1px solid rgba(185,138,46,.5)" }} />
+                  {(["left-[10px] top-[9px]", "right-[10px] top-[9px]", "left-[10px] bottom-[9px]", "right-[10px] bottom-[9px]"] as const).map((pos) => (
+                    <span key={pos} className={`pointer-events-none absolute ${pos} text-[11px] leading-none`} style={{ color: GOLD }}>✦</span>
                   ))}
-                </div>
-                <div className="mt-3 space-y-0.5">
-                  {verse.translit.map((line, i) => (
-                    <div key={i} className="text-[11.5px] italic leading-relaxed" style={{ color: INK_S }}>{line}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Krishna imparting the Gita to Arjuna on the field of Kurukshetra */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/gita-krishna-arjun.webp" alt="Krishna teaching Arjuna" className="mx-auto mt-5 block w-full max-w-xs object-contain lg:mt-6 lg:max-w-sm" />
-          </div>
-
-          {/* right column on desktop — everything in one common block:
-              translation, then the softer layers */}
-          <div className="mt-4 lg:mt-3 lg:flex-1 lg:min-w-0">
-          <div className="overflow-hidden rounded-2xl" style={{ background: "var(--surface)", border: "1px solid var(--line-card)" }}>
-            {/* translation */}
-            <div className="px-4 py-3.5">
-              <div className="eyebrow text-[var(--muted-2)]">Translation</div>
-              <p className="mt-1 text-[13.5px] leading-relaxed text-ink">{verse.translation}</p>
-            </div>
-            {/* the softer layers, opened one at a time */}
-            <div className="px-4 pb-0.5 pt-1.5">
-              <h3 className="section-title">Go deeper</h3>
-            </div>
-            <Layer
-              icon="solar:heart-bold-duotone"
-              title="In simple words"
-              sub="A plain, kind reading"
-              open={open === "simple"}
-              onToggle={() => toggle("simple")}
-            >
-              <p className="text-[13px] leading-relaxed text-ink">{verse.simple}</p>
-            </Layer>
-
-            <Layer
-              icon="solar:sun-bold-duotone"
-              title="Use it today"
-              sub="One thing to try"
-              open={open === "today"}
-              onToggle={() => toggle("today")}
-            >
-              <p className="text-[13px] leading-relaxed text-ink">{verse.today}</p>
-            </Layer>
-
-            <Layer
-              icon="solar:book-2-bold-duotone"
-              title="What the acharyas say"
-              sub="Shankara · Ramanuja · Madhva"
-              open={open === "acharyas"}
-              onToggle={() => toggle("acharyas")}
-            >
-              <div className="space-y-3">
-                {verse.acharyas.map((a) => (
-                  <div key={a.name} className="flex gap-3">
-                    <span
-                      className="mt-1 h-full w-[2px] shrink-0 rounded-full"
-                      style={{ background: LINE, minHeight: 34 }}
-                    />
-                    <div>
-                      <div className="text-[11.5px] font-medium" style={{ color: GOLD_D }}>{a.name}</div>
-                      <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink">{a.line}</p>
+                  <div className="pointer-events-none absolute inset-x-0 top-8 flex justify-center" style={{ opacity: 0.05 }}>
+                    <span className="font-deva leading-none" style={{ color: GOLD, fontSize: 150 }}>ॐ</span>
+                  </div>
+                  <div className="relative px-5 pb-3 pt-6 text-center">
+                    <div className="font-deva text-[10.5px]" style={{ color: INK_S }}>॥ श्रीमद्भगवद्गीता ॥</div>
+                    <div className="mt-1.5 flex items-center justify-center gap-3">
+                      <span className="font-deva text-[14px] leading-none" style={{ color: GOLD }}>ॐ</span>
+                      <span className="text-[12px] uppercase tracking-[0.18em]" style={{ color: GOLD_D }}>Chapter {ch} · Verse {v}</span>
+                      <span className="font-deva text-[14px] leading-none" style={{ color: GOLD }}>ॐ</span>
+                    </div>
+                    {(deep?.theme || chapter?.meaning) && (
+                      <div className="mx-auto mt-1.5 max-w-[26ch] font-display text-[15px] leading-tight" style={{ color: INK_M }}>{deep?.theme ?? chapter?.meaning}</div>
+                    )}
+                  </div>
+                  <div className="px-4 pb-1"><GoldRule /></div>
+                  <div className="relative px-5 pb-5 pt-3 text-center">
+                    <div className="font-deva leading-[2.05]" style={{ color: INK_M }}>
+                      {shlokLines.map((line, i) => (<div key={i} className="text-[18px] lg:text-[21px]">{line}</div>))}
+                    </div>
+                    <div className="mt-3 space-y-0.5">
+                      {translitLines.map((line, i) => (<div key={i} className="text-[11.5px] italic leading-relaxed" style={{ color: INK_S }}>{line}</div>))}
                     </div>
                   </div>
-                ))}
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/gita-krishna-arjun.webp" alt="Krishna teaching Arjuna" className="mx-auto mt-5 block w-full max-w-xs object-contain lg:mt-6 lg:max-w-sm" />
               </div>
-            </Layer>
 
-            <Layer
-              icon="solar:compass-bold-duotone"
-              title="For your life now"
-              sub="Career · relationships · mind"
-              open={open === "modern"}
-              onToggle={() => toggle("modern")}
-            >
-              <div className="space-y-2.5">
-                {verse.modern.map((m) => (
-                  <div key={m.area}>
-                    <div className="text-[11px] uppercase tracking-[0.1em] text-[var(--muted-2)]">{m.area}</div>
-                    <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink">{m.line}</p>
+              {/* right — one common block: translation (+ Hindi) + deep layers when authored */}
+              <div className="mt-4 lg:mt-1 lg:flex-1 lg:min-w-0">
+                <div className="overflow-hidden rounded-2xl" style={{ background: "var(--surface)", border: "1px solid var(--line-card)" }}>
+                  <div className="px-4 pb-2 pt-3.5">
+                    <div className="text-[15px] font-semibold text-ink">Translation</div>
+                    <p className="mt-1 text-[13.5px] leading-relaxed text-ink">{gv.e || "—"}</p>
                   </div>
-                ))}
-              </div>
-            </Layer>
-          </div>{/* /common block */}
+                  {gv.h && (
+                    <div className="px-4 pb-3.5 pt-0">
+                      <div className="text-[15px] font-semibold text-ink">अर्थ</div>
+                      <p className="mt-1 font-deva text-[13px] leading-relaxed text-ink">{gv.h}</p>
+                    </div>
+                  )}
+                  {deep && (
+                    <>
+                      <div className="px-4 pb-0.5 pt-2.5">
+                        <h3 className="section-title">Go deeper</h3>
+                      </div>
+                      <Layer icon="solar:heart-bold-duotone" title="In simple words" sub="A plain, kind reading" open={open === "simple"} onToggle={() => toggle("simple")}>
+                        <p className="text-[13px] leading-relaxed text-ink">{deep.simple}</p>
+                      </Layer>
+                      <Layer icon="solar:sun-bold-duotone" title="Use it today" sub="One thing to try" open={open === "today"} onToggle={() => toggle("today")}>
+                        <p className="text-[13px] leading-relaxed text-ink">{deep.today}</p>
+                      </Layer>
+                      <Layer icon="solar:book-2-bold-duotone" title="What the acharyas say" sub="Shankara · Ramanuja · Madhva" open={open === "acharyas"} onToggle={() => toggle("acharyas")}>
+                        <div className="space-y-3">
+                          {deep.acharyas.map((a) => (
+                            <div key={a.name} className="flex gap-3">
+                              <span className="mt-1 h-full w-[2px] shrink-0 rounded-full" style={{ background: LINE, minHeight: 34 }} />
+                              <div>
+                                <div className="text-[11.5px] font-medium" style={{ color: GOLD_D }}>{a.name}</div>
+                                <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink">{a.line}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </Layer>
+                      <Layer icon="solar:compass-bold-duotone" title="For your life now" sub="Career · relationships · mind" open={open === "modern"} onToggle={() => toggle("modern")}>
+                        <div className="space-y-2.5">
+                          {deep.modern.map((m) => (
+                            <div key={m.area}>
+                              <div className="text-[11px] uppercase tracking-[0.1em] text-[var(--muted-2)]">{m.area}</div>
+                              <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink">{m.line}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </Layer>
+                    </>
+                  )}
+                </div>
 
-          {/* closing seal */}
-          <div className="mt-5 flex flex-col items-center gap-1.5">
-            <GoldRule />
-            <div className="mt-1 font-deva text-[11px]" style={{ color: INK_S }}>॥ हरिः ॐ तत् सत् ॥</div>
-          </div>
-          </div>{/* /right column */}
-          </div>{/* /two-column row */}
+                <div className="mt-5 flex flex-col items-center gap-1.5">
+                  <GoldRule />
+                  <div className="mt-1 font-deva text-[11px]" style={{ color: INK_S }}>॥ हरिः ॐ तत् सत् ॥</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

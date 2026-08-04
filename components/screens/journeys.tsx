@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight, CaretLeft, Check, Lock } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DeityGlyph, ScreenHeader } from "../ui";
@@ -277,7 +278,7 @@ export function JourneysScreen() {
                       <DeityGlyph deity={{ id: j.deityId, color: j.accent }} size={52} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline gap-2">
-                          <span className="rounded-full px-2 py-0.5 text-[9.5px] font-medium tnum" style={{ background: j.soft, color: j.accent }}>
+                          <span className="rounded-[5px] px-2 py-0.5 text-[9.5px] font-medium tnum" style={{ background: j.soft, color: j.accent }}>
                             {j.days} days
                           </span>
                           {started && <span className="text-[10px] text-muted tnum">Day {done + 1} of {j.days}</span>}
@@ -368,18 +369,48 @@ export function JourneysScreen() {
                 <div key={day} className="flex gap-3">
                   {/* timeline rail — the node and the line to the next day */}
                   <div className="flex flex-col items-center">
-                    <span
-                      className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-medium tnum"
-                      style={
-                        isDone
-                          ? { background: journey.accent, color: "#fff" }
-                          : isCurrent
-                            ? { background: "#fff", color: journey.accent, border: `2px solid ${journey.accent}` }
-                            : { background: "var(--surface-2)", color: "var(--muted-2)", border: "1px solid var(--line)" }
-                      }
-                    >
-                      {isDone ? <Check size={13} weight="bold" /> : locked ? <Lock size={11} weight="fill" /> : day}
-                    </span>
+                    {isDone ? (
+                      /* a completed day — a polished gilded bead, gold-rimmed and glowing */
+                      <span
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-white"
+                        style={{
+                          background: `radial-gradient(circle at 34% 28%, rgba(255,255,255,0.55), ${journey.accent})`,
+                          border: "1.5px solid rgba(185,138,46,0.8)",
+                          boxShadow: `0 0 0 2px ${journey.soft}, 0 2px 7px ${journey.accent}59`,
+                        }}
+                      >
+                        <Check size={12} weight="bold" />
+                      </span>
+                    ) : isCurrent ? (
+                      /* today — a lit node with a soft breathing halo */
+                      <span className="relative grid h-8 w-8 shrink-0 place-items-center">
+                        <motion.span
+                          className="absolute inset-0 rounded-full"
+                          style={{ border: `1.5px solid ${journey.accent}` }}
+                          animate={{ scale: [1, 1.4, 1], opacity: [0.65, 0, 0.65] }}
+                          transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut" }}
+                        />
+                        <span
+                          className="grid h-7 w-7 place-items-center rounded-full text-[11px] font-medium tnum"
+                          style={{
+                            background: `radial-gradient(circle at 34% 28%, #fff, ${journey.soft})`,
+                            color: journey.accent,
+                            border: `2px solid ${journey.accent}`,
+                            boxShadow: `0 0 9px ${journey.accent}66`,
+                          }}
+                        >
+                          {day}
+                        </span>
+                      </span>
+                    ) : (
+                      /* a day yet to come */
+                      <span
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] tnum"
+                        style={{ background: "var(--surface-2)", color: "var(--muted-2)", border: "1px solid var(--line)" }}
+                      >
+                        {locked ? <Lock size={11} weight="fill" /> : day}
+                      </span>
+                    )}
                     {day < journey.dayTitles.length && (
                       <span
                         className="w-[2px] flex-1 rounded-full"
