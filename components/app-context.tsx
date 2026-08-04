@@ -13,7 +13,8 @@ export type ScreenName =
   | "panchang" | "festivals" | "library" | "vastu" | "naamkaran"
   | "puja" | "temple" | "sandesh" | "kundli" | "menu" | "category"
   | "shop" | "product" | "cart" | "checkout"
-  | "account" | "profile" | "orders" | "wallet";
+  | "account" | "profile" | "orders" | "wallet"
+  | "journeys" | "reminders" | "journal" | "gita" | "paths";
 
 export type ScreenState = { name: ScreenName; params?: Record<string, unknown> };
 export type PushPayload = { title: string; body: string; tone?: "auspicious" | "info" };

@@ -55,6 +55,8 @@ export const NAV: Record<string, NavGroup> = {
       { label: "Live Darshan", hint: "Watch the aarti as it happens", icon: "solar:eye-bold-duotone", to: "temple" },
       { label: "Chadhava", hint: "Send an offering", icon: "game-icons:flowers", to: "puja", params: { tab: "chadhava" } },
       { label: "Festivals", hint: "What is coming, and how it is kept", icon: "solar:fire-bold-duotone", to: "festivals" },
+      { label: "Journeys", hint: "21, 28 & 40-day guided sadhana", icon: "solar:flag-2-bold-duotone", to: "journeys" },
+      { label: "Divine Paths", hint: "A deity-led path to walk", icon: "solar:map-point-wave-bold-duotone", to: "paths" },
     ],
   },
   store: {
@@ -81,8 +83,11 @@ export const NAV: Record<string, NavGroup> = {
     layout: "grid",
     entries: [
       { label: "Vastu", hint: "Which direction each room wants", icon: "solar:compass-bold-duotone", to: "vastu" },
+      { label: "Gita Wisdom", hint: "Every verse, in six layers", icon: "solar:book-bookmark-bold-duotone", to: "gita" },
       { label: "Spiritual Library", hint: "Readings on practice and belief", icon: "solar:book-2-bold-duotone", to: "library" },
+      { label: "Soul Journal", hint: "A quiet page, always waiting", icon: "solar:pen-new-square-bold-duotone", to: "journal" },
       { label: "Daily Sandesh", hint: "One verse, every morning", icon: "solar:letter-bold-duotone", to: "sandesh" },
+      { label: "Reminders", hint: "Gentle temple-bell nudges", icon: "solar:bell-bold-duotone", to: "reminders" },
     ],
   },
 };

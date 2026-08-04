@@ -14,6 +14,14 @@ const SIZE = 288;
 const CENTER = SIZE / 2;
 const R = 112; // radius of the bead cord
 
+// The mala's material — sets the colour of the un-chanted beads and the guru
+// bead. Chanted beads always warm to gold regardless of material.
+const MALAS = {
+  rudraksha: { label: "Rudraksha", bead: "radial-gradient(circle at 34% 28%, #8A5A2C, #452A12 82%)", guru: "radial-gradient(circle at 34% 28%, #B98A4A, #6E4620 60%, #3E260F)" },
+  tulsi: { label: "Tulsi", bead: "radial-gradient(circle at 34% 28%, #C79B5E, #7A4A2C 82%)", guru: "radial-gradient(circle at 34% 28%, #F5E3B4, #C88131 60%, #8A5A22)" },
+  sphatik: { label: "Sphatik", bead: "radial-gradient(circle at 32% 26%, #FFFFFF, #C7D4DE 60%, #93A6B4 92%)", guru: "radial-gradient(circle at 32% 26%, #FFFFFF, #DDE7EE 55%, #A9B8C4)" },
+} as const;
+
 export function MalaScreen() {
   const { back, addJapa, japaLifetime, streak, addPunya, haptic } = useApp();
   const params = useApp().screen.params as { mantraId?: string } | undefined;
@@ -22,6 +30,8 @@ export function MalaScreen() {
   const [mantraId, setMantraId] = useState(params?.mantraId || mantras[0].id);
   const mantra = mantras.find((m) => m.id === mantraId) ?? mantras[0];
   const [target, setTarget] = useState(108);
+  const [malaType, setMalaType] = useState<keyof typeof MALAS>("tulsi");
+  const mala = MALAS[malaType];
   const [count, setCount] = useState(0);
   const [malas, setMalas] = useState(0);
   const [auto, setAuto] = useState(false);
@@ -134,7 +144,7 @@ export function MalaScreen() {
                       left: x - beadR, top: y - beadR, width: beadR * 2, height: beadR * 2,
                       background: lit
                         ? "radial-gradient(circle at 34% 28%, #FCEBC6, var(--bhagwa-soft) 52%, var(--bhagwa-deep))"
-                        : "radial-gradient(circle at 34% 28%, #C79B5E, #7A4A2C 82%)",
+                        : mala.bead,
                       boxShadow: lit ? "0 0 6px rgba(214,84,3,0.45)" : "inset 0 -1px 1px rgba(0,0,0,0.25)",
                     }}
                   />
@@ -167,7 +177,7 @@ export function MalaScreen() {
                   className="block rounded-full"
                   style={{
                     width: 24, height: 24,
-                    background: "radial-gradient(circle at 34% 28%, #F5E3B4, #C88131 60%, #8A5A22)",
+                    background: mala.guru,
                     border: "1px solid rgba(121,82,31,0.55)",
                   }}
                   animate={{ boxShadow: `0 0 ${8 + progress * 24}px ${2 + progress * 5}px rgba(200,129,49,${0.28 + progress * 0.5})` }}
@@ -201,6 +211,20 @@ export function MalaScreen() {
                   style={t === target ? { background: "var(--icon-ink)" } : undefined}
                 >
                   {t}
+                </button>
+              ))}
+            </div>
+
+            {/* mala material */}
+            <div className="mt-2 flex gap-1.5">
+              {(Object.keys(MALAS) as (keyof typeof MALAS)[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => { setMalaType(k); haptic(6); }}
+                  className={cx("rounded-[5px] px-3 py-1.5 text-[11px]", k === malaType ? "text-white" : "ring-gold text-muted")}
+                  style={k === malaType ? { background: "var(--icon-ink)" } : undefined}
+                >
+                  {MALAS[k].label}
                 </button>
               ))}
             </div>

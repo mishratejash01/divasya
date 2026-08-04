@@ -552,6 +552,17 @@ export function LibraryScreen() {
 }
 
 /* ---------------- Sandesh share card ---------------- */
+// The day's message is Divasya's single daily-wisdom surface — tag it by its
+// lineage so it reads as a rotating wisdom feed, not just a lone shloka.
+function wisdomKind(meaning = ""): string {
+  const m = meaning.toLowerCase();
+  if (m.includes("gita")) return "Gita Wisdom";
+  if (m.includes("chanakya") || m.includes("niti")) return "Guru Teaching";
+  if (m.includes("shiva")) return "Shiva Reflection";
+  if (m.includes("hanuman")) return "Hanuman Inspiration";
+  if (m.includes("krishna")) return "Krishna's Word";
+  return "Divine Wisdom";
+}
 export function SandeshScreen() {
   const { deityId, haptic, profile, lang } = useApp();
   const deity = deityById(deityId);
@@ -598,6 +609,7 @@ export function SandeshScreen() {
     <div>
       <div className="font-deva text-[13.5px] tracking-wide" style={{ color: GOLD_D }}>॥ आज का सन्देश ॥</div>
       <div className="mt-1 text-[9.5px]" style={{ color: INK_S }}>{pg ? `${pg.weekdayShort} · ${pg.tithiDisplay}` : ""}</div>
+      {shloka && <div className="mt-1.5 text-[8px] uppercase tracking-[0.18em]" style={{ color: GOLD_D }}>{wisdomKind(shloka.meaning)}</div>}
     </div>
   );
 
