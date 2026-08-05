@@ -12,6 +12,12 @@ type OrderRow = {
   order_items: { name: string; qty: number; total: number; image: string | null }[];
 };
 
+type BookingRow = {
+  id: string; kind: string; orderNo: string; product: string; packageName: string | null;
+  amount: number; paymentStatus: string; ritualStatus: string | null;
+  startingAt: string | null; mandir: string | null; image: string | null; createdAt: string;
+};
+
 const STATUS: Record<string, { label: string; tone: "good" | "wait" | "bad" }> = {
   pending: { label: "Awaiting payment", tone: "wait" },
   paid: { label: "Confirmed", tone: "good" },
@@ -21,6 +27,22 @@ const STATUS: Record<string, { label: string; tone: "good" | "wait" | "bad" }> =
   cancelled: { label: "Cancelled", tone: "bad" },
   refunded: { label: "Refunded", tone: "bad" },
 };
+
+// The ritual's journey on DevPunya's side, in the devotee's words.
+const RITUAL: Record<string, string> = {
+  pending: "Sankalp received",
+  timing_shared: "Timing shared",
+  started: "Ritual started",
+  conducted: "Ritual conducted",
+  delivered: "Video delivered",
+};
+
+function bookingStatus(b: BookingRow): { label: string; tone: "good" | "wait" | "bad" } {
+  if (b.paymentStatus === "created") return { label: "Awaiting payment", tone: "wait" };
+  if (b.paymentStatus === "failed") return { label: "Payment failed", tone: "bad" };
+  if (b.paymentStatus === "refunded") return { label: "Refunded", tone: "bad" };
+  return { label: RITUAL[b.ritualStatus ?? ""] ?? "Confirmed", tone: "good" };
+}
 
 const prettyDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -49,6 +71,7 @@ function EmptyParcel() {
 export function OrdersScreen() {
   const { back, go } = useApp();
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
+  const [bookings, setBookings] = useState<BookingRow[] | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -69,13 +92,55 @@ export function OrdersScreen() {
     })();
   }, []);
 
+  // Devotion bookings go through the refresh route, which also retries any
+  // paid-signal DevPunya missed and pulls the ritual's live status down.
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: s } = await supabaseBrowser().auth.getSession();
+        const token = s.session?.access_token;
+        if (!token) { setBookings([]); return; }
+        const r = await fetch("/api/devotion/refresh", {
+          method: "POST", headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!r.ok) throw new Error();
+        const d = (await r.json()) as { bookings: BookingRow[] };
+        setBookings(d.bookings ?? []);
+      } catch {
+        // fall back to reading our own table so the list still shows
+        try {
+          const sb = supabaseBrowser();
+          const { data: auth } = await sb.auth.getUser();
+          if (!auth.user) { setBookings([]); return; }
+          const { data } = await sb
+            .from("devpunya_bookings")
+            .select("id,kind,order_no,product_name,package_name,amount,payment_status,ritual_status,starting_at,mandir_name,image,created_at")
+            .eq("user_id", auth.user.id)
+            .order("created_at", { ascending: false })
+            .limit(30);
+          setBookings(((data ?? []) as unknown as Record<string, unknown>[]).map((b) => ({
+            id: b.id as string, kind: b.kind as string, orderNo: b.order_no as string,
+            product: b.product_name as string, packageName: (b.package_name as string) ?? null,
+            amount: Number(b.amount), paymentStatus: b.payment_status as string,
+            ritualStatus: (b.ritual_status as string) ?? null,
+            startingAt: (b.starting_at as string) ?? null,
+            mandir: (b.mandir_name as string) ?? null, image: (b.image as string) ?? null,
+            createdAt: b.created_at as string,
+          })));
+        } catch { setBookings([]); }
+      }
+    })();
+  }, []);
+
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <ScreenHeader title="My orders" onBack={back} />
 
-      {orders === null && <div className="gutter pt-6 text-center text-[11.5px] text-muted">Loading…</div>}
+      {orders === null && bookings === null && (
+        <div className="gutter pt-6 text-center text-[11.5px] text-muted">Loading…</div>
+      )}
 
-      {orders?.length === 0 && (
+      {orders?.length === 0 && bookings?.length === 0 && (
         <div className="flex flex-col items-center gutter pt-16 text-center">
           <EmptyParcel />
           <div className="mt-4 font-display text-[15px] text-ink">No orders yet</div>
@@ -86,6 +151,61 @@ export function OrdersScreen() {
             Visit the store
           </button>
         </div>
+      )}
+
+      {/* puja & chadhava bookings — a ritual's journey, not a parcel's, so the
+          status speaks in sankalp/timing/video terms. Same hairline rows. */}
+      {bookings && bookings.length > 0 && (
+        <>
+          <div className="gutter pt-2">
+            <h3 className="section-title">Puja &amp; Chadhava</h3>
+          </div>
+          {bookings.map((b, bi) => {
+            const st = bookingStatus(b);
+            return (
+              <div
+                key={b.id}
+                className="gutter py-3.5"
+                style={bi ? { borderTop: "1px solid var(--line)" } : undefined}
+              >
+                <div className="flex items-start gap-2.5">
+                  {b.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.image} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="line-clamp-2 text-[12px] font-medium leading-snug text-ink">{b.product}</div>
+                    <div className="mt-0.5 text-[10.5px] text-[var(--muted-2)]">
+                      {[b.packageName ?? undefined, b.mandir ?? undefined,
+                        b.startingAt ? prettyDate(b.startingAt) : undefined].filter(Boolean).join(" · ")}
+                    </div>
+                    <div className="mt-0.5 tnum text-[10.5px] text-[var(--muted-2)]">{b.orderNo}</div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span
+                      className={cx(
+                        "inline-block rounded-[4px] px-2 py-1 text-[10px]",
+                        st.tone === "good" ? "text-[var(--good)]" : st.tone === "bad" ? "text-[var(--avoid)]" : "text-gold"
+                      )}
+                      style={{ background: "var(--surface-2)" }}
+                    >
+                      {st.label}
+                    </span>
+                    <div className="mt-1 tnum text-[12px] text-ink">{money(b.amount)}</div>
+                  </div>
+                </div>
+                {b.paymentStatus === "paid" && (b.ritualStatus ?? "") !== "delivered" && (
+                  <div className="mt-1.5 text-[10px] text-muted">Updates and the ritual video arrive on WhatsApp.</div>
+                )}
+              </div>
+            );
+          })}
+          {(orders?.length ?? 0) > 0 && (
+            <div className="gutter pt-2">
+              <h3 className="section-title">Store</h3>
+            </div>
+          )}
+        </>
       )}
 
       {/* No card, no border around each order — just the order, with a hairline
