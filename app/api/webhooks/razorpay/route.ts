@@ -4,6 +4,10 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { markPaid } from "../../shop/verify/route";
+import { markBookingPaid } from "../../devotion/verify/route";
+
+const BOOKING_COLS =
+  "id, kind, order_no, amount, payment_status, dp_paid_notified, dp_order_id, phone, devotee_name";
 
 export const runtime = "nodejs";
 
@@ -35,15 +39,21 @@ export async function POST(req: Request) {
     id: eventId, provider: "razorpay", event_type: evt.event ?? "unknown", payload: evt,
   });
 
+  // One Razorpay order id belongs to exactly one of the two ledgers: a store
+  // order or a devotion (DevPunya) booking. Look in both, settle whichever.
   const rzpOrderId = (payment?.order_id as string) || "";
   const order = rzpOrderId
     ? (await sb.from("orders").select("id, total").eq("rzp_order_id", rzpOrderId).maybeSingle()).data
+    : null;
+  const booking = !order && rzpOrderId
+    ? (await sb.from("devpunya_bookings").select(BOOKING_COLS).eq("rzp_order_id", rzpOrderId).maybeSingle()).data
     : null;
 
   switch (evt.event) {
     case "payment.captured":
     case "order.paid": {
       if (order && payment) await markPaid(order.id, payment.id as string, order.total, payment);
+      else if (booking && payment) await markBookingPaid(booking, payment.id as string);
       break;
     }
     case "payment.failed": {
@@ -54,17 +64,30 @@ export async function POST(req: Request) {
           provider_order_id: rzpOrderId, provider_payment_id: (payment?.id as string) ?? null,
           amount: order.total, status: "failed", raw: payment,
         });
+      } else if (booking && booking.payment_status !== "paid") {
+        // never regress a paid booking on a late/failed retry event
+        await sb.from("devpunya_bookings")
+          .update({ payment_status: "failed", updated_at: new Date().toISOString() })
+          .eq("id", booking.id);
       }
       break;
     }
     case "refund.processed":
     case "refund.created": {
       const refund = evt.payload?.refund?.entity ?? null;
-      const refOrderId = (refund?.payment_id as string) || "";
-      if (refOrderId) {
-        const { data: pay } = await sb.from("payments").select("order_id").eq("provider_payment_id", refOrderId).maybeSingle();
+      const refPaymentId = (refund?.payment_id as string) || "";
+      if (refPaymentId) {
+        const { data: pay } = await sb.from("payments").select("order_id").eq("provider_payment_id", refPaymentId).maybeSingle();
         if (pay?.order_id) {
           await sb.from("orders").update({ payment_status: "refunded", status: "refunded" }).eq("id", pay.order_id);
+        } else {
+          const { data: rb } = await sb.from("devpunya_bookings")
+            .select("id").eq("rzp_payment_id", refPaymentId).maybeSingle();
+          if (rb) {
+            await sb.from("devpunya_bookings")
+              .update({ payment_status: "refunded", updated_at: new Date().toISOString() })
+              .eq("id", rb.id);
+          }
         }
       }
       break;
