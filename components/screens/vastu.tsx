@@ -26,6 +26,11 @@ import { ROOM_INFO, type RoomType } from "@/lib/vastu/data";
 const DIRS16 = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
 const ROOM_TYPES = Object.keys(ROOM_INFO) as RoomType[];
 
+// My Home, Entrance and Guru are a paid tier. The engine, tables and chat
+// route beneath them stay live; this flag only gates the UI. To launch the
+// tier, set NEXT_PUBLIC_VASTU_PREMIUM=1 in Vercel and redeploy — no code.
+const PREMIUM = process.env.NEXT_PUBLIC_VASTU_PREMIUM === "1";
+
 /* ---------------- the shared compass core (ref-based, no render storm) ---- */
 
 type CompassCore = {
@@ -229,7 +234,7 @@ function CompassTab({ rashi }: { rashi: string | null | undefined }) {
 
 /* ---------------- Lens tab (freeze a spot, get the verdict) -------------- */
 
-function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAskGuru: (seed: string) => void }) {
+function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAskGuru?: (seed: string) => void }) {
   const { haptic } = useApp();
   const c = useCompass(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -353,16 +358,18 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
 
           <div className="mt-3 flex gap-2">
             <button onClick={saveSnapshot} disabled={saved}
-              className="flex-1 rounded-2xl py-3 text-[11.5px] btn-white">
+              className={cx("flex-1 rounded-2xl py-3 text-[11.5px]", onAskGuru ? "btn-white" : "btn-saffron")}>
               {saved ? "Saved to walkthrough" : "Save this reading"}
             </button>
-            <button
-              onClick={() => onAskGuru(
-                `I froze a spot facing ${z.direction}${what ? ` where my ${ROOM_INFO[what].label.toLowerCase()} stands` : ""}. ${verdict ? `The engine says: ${verdict.label} — ${verdict.basis}` : ""} What should I understand and do?`
-              )}
-              className="flex-1 rounded-2xl py-3 text-[11.5px] btn-saffron">
-              Ask the Guru
-            </button>
+            {onAskGuru && (
+              <button
+                onClick={() => onAskGuru(
+                  `I froze a spot facing ${z.direction}${what ? ` where my ${ROOM_INFO[what].label.toLowerCase()} stands` : ""}. ${verdict ? `The engine says: ${verdict.label} — ${verdict.basis}` : ""} What should I understand and do?`
+                )}
+                className="flex-1 rounded-2xl py-3 text-[11.5px] btn-saffron">
+                Ask the Guru
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -749,19 +756,23 @@ export function VastuScreen() {
         chips={[
           { id: "compass", label: "Compass" },
           { id: "lens", label: "Lens" },
-          { id: "home", label: "My Home" },
-          { id: "entrance", label: "Entrance" },
-          { id: "guru", label: "Guru" },
+          ...(PREMIUM
+            ? [
+                { id: "home", label: "My Home" },
+                { id: "entrance", label: "Entrance" },
+                { id: "guru", label: "Guru" },
+              ]
+            : []),
         ]}
         active={tab}
         onSelect={setTab}
       />
       <div className={cx("flex-1", tab === "guru" ? "overflow-hidden" : "overflow-y-auto no-scrollbar screen-bottom")}>
         {tab === "compass" && <CompassTab rashi={profile?.rashi} />}
-        {tab === "lens" && <LensTab rashi={profile?.rashi} onAskGuru={askGuru} />}
-        {tab === "home" && <HomeTab rashi={profile?.rashi} />}
-        {tab === "entrance" && <EntranceTab />}
-        {tab === "guru" && <GuruTab seed={guruSeed} context={homeContext} />}
+        {tab === "lens" && <LensTab rashi={profile?.rashi} onAskGuru={PREMIUM ? askGuru : undefined} />}
+        {PREMIUM && tab === "home" && <HomeTab rashi={profile?.rashi} />}
+        {PREMIUM && tab === "entrance" && <EntranceTab />}
+        {PREMIUM && tab === "guru" && <GuruTab seed={guruSeed} context={homeContext} />}
       </div>
     </div>
   );
