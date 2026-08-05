@@ -132,8 +132,16 @@ export function roomVerdict(room: RoomType, zoneIdx: number): RoomVerdict {
   const clashZA = onCycle && controls(zEl, aEl); // zone drains the activity
   const support = onCycle && (aEl === zEl || produces(aEl, zEl) || produces(zEl, aEl));
 
+  // Sanctity is read off the zone's own prescriptions: a zone the texts give
+  // to pooja or meditation is sattvic. Impurity there is the gravest defect —
+  // a different principle from element conflict, and older than it.
+  const sattvic = zone.idealFor.some((s) => /pooja|meditation/i.test(s));
+
   let grade: Grade, basis: string;
-  if (proscribed && (clashAZ || clashZA)) {
+  if (proscribed && info.polluting && sattvic) {
+    grade = "severe";
+    basis = `A ${info.label.toLowerCase()} defiles ${zone.direction} (${zone.sanskrit || zone.code}), the most sattvic zone — the classical ashuddhi dosha.`;
+  } else if (proscribed && (clashAZ || clashZA)) {
     grade = "severe";
     basis = `${info.label} is classically avoided in ${zone.direction}, and its ${aEl} energy clashes with the zone's ${zEl}.`;
   } else if (proscribed) {
