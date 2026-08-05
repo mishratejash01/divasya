@@ -53,7 +53,7 @@ export type RoomType =
   | "living" | "dining" | "study" | "toilet" | "bathroom" | "store" | "staircase"
   | "water_tank" | "borewell" | "septic_tank" | "safe" | "balcony" | "garage" | "washing";
 
-export const ROOM_INFO: Record<RoomType, { label: string; element: Tattva; weight: number }> = {
+export const ROOM_INFO: Record<RoomType, { label: string; element: Tattva; weight: number; polluting?: boolean }> = {
   entrance: { label: "Main entrance", element: "space", weight: 10 },
   pooja: { label: "Pooja room", element: "space", weight: 9 },
   kitchen: { label: "Kitchen", element: "fire", weight: 9 },
@@ -63,13 +63,13 @@ export const ROOM_INFO: Record<RoomType, { label: string; element: Tattva; weigh
   living: { label: "Living room", element: "air", weight: 5 },
   dining: { label: "Dining", element: "fire", weight: 4 },
   study: { label: "Study", element: "wood", weight: 6 },
-  toilet: { label: "Toilet", element: "water", weight: 9 },
+  toilet: { label: "Toilet", element: "water", weight: 9, polluting: true },
   bathroom: { label: "Bathroom", element: "water", weight: 5 },
   store: { label: "Store room", element: "earth", weight: 3 },
   staircase: { label: "Staircase", element: "earth", weight: 5 },
   water_tank: { label: "Overhead tank", element: "water", weight: 5 },
   borewell: { label: "Borewell / underground water", element: "water", weight: 7 },
-  septic_tank: { label: "Septic tank", element: "water", weight: 7 },
+  septic_tank: { label: "Septic tank", element: "water", weight: 7, polluting: true },
   safe: { label: "Cash locker / safe", element: "metal", weight: 6 },
   balcony: { label: "Balcony / open", element: "space", weight: 3 },
   garage: { label: "Garage / parking", element: "metal", weight: 3 },
