@@ -202,7 +202,7 @@ export function MalaScreen() {
             </button>
 
             {/* target chips */}
-            <div className="mt-4 flex gap-1.5">
+            <div className="mt-5 flex justify-center gap-1.5">
               {TARGETS.map((t) => (
                 <button
                   key={t}
@@ -216,7 +216,7 @@ export function MalaScreen() {
             </div>
 
             {/* mala material */}
-            <div className="mt-2 flex gap-1.5">
+            <div className="mt-2 flex justify-center gap-1.5">
               {(Object.keys(MALAS) as (keyof typeof MALAS)[]).map((k) => (
                 <button
                   key={k}
@@ -231,7 +231,7 @@ export function MalaScreen() {
           </div>
 
           {/* all the text, gathered in one open column */}
-          <div className="mt-4 lg:mt-0 lg:flex-1">
+          <div className="mx-auto mt-5 w-full max-w-[320px] lg:mx-0 lg:mt-0 lg:max-w-none lg:flex-1">
 
             {/* the chant */}
             <div className="text-center lg:text-left">
@@ -240,8 +240,9 @@ export function MalaScreen() {
               <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13.5px]">{mantra.translit}</p>
             </div>
 
-            {/* mantra selector */}
-            <div className="mt-2.5 flex flex-wrap justify-center gap-1.5 lg:justify-start">
+            {/* mantra selector — a single scroll strip on mobile so the pills
+                never wrap into a ragged block; wraps freely on desktop */}
+            <div className="mt-3 flex gap-1.5 overflow-x-auto no-scrollbar lg:flex-wrap lg:justify-start lg:overflow-visible">
               {mantras.slice(0, 6).map((m) => {
                 const on = m.id === mantraId;
                 return (
