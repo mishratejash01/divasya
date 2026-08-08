@@ -7,6 +7,74 @@ export function cx(...a: (string | false | null | undefined)[]) {
   return a.filter(Boolean).join(" ");
 }
 
+// Curated from the supplied devotional illustration sheets. Keeping the asset
+// names here gives screens a small, consistent vocabulary instead of each one
+// inventing a new placeholder icon.
+export const ILLUSTRATION_SRC = {
+  panchang: "/illustrations/panchang-wheel.png",
+  journal: "/illustrations/journal.png",
+  sun: "/illustrations/sun.png",
+  star: "/illustrations/star.png",
+  wellness: "/illustrations/wellness.png",
+  damru: "/illustrations/damru.png",
+  eye: "/illustrations/eye.png",
+  time: "/illustrations/time.png",
+  om: "/illustrations/om.png",
+  swastik: "/illustrations/swastik.png",
+  trishul: "/illustrations/trishul.png",
+  feather: "/illustrations/feather.png",
+  flute: "/illustrations/flute.png",
+  bael: "/illustrations/bael.png",
+  datura: "/illustrations/datura.png",
+  tulsi: "/illustrations/tulsi.png",
+  hibiscus: "/illustrations/hibiscus.png",
+  lotus: "/illustrations/lotus.png",
+  palash: "/illustrations/palash.png",
+  serpent: "/illustrations/serpent.png",
+  sitara: "/illustrations/sitara.png",
+  gada: "/illustrations/gada.png",
+  chakra: "/illustrations/chakra.png",
+  nandi: "/illustrations/nandi.png",
+  conch: "/illustrations/conch.png",
+  mushak: "/illustrations/mushak.png",
+  modak: "/illustrations/modak.png",
+  diya: "/illustrations/diya.png",
+  rudraksha: "/illustrations/rudraksha.png",
+  bow: "/illustrations/bow.png",
+  lion: "/illustrations/lion.png",
+  vel: "/illustrations/vel.png",
+  elephant: "/illustrations/elephant.png",
+  ganesha: "/illustrations/ganesha.png",
+  namamShiva: "/illustrations/namam-shiva.png",
+  namamKrishna: "/illustrations/namam-krishna.png",
+  namamVaishnav: "/illustrations/namam-vaishnav.png",
+  namamVishnu: "/illustrations/namam-vishnu.png",
+} as const;
+export type DevotionalIllustrationName = keyof typeof ILLUSTRATION_SRC;
+
+export function DevotionalIllustration({
+  name,
+  alt = "",
+  className,
+  priority = false,
+}: {
+  name: DevotionalIllustrationName;
+  alt?: string;
+  className?: string;
+  priority?: boolean;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={ILLUSTRATION_SRC[name]}
+      alt={alt}
+      aria-hidden={alt ? undefined : true}
+      className={cx("object-contain", className)}
+      loading={priority ? "eager" : "lazy"}
+    />
+  );
+}
+
 /**
  * Divasya logomark — celestial mandala inspired by the brand's symbol:
  * concentric rings, moon phases and the intuitive eye with radiating light.

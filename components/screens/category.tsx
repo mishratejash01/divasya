@@ -1,7 +1,7 @@
 "use client";
 
 import { useApp } from "../app-context";
-import { ScreenHeader } from "../ui";
+import { DevotionalIllustration, ScreenHeader } from "../ui";
 import { Iconify } from "../iconify";
 import { NAV } from "../nav-map";
 
@@ -37,7 +37,11 @@ export function CategoryScreen() {
             >
               {/* On the wide desktop rows the mark scales up so the tile does not
                   read as a small icon marooned in a long bar. */}
-              <Iconify icon={t.icon} className="shrink-0 text-[var(--icon-ink)] text-[19px] lg:text-[30px]" />
+              {t.art ? (
+                <DevotionalIllustration name={t.art} alt="" className="h-11 w-11 shrink-0 lg:h-16 lg:w-16" />
+              ) : (
+                <Iconify icon={t.icon} className="shrink-0 text-[var(--icon-ink)] text-[19px] lg:text-[30px]" />
+              )}
               <span className="min-w-0 flex-1 truncate text-[12px] font-medium leading-tight text-ink lg:text-[14.5px]">{t.label}</span>
             </button>
           ))}
@@ -50,7 +54,11 @@ export function CategoryScreen() {
               onClick={() => { haptic(6); go(t.to, t.params); }}
               className="flex w-full items-center gap-3 py-3 text-left transition-opacity hover:opacity-70"
             >
-              <Iconify icon={t.icon} width={22} height={22} className="shrink-0 text-[var(--icon-ink)]" />
+              {t.art ? (
+                <DevotionalIllustration name={t.art} alt="" className="h-9 w-9 shrink-0" />
+              ) : (
+                <Iconify icon={t.icon} width={22} height={22} className="shrink-0 text-[var(--icon-ink)]" />
+              )}
               <span className="flex-1 text-[13px] font-medium leading-tight text-ink">{t.label}</span>
             </button>
           ))}

@@ -2,17 +2,17 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { CaretRight } from "@phosphor-icons/react";
-import { IconEye, IconGanesha, IconLotus, IconMala, IconShare } from "../icons";
+import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER } from "../nav-map";
-import { DeityPortrait, Logomark, cx } from "../ui";
+import { DeityPortrait, DevotionalIllustration, Logomark, cx, type DevotionalIllustrationName } from "../ui";
 import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
 import {
-  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope, getTemples,
+  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
   Festival, Article, Shloka,
 } from "@/lib/catalog";
-import { TEMPLES } from "@/lib/demo";
+import { LIVE_TEMPLES } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 
 let firedOnce = false;
@@ -20,6 +20,7 @@ let firedOnce = false;
 type Block = {
   label: string;
   icon: string;
+  art?: DevotionalIllustrationName;
   to: ScreenName;
   params?: Record<string, unknown>;
 };
@@ -135,7 +136,7 @@ export function HomeScreen() {
   // backend content
   const festivals = useCatalog<Festival[]>(() => getUpcomingFestivals(3), []);
   const library = useCatalog<Article[]>(getLibrary, []);
-  const temples = useCatalog(getTemples, TEMPLES);
+  const temples = LIVE_TEMPLES;
   const [shloka, setShloka] = useState<Shloka | null>(null);
   const [horoscope, setHoroscope] = useState<string | null>(null);
   // Track settled-ness separately: an empty reading is a real answer, and
@@ -337,15 +338,15 @@ export function HomeScreen() {
           onClick={() => go("panchang")}
           className="flex w-full items-center gap-2.5 rounded-2xl surface px-3 py-2.5 text-left"
         >
-          {/* A cloud stands in for the plain status dot — still tinted shubh
-              green or avoid-red so the reading is legible at a glance. */}
-          <Iconify
-            icon="solar:cloud-bold-duotone"
-            width={20}
-            height={20}
-            className="shrink-0"
-            style={{ color: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)" }}
-          />
+          {/* The supplied Panchang wheel gives this live reading its own visual
+              anchor; the small dot still carries the current status. */}
+          <span className="relative grid h-10 w-10 shrink-0 place-items-center" aria-hidden>
+            <DevotionalIllustration name="panchang" className="h-10 w-10" priority />
+            <span
+              className="absolute bottom-0.5 right-0.5 h-2 w-2 rounded-full"
+              style={{ background: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)", border: "1px solid var(--surface)" }}
+            />
+          </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
               <span className="truncate text-[12.5px] text-ink">
@@ -472,7 +473,7 @@ export function HomeScreen() {
       >
         {/* Bare mark, set large. The tinted disc behind it was a container
             doing nothing but shrinking the thing it contained. */}
-        <IconMala size={38} className="shrink-0 text-[var(--bhagwa)]" strokeWidth={1.4} />
+        <DevotionalIllustration name="rudraksha" alt="Rudraksha" className="h-11 w-11 shrink-0" />
         <div className="flex-1">
           <div className="text-[12.5px] font-medium text-ink">{streak}-day japa streak</div>
           <div className="text-[11px] text-muted">{japaToday} chants today · keep it alive</div>
@@ -513,7 +514,11 @@ export function HomeScreen() {
                       : "flex flex-col items-center gap-2 px-1 py-3 lg:py-3.5"
                   )}
                 >
-                  <Iconify icon={b.icon} className="shrink-0 text-[var(--icon-ink)] h-[22px] w-[22px] lg:h-[24px] lg:w-[24px]" />
+                  {b.art ? (
+                    <DevotionalIllustration name={b.art} alt="" className="h-9 w-9 shrink-0 lg:h-11 lg:w-11" />
+                  ) : (
+                    <Iconify icon={b.icon} className="shrink-0 text-[var(--icon-ink)] h-[22px] w-[22px] lg:h-[24px] lg:w-[24px]" />
+                  )}
                   <span
                     className={cx(
                       "text-[11px] leading-tight text-ink lg:text-[13px]",

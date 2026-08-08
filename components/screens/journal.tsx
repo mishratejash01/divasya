@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useApp } from "../app-context";
-import { ScreenHeader } from "../ui";
+import { DevotionalIllustration, ScreenHeader } from "../ui";
 import { Iconify } from "../iconify";
 
 type Entry = { id: string; date: string; prompt: string; text: string };
@@ -156,6 +156,11 @@ export function JournalScreen() {
             </span>
 
             <div className="relative px-4 pb-4 pt-4 lg:px-5 lg:pt-5">
+              <DevotionalIllustration
+                name="journal"
+                className="pointer-events-none absolute -right-3 -top-4 h-28 w-36 opacity-[0.09]"
+                priority
+              />
               <div className="flex items-center gap-2">
                 <Iconify
                   icon={morning ? "solar:sun-2-bold-duotone" : "solar:moon-stars-bold-duotone"}

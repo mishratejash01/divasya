@@ -2,7 +2,7 @@
 
 import { CaretRight } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { Logomark, ScreenHeader, cx } from "../ui";
+import { DevotionalIllustration, Logomark, ScreenHeader, cx } from "../ui";
 import { Iconify } from "../iconify";
 import { NAV, NAV_ORDER } from "../nav-map";
 
@@ -36,7 +36,11 @@ export function MenuScreen() {
                   onClick={() => { haptic(6); go(e.to, e.params); }}
                   className="flex w-full items-center gap-3 border-t border-[var(--line)] px-1 py-2.5 text-left transition-colors first:border-t-0 hover:bg-[var(--surface-2)]"
                 >
-                  <Iconify icon={e.icon} width={19} height={19} className="shrink-0 text-[var(--icon-ink)]" />
+                  {e.art ? (
+                    <DevotionalIllustration name={e.art} alt="" className="h-9 w-9 shrink-0" />
+                  ) : (
+                    <Iconify icon={e.icon} width={19} height={19} className="shrink-0 text-[var(--icon-ink)]" />
+                  )}
                   <span className="flex-1 text-[12.5px] font-medium leading-tight text-ink">{e.label}</span>
                   <CaretRight size={13} className="shrink-0 text-ink" />
                 </button>

@@ -217,9 +217,6 @@ strong { font-weight: 500; }
    real handset, so the whole app column is scaled up a step. zoom reflows (it
    is not a transform), so nothing overflows sideways and the fixed tab bar
    still sits on the viewport edge. Desktop is untouched. */
-@media (max-width: 1023px) {
-  main { zoom: 1.16; }
-}
 
 /* Desktop reads as a dashboard, not a phone blown up: the page stays white,
    the white cards separate with a soft shadow and their hairline, and the
