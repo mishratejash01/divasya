@@ -2,6 +2,8 @@
 // the client sends about money is ignored, so a tampered cart cannot underpay.
 import { supabaseAdmin } from "@/lib/supabase";
 import { rzpConfigured, rzpKeyId, createRazorpayOrder, newOrderNo } from "@/lib/razorpay";
+import { spendForOrder, refundSpend } from "@/lib/wallet";
+import { markPaid } from "../verify/route";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
   const uid = await userFromToken(req);
   if (!uid) return Response.json({ error: "sign_in_required" }, { status: 401 });
 
-  const body = (await req.json().catch(() => ({}))) as { addressId?: string; coupon?: string };
+  const body = (await req.json().catch(() => ({}))) as { addressId?: string; coupon?: string; useWallet?: boolean };
   const sb = supabaseAdmin();
 
   // 1. the cart, priced from the products table (never from the client)
@@ -91,7 +93,26 @@ export async function POST(req: Request) {
     }))
   );
 
-  // 5. hand it to Razorpay
+  // 5. the wallet first, if asked — a real ledger debit tied to this order
+  //    number, capped at the live balance. If the gateway remainder later
+  //    fails or is abandoned, the webhook / stale-release returns it.
+  let walletApplied = 0;
+  if (body.useWallet) {
+    walletApplied = await spendForOrder(sb, uid, order.order_no, total, `Paid toward order ${order.order_no}`);
+    if (walletApplied > 0) await sb.from("orders").update({ wallet_applied: walletApplied }).eq("id", order.id);
+  }
+  const remainder = total - walletApplied;
+
+  // fully covered by the wallet: settled right here, no gateway at all
+  if (remainder === 0) {
+    await markPaid(order.id, null, walletApplied, null, "wallet");
+    return Response.json({
+      paid: true, orderId: order.id, orderNo: order.order_no,
+      amount: total, walletApplied, currency: "INR",
+    });
+  }
+
+  // 6. hand the remainder to Razorpay
   if (!rzpConfigured()) {
     return Response.json({
       error: "payment_not_configured",
@@ -100,19 +121,21 @@ export async function POST(req: Request) {
   }
 
   try {
-    const rzp = await createRazorpayOrder(total, order.order_no, { order_no: order.order_no, user_id: uid });
+    const rzp = await createRazorpayOrder(remainder, order.order_no, { order_no: order.order_no, user_id: uid });
     await sb.from("orders").update({ rzp_order_id: rzp.id }).eq("id", order.id);
     await sb.from("payments").insert({
       order_id: order.id, provider: "razorpay", provider_order_id: rzp.id,
-      amount: total, status: "created",
+      amount: remainder, status: "created",
     });
     return Response.json({
       orderId: order.id, orderNo: order.order_no,
-      amount: total, currency: "INR",
+      amount: remainder, total, walletApplied, currency: "INR",
       rzpOrderId: rzp.id, keyId: rzpKeyId(),
     });
   } catch (e) {
     await sb.from("orders").update({ status: "cancelled" }).eq("id", order.id);
+    // the gateway never opened — give the wallet portion back immediately
+    if (walletApplied > 0) await refundSpend(sb, order.order_no, "Returned — payment could not start");
     return Response.json({ error: "gateway_error", detail: (e as Error).message }, { status: 502 });
   }
 }
