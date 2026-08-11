@@ -222,6 +222,19 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
   const [wish, setWish] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [orderNo, setOrderNo] = useState("");
+  // the real wallet balance — offered as payment when there is any
+  const [walletBal, setWalletBal] = useState(0);
+  const [useWallet, setUseWallet] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await authToken();
+        if (!token) return;
+        const r = await fetch("/api/wallet/summary", { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) setWalletBal(((await r.json()) as { balance: number }).balance);
+      } catch { /* wallet row simply doesn't show */ }
+    })();
+  }, []);
 
   // full detail (with add-ons) on open — the listing card travels light
   useEffect(() => {
@@ -276,6 +289,7 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
           sankalp: members.map((m) => ({ name: m.name.trim(), gotra: m.gotra.trim() || "—" })),
           phone,
           wish: wish.trim() || undefined,
+          useWallet,
         }),
       });
       const d = await r.json();
@@ -288,6 +302,16 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
           devpunya_error: "The temple partner could not take the booking just now. Nothing was charged.",
         };
         throw new Error(friendly[d.error as string] ?? "The booking could not start. Nothing was charged.");
+      }
+
+      // the wallet covered the whole sankalp — settled server-side, no gateway
+      if (d.paid) {
+        setOrderNo(d.orderNo);
+        setStep("done");
+        bell(540, 1.8, 0.2);
+        haptic([15, 40, 15]);
+        logEvent("puja_booking", { item: p.name, price: d.amount, kind: apiKind, wallet: true });
+        return;
       }
 
       const ok = await loadRazorpay();
@@ -448,11 +472,25 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
               </div>
             </div>
 
+            {/* wallet — a real ledger debit, offered only when there is balance */}
+            {walletBal > 0 && (
+              <button onClick={() => setUseWallet((v) => !v)}
+                className="mt-3 flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left"
+                style={{ background: "var(--surface-2)" }}>
+                <span className={cx("grid h-5 w-5 shrink-0 place-items-center rounded-md border", useWallet ? "btn-saffron border-transparent" : "")}
+                  style={{ borderColor: useWallet ? "transparent" : "var(--line-strong)" }}>
+                  {useWallet && <Check size={12} />}
+                </span>
+                <span className="min-w-0 flex-1 text-[11.5px] text-ink">Use Divasya Wallet</span>
+                <span className="tnum shrink-0 text-[11.5px] text-muted">{money(walletBal)} available</span>
+              </button>
+            )}
+
             {err && <div className="mt-3 rounded-xl surface p-2.5 text-[11.5px] leading-relaxed text-ink">{err}</div>}
 
             <button onClick={pay} disabled={!detail}
               className={cx("mt-4 w-full rounded-2xl py-3.5 text-[12.5px]", ready ? "btn-saffron" : "btn-white")}>
-              Proceed to Pay {money(total)}
+              Proceed to Pay {money(useWallet ? Math.max(0, total - walletBal) : total)}
             </button>
             <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted">
               <ShieldCheck size={12} className="text-[var(--good)]" /> UPI · Cards · Netbanking · secured by Razorpay
