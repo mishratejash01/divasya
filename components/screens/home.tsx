@@ -9,7 +9,7 @@ import { DeityPortrait, DevotionalIllustration, Logomark, cx, type DevotionalIll
 import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
 import {
-  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
+  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope, getTemples,
   Festival, Article, Shloka,
 } from "@/lib/catalog";
 import { LIVE_TEMPLES } from "@/lib/demo";
@@ -136,7 +136,9 @@ export function HomeScreen() {
   // backend content
   const festivals = useCatalog<Festival[]>(() => getUpcomingFestivals(3), []);
   const library = useCatalog<Article[]>(getLibrary, []);
-  const temples = LIVE_TEMPLES;
+  // Temples come from the DB like everything else; LIVE_TEMPLES is only the
+  // offline fallback seed. The list is filtered below to verified streams.
+  const allTemples = useCatalog(getTemples, LIVE_TEMPLES);
   const [shloka, setShloka] = useState<Shloka | null>(null);
   const [horoscope, setHoroscope] = useState<string | null>(null);
   // Track settled-ness separately: an empty reading is a real answer, and
@@ -225,6 +227,9 @@ export function HomeScreen() {
       : t.youtubeId
       ? `https://www.youtube.com/embed/${t.youtubeId}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0`
       : null;
+
+  // Only temples with a verified stream appear under a Live heading.
+  const temples = allTemples.filter((t) => darshanEmbed(t) !== null);
 
   const darshanVertical = temples.length > 0 && (
     <section className="rounded-2xl surface p-2.5">
