@@ -48,6 +48,20 @@ export function CheckoutScreen() {
   const [stage, setStage] = useState<"form" | "paying" | "done">("form");
   const [orderNo, setOrderNo] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  // the real wallet balance, from the ledger — offered when it can help
+  const [walletBal, setWalletBal] = useState(0);
+  const [useWallet, setUseWallet] = useState(false);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: s } = await supabaseBrowser().auth.getSession();
+        const token = s.session?.access_token;
+        if (!token) return;
+        const r = await fetch("/api/wallet/summary", { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) setWalletBal(((await r.json()) as { balance: number }).balance);
+      } catch { /* wallet row simply doesn't show */ }
+    })();
+  }, []);
 
   // Prefill from the last address used, then from the profile name.
   useEffect(() => {
@@ -90,7 +104,7 @@ export function CheckoutScreen() {
       const r = await fetch("/api/shop/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ addressId: saved?.id ?? addr.id }),
+        body: JSON.stringify({ addressId: saved?.id ?? addr.id, useWallet }),
       });
       const d = await r.json();
 
@@ -101,6 +115,14 @@ export function CheckoutScreen() {
         return;
       }
       if (!r.ok) throw new Error(d.item ? `${d.item} is out of stock.` : "Could not start the payment.");
+
+      // the wallet covered everything — settled server-side, no gateway
+      if (d.paid) {
+        setOrderNo(d.orderNo);
+        setStage("done");
+        cart.refresh();
+        return;
+      }
 
       const ok = await loadRazorpay();
       if (!ok) throw new Error("Payment window could not load. Check your connection.");
@@ -207,11 +229,31 @@ export function CheckoutScreen() {
               <span className="text-muted">Delivery</span>
               <span className="tnum text-ink">{shipping === 0 ? "Free" : money(shipping)}</span>
             </div>
+            {useWallet && walletBal > 0 && (
+              <div className="mt-1 flex items-center justify-between py-0.5 text-[11.5px]">
+                <span className="text-muted">Divasya Wallet</span>
+                <span className="tnum" style={{ color: "var(--good)" }}>− {money(Math.min(walletBal, total))}</span>
+              </div>
+            )}
             <div className="mt-1.5 flex items-center justify-between border-t pt-1.5" style={{ borderColor: "var(--line)" }}>
               <span className="text-[12px] text-ink">To pay</span>
-              <span className="tnum text-[15px] text-ink">{money(total)}</span>
+              <span className="tnum text-[15px] text-ink">{money(useWallet ? Math.max(0, total - walletBal) : total)}</span>
             </div>
           </div>
+
+          {/* wallet — a real ledger debit, offered only when there is balance */}
+          {walletBal > 0 && (
+            <button onClick={() => setUseWallet((v) => !v)}
+              className="mt-2 flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-2.5 text-left"
+              style={{ background: "var(--surface-2)" }}>
+              <span className={cx("grid h-5 w-5 shrink-0 place-items-center rounded-md border", useWallet ? "btn-saffron border-transparent" : "")}
+                style={{ borderColor: useWallet ? "transparent" : "var(--line-strong)" }}>
+                {useWallet && <CheckCircle size={12} weight="fill" />}
+              </span>
+              <span className="min-w-0 flex-1 text-[11.5px] text-ink">Use Divasya Wallet</span>
+              <span className="tnum shrink-0 text-[11.5px] text-muted">{money(walletBal)} available</span>
+            </button>
+          )}
         </section>
       </div>
 
@@ -227,7 +269,7 @@ export function CheckoutScreen() {
           disabled={stage === "paying" || cart.lines.length === 0}
           className={cx("w-full rounded-2xl py-3 text-[12.5px]", ready ? "btn-saffron" : "btn-white")}
         >
-          {stage === "paying" ? "Opening payment…" : `Pay ${money(total)}`}
+          {stage === "paying" ? "Opening payment…" : `Pay ${money(useWallet ? Math.max(0, total - walletBal) : total)}`}
         </button>
         <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted">
           <ShieldCheck size={12} className="text-[var(--good)]" /> UPI · Cards · Netbanking · secured by Razorpay
