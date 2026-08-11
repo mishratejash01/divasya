@@ -9,10 +9,9 @@ import { DeityPortrait, DevotionalIllustration, Logomark, cx, type DevotionalIll
 import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
 import {
-  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope, getTemples,
+  useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
   Festival, Article, Shloka,
 } from "@/lib/catalog";
-import { LIVE_TEMPLES } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 
 let firedOnce = false;
@@ -136,9 +135,29 @@ export function HomeScreen() {
   // backend content
   const festivals = useCatalog<Festival[]>(() => getUpcomingFestivals(3), []);
   const library = useCatalog<Article[]>(getLibrary, []);
-  // Temples come from the DB like everything else; LIVE_TEMPLES is only the
-  // offline fallback seed. The list is filtered below to verified streams.
-  const allTemples = useCatalog(getTemples, LIVE_TEMPLES);
+  // Live darshan comes from /api/darshan with proof attached: only temples
+  // whose stream verified minutes ago appear, with the exact live video id.
+  const [temples, setTemples] = useState<
+    { id: string; name: string; deity: string | null; location: string | null; videoId: string }[]
+  >([]);
+  useEffect(() => {
+    let on = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/darshan");
+        if (!r.ok) return;
+        const d = (await r.json()) as {
+          temples: { id: string; name: string; deity: string | null; location: string | null; live: { videoId: string } | null }[];
+        };
+        if (on) setTemples(
+          d.temples.filter((t) => t.live).map((t) => ({
+            id: t.id, name: t.name, deity: t.deity, location: t.location, videoId: t.live!.videoId,
+          }))
+        );
+      } catch { /* the rail simply doesn't render */ }
+    })();
+    return () => { on = false; };
+  }, []);
   const [shloka, setShloka] = useState<Shloka | null>(null);
   const [horoscope, setHoroscope] = useState<string | null>(null);
   // Track settled-ness separately: an empty reading is a real answer, and
@@ -221,15 +240,8 @@ export function HomeScreen() {
     </div>
   );
 
-  const darshanEmbed = (t: { youtubeChannel?: string; youtubeId?: string }) =>
-    t.youtubeChannel
-      ? `https://www.youtube.com/embed/live_stream?channel=${t.youtubeChannel}&autoplay=1&mute=1&playsinline=1&controls=0&rel=0`
-      : t.youtubeId
-      ? `https://www.youtube.com/embed/${t.youtubeId}?autoplay=1&mute=1&playsinline=1&controls=0&rel=0`
-      : null;
-
-  // Only temples with a verified stream appear under a Live heading.
-  const temples = allTemples.filter((t) => darshanEmbed(t) !== null);
+  // a live thumbnail is far lighter than a live iframe — the player embeds
+  const darshanThumb = (videoId: string) => `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
   const darshanVertical = temples.length > 0 && (
     <section className="rounded-2xl surface p-2.5">
@@ -254,15 +266,12 @@ export function HomeScreen() {
                 className="relative h-12 w-[74px] shrink-0 overflow-hidden rounded-lg"
                 style={{ background: `linear-gradient(125deg, ${from}, ${to})` }}
               >
-                {darshanEmbed(t) && (
-                  <iframe className="pointer-events-none absolute inset-0 h-full w-full" src={darshanEmbed(t)!} title={t.name} allow="autoplay; encrypted-media" loading="lazy" />
-                )}
-                {/* Live is a claim — only made when a real stream exists */}
-                {darshanEmbed(t) && (
-                  <span className="absolute left-1 top-1 z-10 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
-                    <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
-                  </span>
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={darshanThumb(t.videoId)} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                {/* everyone in this rail was proven live minutes ago */}
+                <span className="absolute left-1 top-1 z-10 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
+                  <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
+                </span>
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[12px] font-medium text-ink">{t.name}</div>
@@ -568,20 +577,18 @@ export function HomeScreen() {
                       className="relative h-[112px] w-[172px] shrink-0 overflow-hidden rounded-xl text-left"
                       style={{ background: `linear-gradient(152deg, ${from}, ${to})` }}
                     >
-                      {darshanEmbed(t) && (
-                        <iframe className="pointer-events-none absolute inset-0 h-full w-full" src={darshanEmbed(t)!} title={t.name} allow="autoplay; encrypted-media" loading="lazy" />
-                      )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={darshanThumb(t.videoId)} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                       {/* scrim so the name holds against the lighter top stop */}
                       <span
                         className="pointer-events-none absolute inset-0"
                         style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 58%)" }}
                       />
-                      {darshanEmbed(t) && (
-                        <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[3px] px-1.5 py-[2px] text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
-                          <span className="h-1 w-1 rounded-full bg-white" />
-                          Live
-                        </span>
-                      )}
+                      {/* everyone in this rail was proven live minutes ago */}
+                      <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[3px] px-1.5 py-[2px] text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
+                        <span className="h-1 w-1 rounded-full bg-white" />
+                        Live
+                      </span>
                       <span className="absolute inset-x-0 bottom-0 p-2.5">
                         <span className="block truncate text-[12.5px] font-medium text-white">{t.name}</span>
                         <span className="mt-0.5 block truncate text-[10px] text-white/75">
