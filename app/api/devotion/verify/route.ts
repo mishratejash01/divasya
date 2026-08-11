@@ -33,15 +33,17 @@ export async function POST(req: Request) {
   const sb = supabaseAdmin();
   const { data: booking } = await sb
     .from("devpunya_bookings")
-    .select("id, kind, order_no, amount, payment_status, dp_paid_notified, dp_order_id, phone, devotee_name")
+    .select("id, kind, order_no, amount, payment_status, dp_paid_notified, dp_order_id, phone, devotee_name, wallet_applied")
     .eq("rzp_order_id", razorpay_order_id)
     .maybeSingle();
   if (!booking) return Response.json({ ok: false, error: "unknown_booking" }, { status: 404 });
 
   // The signature proves the message; Razorpay itself confirms the money.
+  // The gateway owes the total MINUS whatever the wallet already covered.
+  const gatewayDue = Math.round((Number(booking.amount) - Number(booking.wallet_applied ?? 0)) * 100);
   const pay = await fetchPayment(razorpay_payment_id);
   const paidPaise = Number(pay?.amount ?? 0);
-  if (pay && paidPaise !== Math.round(Number(booking.amount) * 100))
+  if (pay && paidPaise !== gatewayDue)
     return Response.json({ ok: false, error: "amount_mismatch" }, { status: 400 });
 
   await markBookingPaid(booking as BookingRow, razorpay_payment_id);
