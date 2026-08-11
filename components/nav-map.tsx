@@ -42,7 +42,8 @@ export const NAV: Record<string, NavGroup> = {
       { label: "AI Jyotishi", hint: "Ask anything about your chart", icon: "solar:eye-scan-bold-duotone", art: "eye", to: "ai", params: { mode: "jyotishi" } },
       { label: "Talk to Devta", hint: "Sit with your ishta devta", icon: "mdi:temple-hindu", art: "om", to: "ai", params: { mode: "deity" } },
       { label: "Panchang", hint: "Tithi, nakshatra and the day's muhurat", icon: "solar:calendar-bold-duotone", art: "panchang", to: "panchang" },
-      { label: "Consult", hint: "Speak to a real astrologer", icon: "solar:chat-round-dots-bold-duotone", art: "sun", to: "consult" },
+      // Consult (talk to a real astrologer) is hidden for now — the screen and
+      // route stay; re-add this entry to bring it back.
       { label: "Naamkaran", hint: "Name a child by its birth nakshatra", icon: "solar:smile-circle-bold-duotone", art: "time", to: "naamkaran" },
     ],
   },

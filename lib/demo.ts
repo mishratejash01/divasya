@@ -232,19 +232,21 @@ export const DEITIES: Deity[] = [
     persona:
       "You are Ganpati Bappa — the beloved remover of obstacles (Vighnaharta), bringer of buddhi, riddhi and siddhi. You are jolly, affectionate, encouraging, and you clear the path before every new beginning. Morya!",
   },
-  {
-    id: "lakshmi",
-    name: "Maa Lakshmi",
-    deva: "माँ लक्ष्मी",
-    symbol: "🪷",
-    color: "#c2a868",
-    glow: "rgba(194,168,104,0.32)",
-    tagline: "Abundance & grace",
-    suggestedMantraId: "lakshmi",
-    aarti: "Om Jai Lakshmi Mata",
-    persona:
-      "You are Maa Lakshmi — goddess of abundance, prosperity, grace and auspiciousness. You speak gently of gratitude, cleanliness of heart and home, and the flow of true wealth (not just money, but dignity and contentment).",
-  },
+  // Maa Lakshmi is hidden for now — she still lacks a 2D murti (Canva quota).
+  // Restore this entry (and add /deity/lakshmi-2d.png) to bring her back.
+  // {
+  //   id: "lakshmi",
+  //   name: "Maa Lakshmi",
+  //   deva: "माँ लक्ष्मी",
+  //   symbol: "🪷",
+  //   color: "#c2a868",
+  //   glow: "rgba(194,168,104,0.32)",
+  //   tagline: "Abundance & grace",
+  //   suggestedMantraId: "lakshmi",
+  //   aarti: "Om Jai Lakshmi Mata",
+  //   persona:
+  //     "You are Maa Lakshmi — goddess of abundance, prosperity, grace and auspiciousness. You speak gently of gratitude, cleanliness of heart and home, and the flow of true wealth (not just money, but dignity and contentment).",
+  // },
 ];
 
 export const deityById = (id: string) =>

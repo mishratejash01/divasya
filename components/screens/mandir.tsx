@@ -273,14 +273,14 @@ function Temple({ deity, lit }: { deity: God; lit: boolean }) {
         </g>
       </svg>
 
-      {/* the deity murti, seated in the sanctum */}
-      <motion.div
-        className="absolute left-1/2 top-[63%] -translate-x-1/2 -translate-y-1/2"
-        animate={{ y: [0, -4, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        style={{ filter: lit ? "drop-shadow(0 0 26px rgba(200,129,49,0.6))" : "drop-shadow(0 4px 12px rgba(122,58,20,0.22))" }}>
-        <span className="lg:hidden"><DeityMurti deity={deity} size={104} /></span>
-        <span className="hidden lg:block"><DeityMurti deity={deity} size={122} /></span>
-      </motion.div>
+      {/* the deity murti, standing on the singhasan. Static, no drop-shadow —
+          only a soft golden aura when the diya is lit, so darshan still pays off. */}
+      <div
+        className="absolute left-1/2 top-[62%] -translate-x-1/2 -translate-y-1/2"
+        style={{ filter: lit ? "drop-shadow(0 0 22px rgba(200,129,49,0.5))" : "none" }}>
+        <span className="lg:hidden"><DeityMurti deity={deity} size={112} /></span>
+        <span className="hidden lg:block"><DeityMurti deity={deity} size={132} /></span>
+      </div>
 
       {/* diyas on the plinth */}
       {[28, 72].map((x) => (
@@ -304,20 +304,23 @@ function Temple({ deity, lit }: { deity: God; lit: boolean }) {
 }
 
 /**
- * The murti in the sanctum — a framed portrait from /deity/<id>.jpg with a slight
- * corner radius (not a full circle). Falls back to a quiet ॐ tile when the image
- * is missing, so the sanctum is never a broken frame.
+ * The murti in the sanctum. Prefers the 2D illustrated statue at
+ * /deity/<id>-2d.png — a transparent, portrait cut-out that stands in the
+ * sanctum like a real idol — then falls back to the photographic /deity/<id>.jpg
+ * (framed), then a quiet ॐ tile, so the sanctum is never a broken frame.
  */
 function DeityMurti({ deity, size }: { deity: God; size: number }) {
-  const [failed, setFailed] = useState(false);
+  const candidates = [`/deity/${deity.id}-2d.png`, `/deity/${deity.id}.jpg`];
+  const [i, setI] = useState(0);
   const ref = useRef<HTMLImageElement>(null);
-  useEffect(() => { setFailed(false); }, [deity.id]);
+  useEffect(() => { setI(0); }, [deity.id]);
   // catch a 404 that lands before hydration attaches the onError handler
   useEffect(() => {
     const el = ref.current;
-    if (el && el.complete && el.naturalWidth === 0) setFailed(true);
+    if (el && el.complete && el.naturalWidth === 0) setI((n) => n + 1);
   });
-  if (failed)
+  const src = candidates[i];
+  if (!src)
     return (
       <span className="grid place-items-center rounded-[12px] font-deva text-[var(--bhagwa-deep)]"
         style={{
@@ -326,10 +329,13 @@ function DeityMurti({ deity, size }: { deity: God; size: number }) {
           border: "1px solid var(--line-gold)",
         }}>ॐ</span>
     );
+  const is2d = src.endsWith("-2d.png");
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img ref={ref} key={deity.id} src={`/deity/${deity.id}.jpg`} alt={deity.name} onError={() => setFailed(true)}
-      className="rounded-[12px] object-cover"
-      style={{ width: size, height: size, border: "1px solid var(--line-gold)" }} />
+    <img ref={ref} key={src} src={src} alt={deity.name} onError={() => setI((n) => n + 1)}
+      className={is2d ? "object-contain object-bottom" : "rounded-[12px] object-cover"}
+      style={is2d
+        ? { width: Math.round(size * 1.12), height: Math.round(size * 1.5) }
+        : { width: size, height: size, border: "1px solid var(--line-gold)" }} />
   );
 }

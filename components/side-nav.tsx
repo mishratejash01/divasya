@@ -23,7 +23,7 @@ const ITEMS: NavItem[] = [
   { id: "festival", label: "Festivals", icon: "solar:fire-bold-duotone", to: "festivals", match: ["festivals"] },
   { id: "tools", label: "Guides", icon: "solar:notebook-bold-duotone", to: "category", params: { id: "tools" }, match: [], cat: "tools" },
   { id: "shop", label: "Store", icon: "solar:cart-large-2-bold-duotone", to: "shop", match: ["shop", "product", "cart", "checkout"] },
-  { id: "consult", label: "Consult", icon: "solar:chat-round-dots-bold-duotone", to: "consult", match: ["consult", "consultChat"] },
+  // Consult is hidden for now — restore this row to bring the rail entry back.
   { id: "menu", label: "Menu", icon: "solar:hamburger-menu-linear", to: "menu", match: ["menu"] },
 ];
 

@@ -104,15 +104,42 @@ export function MalaScreen() {
         }
       />
 
-      {/* Everything lives inside one section block — mala on the left, all the
-          text on the right — so the screen reads as a single card, not sprawl. */}
+      {/* One centered column, not stretched on desktop: the mantra you are
+          telling, the mala itself as the hero, then settings, tally, controls. */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="gutter py-3" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}>
-          <section className="rounded-2xl surface ring-gold p-3.5 lg:p-5">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:gap-8">
+          <section className="mx-auto w-full max-w-[430px] rounded-2xl surface ring-gold p-4 lg:max-w-[520px] lg:p-6">
 
-          {/* the mala — the tap surface, sitting to the left on desktop */}
-          <div className="relative flex flex-col items-center lg:shrink-0">
+            {/* the mantra — what you're chanting, named first */}
+            <div className="text-center">
+              <p className="eyebrow text-muted">{mantra.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")} · {mantra.deity}</p>
+              <p className="mt-1.5 font-deva text-[21px] leading-snug text-ink lg:text-[26px]">{mantra.deva}</p>
+              <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13px]">{mantra.translit}</p>
+            </div>
+
+            {/* mantra selector — a single scroll strip so pills never wrap ragged.
+                justify-start keeps the selected pill flush-left and unclipped. */}
+            <div className="mt-3 flex justify-start gap-1.5 overflow-x-auto no-scrollbar lg:flex-wrap lg:justify-center">
+              {mantras.slice(0, 6).map((m) => {
+                const on = m.id === mantraId;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => { setMantraId(m.id); reset(); }}
+                    className={cx(
+                      "shrink-0 rounded-[5px] px-3 py-1 text-[11px] transition-colors lg:text-[12.5px]",
+                      on ? "text-white" : "ring-gold text-muted"
+                    )}
+                    style={on ? { background: "var(--icon-ink)" } : undefined}
+                  >
+                    {m.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")}
+                  </button>
+                );
+              })}
+            </div>
+
+          {/* the mala — the tap surface, the hero of the screen */}
+          <div className="relative mt-5 flex flex-col items-center">
             <button onClick={chant} className="relative active:scale-[0.99]" style={{ width: SIZE, height: SIZE }}>
               {/* the cord — a soft wooden thread the beads are strung on */}
               <svg width={SIZE} height={SIZE} className="absolute inset-0 -rotate-90">
@@ -228,41 +255,10 @@ export function MalaScreen() {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* all the text, gathered in one open column */}
-          <div className="mx-auto mt-5 w-full max-w-[320px] lg:mx-0 lg:mt-0 lg:max-w-none lg:flex-1">
-
-            {/* the chant */}
-            <div className="text-center lg:text-left">
-              <p className="eyebrow text-muted">{mantra.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")} · {mantra.deity}</p>
-              <p className="mt-1.5 font-deva text-[20px] leading-snug text-ink lg:text-[24px]">{mantra.deva}</p>
-              <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13.5px]">{mantra.translit}</p>
-            </div>
-
-            {/* mantra selector — a single scroll strip on mobile so the pills
-                never wrap into a ragged block; wraps freely on desktop */}
-            <div className="mt-3 flex gap-1.5 overflow-x-auto no-scrollbar lg:flex-wrap lg:justify-start lg:overflow-visible">
-              {mantras.slice(0, 6).map((m) => {
-                const on = m.id === mantraId;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => { setMantraId(m.id); reset(); }}
-                    className={cx(
-                      "shrink-0 rounded-[5px] px-2.5 py-1 text-[11px] transition-colors lg:px-3 lg:py-1.5 lg:text-[12.5px]",
-                      on ? "text-white" : "ring-gold text-muted"
-                    )}
-                    style={on ? { background: "var(--icon-ink)" } : undefined}
-                  >
-                    {m.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")}
-                  </button>
-                );
-              })}
-            </div>
+          </div>{/* /mala */}
 
             {/* japa tally — hairline row, no boxes */}
-            <div className="mt-4 grid grid-cols-3 border-y py-2.5 text-center" style={{ borderColor: "var(--line)" }}>
+            <div className="mt-5 grid grid-cols-3 border-y py-2.5 text-center" style={{ borderColor: "var(--line)" }}>
               {stats.map(([l, v], i) => (
                 <div key={l} className={cx("px-1", i > 0 && "border-l")} style={i > 0 ? { borderColor: "var(--line)" } : undefined}>
                   <div className="font-display text-[18px] tnum text-ink lg:text-[22px]">{v}</div>
@@ -272,15 +268,13 @@ export function MalaScreen() {
             </div>
 
             {/* controls */}
-            <div className="mt-3 flex gap-2.5 lg:ml-auto lg:max-w-xs">
+            <div className="mt-3 flex gap-2.5">
               <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center rounded-2xl py-3 text-[12.5px] font-medium text-white lg:text-[13.5px]" style={{ background: "var(--icon-ink)" }}>
                 {auto ? "Pause auto-jaap" : "Hands-free auto-jaap"}
               </button>
               <button onClick={reset} className="grid h-[48px] w-[48px] place-items-center rounded-2xl btn-ghost lg:h-[52px] lg:w-[52px]"><ArrowCounterClockwise size={16} /></button>
             </div>
-            <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-muted lg:text-left">Chant at your own pace — Divasya keeps the count for you, even with the screen off.</p>
-          </div>
-            </div>
+            <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-muted">Chant at your own pace — Divasya keeps the count for you, even with the screen off.</p>
           </section>
         </div>
       </div>

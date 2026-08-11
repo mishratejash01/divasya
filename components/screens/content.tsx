@@ -392,7 +392,7 @@ export function FestivalsScreen() {
             </div>
           </>
         )}
-        <button onClick={() => go("puja")} className="mt-4 block w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron lg:max-w-sm">{lang === "hi" ? "पंडित से यह पूजा बुक करें" : "Book this Puja with a Pandit"}</button>
+        <button onClick={() => go("puja")} className="mt-4 block w-full rounded-2xl py-3.5 text-[12.5px] btn-saffron lg:max-w-sm">{lang === "hi" ? "हमारे पंडितों के साथ पूजाएँ देखें" : "Explore Pujas with Our Pandits"}</button>
       </div>
 
       {rest.length > 0 && (
