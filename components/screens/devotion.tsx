@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bank, Check, MapPin, Play, Plus, ShieldCheck, VideoCamera, X } from "@phosphor-icons/react";
+import { Bank, Check, MagnifyingGlass, MapPin, Play, Plus, ShieldCheck, VideoCamera, X } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { ScreenHeader, FilterChips, cx } from "../ui";
-import { LIVE_TEMPLES } from "@/lib/demo";
-import { useCatalog, getTemples } from "@/lib/catalog";
 import { logEvent } from "@/lib/chat";
 import { supabaseBrowser } from "@/lib/supabase";
 import { money } from "@/lib/shop";
@@ -55,24 +53,6 @@ async function authToken(): Promise<string | null> {
   return data.session?.access_token ?? null;
 }
 
-/**
- * The darshan stream URL for a temple, or null if none is configured.
- *
- * Always muted: a temple stream that starts talking the moment someone opens
- * the screen is the wrong first impression, and browsers refuse to autoplay
- * unmuted anyway. playsinline keeps iOS from throwing it fullscreen.
- *
- * To switch a temple on, set youtube_channel (a UC… id) on its row — that
- * follows the channel's current broadcast, so it survives each new stream.
- * youtube_id is only for a fixed recording. Neither is seeded locally: a wrong
- * id renders "Video unavailable", which is worse than the honest placeholder.
- */
-function darshanEmbed(t: { youtubeChannel?: string; youtubeId?: string }): string | null {
-  const p = "autoplay=1&mute=1&playsinline=1&rel=0";
-  if (t.youtubeChannel) return `https://www.youtube.com/embed/live_stream?channel=${t.youtubeChannel}&${p}`;
-  if (t.youtubeId) return `https://www.youtube.com/embed/${t.youtubeId}?${p}`;
-  return null;
-}
 
 /* ---------------- Puja + Chadhava (real DevPunya bookings) ---------------- */
 export function PujaScreen() {
@@ -530,155 +510,294 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
 }
 
 /* ---------------- Temple directory + Live Darshan ---------------- */
+// The directory is served by /api/darshan with proof attached: a temple shows
+// Live only when the server verified its stream minutes ago, and the player
+// embeds the exact live video id — never the flaky channel alias. Lists use
+// thumbnails, not six live iframes; only the player runs one.
+
+type DarshanTemple = {
+  id: string; name: string; deity: string | null; deityGroup: string;
+  location: string | null; timing: string | null; about: string | null; tint: string;
+  live: { videoId: string; embeddable: boolean; watchUrl: string; label: string } | null;
+};
+
+const DARSHAN_CHIPS = [
+  { id: "all", label: "All" },
+  { id: "live", label: "Live now" },
+  { id: "shiva", label: "Shiva" },
+  { id: "vishnu", label: "Krishna & Vishnu" },
+  { id: "devi", label: "Devi" },
+  { id: "ganga", label: "Ganga Aarti" },
+];
+
+const thumb = (videoId: string) => `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+function LivePill({ small }: { small?: boolean }) {
+  return (
+    <span
+      className={cx(
+        "flex items-center gap-1 rounded-[3px] font-medium text-white",
+        small ? "px-1.5 py-0.5 text-[9px]" : "px-2 py-1 text-[10px]"
+      )}
+      style={{ background: "#E11900" }}
+    >
+      <span className={cx("rounded-full bg-white", small ? "h-1 w-1" : "h-1.5 w-1.5")} /> Live
+    </span>
+  );
+}
+
 export function TempleScreen() {
   const { back, go, haptic } = useApp();
-  // Live Darshan lists only temples whose stream is verified — the DB rows
-  // that carry a channel. The curated LIVE_TEMPLES seed is the offline
-  // fallback, not the source: verify a channel by setting it on the temple row.
-  const temples = useCatalog(getTemples, LIVE_TEMPLES).filter((t) => darshanEmbed(t) !== null);
-  const [open, setOpen] = useState<string | null>(null);
+  const [dir, setDir] = useState<DarshanTemple[] | null>(null);
+  const [loadErr, setLoadErr] = useState(false);
+  const [q, setQ] = useState("");
+  const [chip, setChip] = useState("all");
+  const [openId, setOpenId] = useState<string | null>(null);
 
+  const load = useCallback(async (fresh = false) => {
+    try {
+      const r = await fetch(`/api/darshan${fresh ? "?fresh=1" : ""}`);
+      if (!r.ok) throw new Error();
+      const d = (await r.json()) as { temples: DarshanTemple[] };
+      setDir(d.temples);
+      setLoadErr(false);
+    } catch {
+      setLoadErr(true);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  // While a player is open, re-prove every minute. If the stream drops, the
+  // banner below the player offers the next live temple — the auto-switch.
+  useEffect(() => {
+    if (!openId) return;
+    const t = setInterval(() => load(), 60000);
+    return () => clearInterval(t);
+  }, [openId, load]);
+
+  const open = openId ? (dir ?? []).find((x) => x.id === openId) ?? null : null;
+
+  /* ---------------- player ---------------- */
   if (open) {
-    const t = temples.find((x) => x.id === open) ?? temples[0];
+    const alsoLive = (dir ?? []).filter((x) => x.live && x.id !== open.id).slice(0, 4);
+    const suggestion = !open.live ? alsoLive[0] : null;
     return (
       <div className="flex h-full flex-col">
         <ScreenHeader
-          title={t.name}
-          sub={`${t.deity} · ${t.location}`}
-          onBack={() => setOpen(null)}
+          title={open.name}
+          sub={[open.deity ?? undefined, open.location ?? undefined].filter(Boolean).join(" · ")}
+          onBack={() => setOpenId(null)}
         />
-
-        {/* On desktop the player sits on the left and everything else — place,
-            timing, about and the actions — stacks in a column on the right. */}
         <div className="flex-1 overflow-y-auto no-scrollbar screen-bottom lg:flex lg:items-start lg:gap-6 lg:px-4 lg:pt-5">
-          {/* live player */}
-          <div className="relative mt-3 gutter-m overflow-hidden rounded-2xl lg:mx-0 lg:mt-0 lg:min-w-0 lg:flex-1" style={{ aspectRatio: "16/9", background: "var(--surface-2)" }}>
-            {darshanEmbed(t) ? (
+          <div className="relative mt-3 gutter-m overflow-hidden rounded-2xl lg:mx-0 lg:mt-0 lg:min-w-0 lg:flex-1"
+            style={{ aspectRatio: "16/9", background: "var(--surface-2)" }}>
+            {open.live && open.live.embeddable && (
               <iframe
                 className="h-full w-full"
-                src={darshanEmbed(t)!}
-                title={`${t.name} live darshan`}
-                // mute=1 in the URL *and* autoplay in allow — browsers block
-                // autoplay outright unless the player is muted.
+                src={`https://www.youtube.com/embed/${open.live.videoId}?autoplay=1&mute=1&playsinline=1&rel=0`}
+                title={`${open.name} live darshan`}
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowFullScreen
                 referrerPolicy="strict-origin-when-cross-origin"
               />
-            ) : (
-              // No stream yet — say so, rather than pulsing a decorative glyph.
-              <div className="relative grid h-full w-full place-items-center">
-                <span className="text-[11.5px] text-muted">Darshan begins at {t.timing}</span>
-                <div className="absolute inset-0 shimmer opacity-25" />
+            )}
+            {open.live && !open.live.embeddable && (
+              // the temple streams, but blocks in-app playback — hand off honestly
+              <div className="grid h-full w-full place-items-center p-4 text-center"
+                style={{ background: `linear-gradient(160deg, ${open.tint}55, ${open.tint}22)` }}>
+                <div>
+                  <div className="text-[12.5px] text-ink">This temple streams on YouTube only.</div>
+                  <a href={open.live.watchUrl} target="_blank" rel="noreferrer"
+                    className="mt-3 inline-block rounded-full px-4 py-2 text-[11.5px] btn-saffron">
+                    Watch live on YouTube
+                  </a>
+                </div>
               </div>
             )}
-            {/* The Live badge is a claim — it appears only when a real stream
-                is configured. No viewer counts: an embed exposes none, and an
-                invented number is worse than silence. */}
-            {darshanEmbed(t) && (
-              <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-[4px] px-2 py-1 text-[10px] font-medium text-white" style={{ background: "#E11900" }}>
-                <span className="h-1.5 w-1.5 rounded-full bg-white" /> Live
+            {!open.live && (
+              <div className="grid h-full w-full place-items-center p-4 text-center">
+                <div>
+                  <div className="text-[12.5px] text-ink">Not streaming right now</div>
+                  {open.timing && <div className="mt-1 text-[11px] text-gold">{open.timing}</div>}
+                </div>
+                <div className="absolute inset-0 shimmer opacity-20" />
               </div>
+            )}
+            {open.live && (
+              <div className="absolute left-3 top-3"><LivePill /></div>
             )}
           </div>
 
           <div className="gutter pt-4 lg:mx-0 lg:w-[340px] lg:shrink-0 lg:px-0 lg:pt-0">
-            {/* Title + live status — the phone shows the name in its header, so
-                this repeats only on desktop. */}
-            <div className="hidden lg:block">
-              <h1 className="font-display text-[19px] leading-snug text-ink">{t.name}</h1>
-              <div className="mt-2 flex items-center gap-2 text-[11.5px]">
-                {darshanEmbed(t) ? (
-                  <span className="flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-white" style={{ background: "#E11900" }}>
-                    <span className="h-1 w-1 rounded-full bg-white" /> LIVE
-                  </span>
-                ) : (
-                  <span className="text-muted">Darshan begins at {t.timing}</span>
-                )}
-              </div>
-            </div>
+            {/* stream dropped or never on — offer the next live darshan */}
+            {suggestion && (
+              <button
+                onClick={() => { haptic(8); setOpenId(suggestion.id); }}
+                className="mb-3 flex w-full items-center gap-2.5 rounded-xl p-2.5 text-left"
+                style={{ background: "var(--surface-2)", border: "1px solid var(--line-gold)" }}
+              >
+                <LivePill small />
+                <span className="min-w-0 flex-1 truncate text-[11.5px] text-ink">
+                  {suggestion.name} is live now — switch darshan
+                </span>
+                <Play size={13} className="shrink-0 text-[var(--bhagwa)]" />
+              </button>
+            )}
 
-            {/* Deity and place. */}
-            <div className="mt-3 lg:mt-4">
-              <div className="text-[12.5px] font-medium text-ink">{t.deity}</div>
-              <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted"><MapPin size={11} /> {t.location}</div>
+            <div className="text-[12.5px] font-medium text-ink">{open.deity}</div>
+            <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted">
+              <MapPin size={11} /> {open.location}
             </div>
-
-            {/* Description panel — schedule then the note, the way a video page
-                keeps its details in one box. */}
             <div className="mt-3 rounded-xl p-3" style={{ background: "var(--surface-2)" }}>
-              <div className="text-[11px] font-medium text-gold">Aarti · {t.timing}</div>
-              <p className="mt-1.5 text-[12px] leading-relaxed text-ink-dim">{t.about}</p>
+              {open.timing && <div className="text-[11px] font-medium text-gold">{open.timing}</div>}
+              {open.about && <p className="mt-1.5 text-[12px] leading-relaxed text-ink-dim">{open.about}</p>}
             </div>
 
-            <button onClick={() => go("puja")} className="mt-4 w-full rounded-2xl py-3.5 text-center text-[12.5px] btn-saffron">Book Puja / Chadhava here</button>
-            <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 w-full rounded-2xl py-3 text-center text-[11.5px] btn-ghost">Offer a virtual Shankhnaad</button>
+            {/* other proven-live darshans, one tap away */}
+            {alsoLive.length > (suggestion ? 1 : 0) && (
+              <div className="mt-4">
+                <h3 className="section-title mb-1.5">Also live now</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {alsoLive.map((t) => (
+                    <button key={t.id} onClick={() => { haptic(6); setOpenId(t.id); }} className="text-left">
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg"
+                        style={{ background: `linear-gradient(150deg, ${t.tint}66, ${t.tint}22)` }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={thumb(t.live!.videoId)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        <span className="absolute left-1.5 top-1.5"><LivePill small /></span>
+                      </div>
+                      <div className="mt-1 truncate text-[11px] font-medium text-ink">{t.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button onClick={() => go("puja")} className="mt-4 w-full rounded-2xl py-3.5 text-center text-[12.5px] btn-saffron">
+              Book Puja / Chadhava here
+            </button>
+            <button onClick={() => { conch(); haptic([14, 40, 14]); }} className="mt-2 w-full rounded-2xl py-3 text-center text-[11.5px] btn-ghost">
+              Offer a virtual Shankhnaad
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
+  /* ---------------- directory ---------------- */
+  const list = (dir ?? []).filter((t) => {
+    if (chip === "live" && !t.live) return false;
+    if (chip !== "all" && chip !== "live" && t.deityGroup !== chip) return false;
+    const needle = q.trim().toLowerCase();
+    if (needle) {
+      const hay = `${t.name} ${t.deity ?? ""} ${t.location ?? ""}`.toLowerCase();
+      if (!hay.includes(needle)) return false;
+    }
+    return true;
+  });
+  const liveList = list.filter((t) => t.live);
+  const restList = list.filter((t) => !t.live);
+
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+    <div className="flex h-full flex-col">
       <ScreenHeader title="Live Temple Darshan" onBack={back} />
-      {/* On a phone, a 16:9 thumbnail with the name beside it, like a video
-          list. On desktop it opens up into a gallery of large stream cards —
-          full-width frames with a play badge — that fill the page. */}
-      <div className="gutter pt-1 lg:pt-3">
-        <div>
-          {temples.map((t) => {
-            const embed = darshanEmbed(t);
-            return (
-            <button
-              key={t.id}
-              onClick={() => { setOpen(t.id); haptic(8); }}
-              className="flex w-full items-center gap-3 py-2.5 text-left transition-opacity hover:opacity-80 lg:gap-6 lg:py-4"
-            >
-              <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-lg lg:w-[360px]" style={{ background: `linear-gradient(160deg, ${t.grad[0]}33, ${t.grad[0]}14)` }}>
-                {embed ? (
-                  // The live stream plays right in the card; the click still opens
-                  // the full player, so the iframe itself ignores the pointer.
-                  <iframe
-                    className="pointer-events-none h-full w-full"
-                    src={embed}
-                    title={`${t.name} live darshan`}
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    loading="lazy"
-                  />
-                ) : (
-                  <>
-                    <div className="grid h-full w-full place-items-center" style={{ color: "var(--bhagwa-deep)" }}>
-                      <Bank size={22} className="lg:hidden" />
-                      <Bank size={46} className="hidden lg:block" />
-                    </div>
-                    {/* play badge on the placeholder, desktop only */}
-                    <div className="absolute inset-0 hidden place-items-center lg:grid">
-                      <span className="grid h-12 w-12 place-items-center rounded-full" style={{ background: "rgba(0,0,0,0.34)" }}>
-                        <Play size={18} weight="fill" className="ml-0.5 text-white" />
-                      </span>
-                    </div>
-                  </>
-                )}
-                {embed ? (
-                  <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-[3px] px-1.5 py-0.5 text-[9px] font-medium text-white lg:left-2.5 lg:top-2.5 lg:text-[10.5px]" style={{ background: "#E11900" }}>
-                    <span className="h-1 w-1 rounded-full bg-white" />Live
-                  </span>
-                ) : (
-                  <span className="absolute left-1.5 top-1.5 rounded-[3px] bg-black/45 px-1.5 py-0.5 text-[9px] font-medium text-white lg:left-2.5 lg:top-2.5 lg:text-[10.5px]">
-                    Darshan {t.timing.replace(/^Aarti\s*/i, "")}
-                  </span>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[12.5px] font-semibold text-ink lg:text-[17px]">{t.name}</div>
-                <div className="truncate text-[10.5px] text-muted lg:mt-1 lg:text-[12.5px]">{t.location} · {t.deity}</div>
-                <div className="text-[10px] text-gold lg:mt-1 lg:text-[12px]">{t.timing}</div>
-              </div>
-            </button>
-            );
-          })}
-        </div>
+
+      {/* search — name, deity or city */}
+      <div className="gutter-m flex items-center gap-2 rounded-2xl px-3 py-2 surface">
+        <MagnifyingGlass size={14} className="shrink-0 text-muted" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search temple, deity or city…"
+          className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink outline-none placeholder:text-muted"
+        />
+        {q && (
+          <button onClick={() => setQ("")} aria-label="Clear search" className="shrink-0 text-muted"><X size={13} /></button>
+        )}
+      </div>
+
+      <FilterChips chips={DARSHAN_CHIPS} active={chip} onSelect={setChip} />
+
+      <div className="flex-1 overflow-y-auto no-scrollbar screen-bottom">
+        {dir === null && !loadErr && (
+          <div className="gutter pt-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="mb-2.5 h-20 w-full rounded-xl shimmer" style={{ background: "var(--surface-2)" }} />
+            ))}
+          </div>
+        )}
+
+        {loadErr && (
+          <div className="gutter pt-8 text-center">
+            <div className="text-[12.5px] text-ink">The darshan directory could not load.</div>
+            <button onClick={() => load(true)} className="mt-3 rounded-full px-4 py-2 text-[11.5px] btn-saffron">Try again</button>
+          </div>
+        )}
+
+        {dir && list.length === 0 && (
+          <div className="gutter pt-8 text-center text-[11.5px] text-muted">
+            {chip === "live" ? "No verified live streams at this moment. Aarti hours bring them back." : "Nothing matches. Try another name or filter."}
+          </div>
+        )}
+
+        {/* proven live right now — thumbnails, not iframes */}
+        {liveList.length > 0 && (
+          <div className="gutter pt-2">
+            <h3 className="section-title mb-1.5">Live now</h3>
+            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+              {liveList.map((t) => (
+                <button key={t.id} onClick={() => { haptic(8); setOpenId(t.id); }} className="text-left">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-xl"
+                    style={{ background: `linear-gradient(150deg, ${t.tint}66, ${t.tint}22)` }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={thumb(t.live!.videoId)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <span className="absolute left-1.5 top-1.5"><LivePill small /></span>
+                    {!t.live!.embeddable && (
+                      <span className="absolute bottom-1.5 right-1.5 rounded-[3px] bg-black/55 px-1.5 py-0.5 text-[8.5px] text-white">on YouTube</span>
+                    )}
+                  </div>
+                  <div className="mt-1 truncate text-[12px] font-medium text-ink">{t.name}</div>
+                  <div className="truncate text-[10px] text-muted">{[t.deity ?? undefined, t.location ?? undefined].filter(Boolean).join(" · ")}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* the rest of the mandir directory, with honest timings */}
+        {restList.length > 0 && (
+          <div className="gutter pt-3">
+            <h3 className="section-title mb-1">Darshan schedule</h3>
+            <div>
+              {restList.map((t, i) => (
+                <button
+                  key={t.id}
+                  onClick={() => { haptic(6); setOpenId(t.id); }}
+                  className="flex w-full items-center gap-3 py-2.5 text-left"
+                  style={i ? { borderTop: "1px solid var(--line)" } : undefined}
+                >
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+                    style={{ background: `linear-gradient(150deg, ${t.tint}44, ${t.tint}14)`, color: "var(--bhagwa-deep)" }}>
+                    <Bank size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[12.5px] font-medium text-ink">{t.name}</div>
+                    <div className="truncate text-[10.5px] text-muted">{[t.deity ?? undefined, t.location ?? undefined].filter(Boolean).join(" · ")}</div>
+                  </div>
+                  {t.timing && <div className="shrink-0 text-right text-[10px] text-gold">{t.timing}</div>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {dir && (
+          <p className="gutter pb-2 pt-4 text-[9.5px] leading-relaxed text-[var(--muted-2)]">
+            Live appears only for streams verified in the last few minutes. Temples switch to their
+            best available source automatically.
+          </p>
+        )}
       </div>
     </div>
   );
