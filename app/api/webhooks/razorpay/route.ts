@@ -5,6 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { markPaid } from "../../shop/verify/route";
 import { markBookingPaid } from "../../devotion/verify/route";
+import { creditTopup, refundSpend } from "@/lib/wallet";
 
 const BOOKING_COLS =
   "id, kind, order_no, amount, payment_status, dp_paid_notified, dp_order_id, phone, devotee_name";
@@ -39,14 +40,17 @@ export async function POST(req: Request) {
     id: eventId, provider: "razorpay", event_type: evt.event ?? "unknown", payload: evt,
   });
 
-  // One Razorpay order id belongs to exactly one of the two ledgers: a store
-  // order or a devotion (DevPunya) booking. Look in both, settle whichever.
+  // One Razorpay order id belongs to exactly one of three ledgers: a store
+  // order, a devotion (DevPunya) booking, or a wallet top-up. Settle whichever.
   const rzpOrderId = (payment?.order_id as string) || "";
   const order = rzpOrderId
-    ? (await sb.from("orders").select("id, total").eq("rzp_order_id", rzpOrderId).maybeSingle()).data
+    ? (await sb.from("orders").select("id, total, order_no, wallet_applied").eq("rzp_order_id", rzpOrderId).maybeSingle()).data
     : null;
   const booking = !order && rzpOrderId
     ? (await sb.from("devpunya_bookings").select(BOOKING_COLS).eq("rzp_order_id", rzpOrderId).maybeSingle()).data
+    : null;
+  const topup = !order && !booking && rzpOrderId
+    ? (await sb.from("wallet_topups").select("id, user_id, order_no, amount, status").eq("rzp_order_id", rzpOrderId).maybeSingle()).data
     : null;
 
   switch (evt.event) {
@@ -54,6 +58,7 @@ export async function POST(req: Request) {
     case "order.paid": {
       if (order && payment) await markPaid(order.id, payment.id as string, order.total, payment);
       else if (booking && payment) await markBookingPaid(booking, payment.id as string);
+      else if (topup && payment) await creditTopup(sb, topup, payment.id as string);
       break;
     }
     case "payment.failed": {
@@ -64,11 +69,16 @@ export async function POST(req: Request) {
           provider_order_id: rzpOrderId, provider_payment_id: (payment?.id as string) ?? null,
           amount: order.total, status: "failed", raw: payment,
         });
+        // the wallet portion of a failed purchase goes straight back
+        await refundSpend(sb, order.order_no, "Returned — payment failed");
       } else if (booking && booking.payment_status !== "paid") {
         // never regress a paid booking on a late/failed retry event
         await sb.from("devpunya_bookings")
           .update({ payment_status: "failed", updated_at: new Date().toISOString() })
           .eq("id", booking.id);
+        await refundSpend(sb, booking.order_no, "Returned — payment failed");
+      } else if (topup && topup.status !== "paid") {
+        await sb.from("wallet_topups").update({ status: "failed" }).eq("id", topup.id);
       }
       break;
     }
@@ -80,13 +90,16 @@ export async function POST(req: Request) {
         const { data: pay } = await sb.from("payments").select("order_id").eq("provider_payment_id", refPaymentId).maybeSingle();
         if (pay?.order_id) {
           await sb.from("orders").update({ payment_status: "refunded", status: "refunded" }).eq("id", pay.order_id);
+          const { data: ro } = await sb.from("orders").select("order_no").eq("id", pay.order_id).maybeSingle();
+          if (ro) await refundSpend(sb, ro.order_no, "Returned — order refunded");
         } else {
           const { data: rb } = await sb.from("devpunya_bookings")
-            .select("id").eq("rzp_payment_id", refPaymentId).maybeSingle();
+            .select("id, order_no").eq("rzp_payment_id", refPaymentId).maybeSingle();
           if (rb) {
             await sb.from("devpunya_bookings")
               .update({ payment_status: "refunded", updated_at: new Date().toISOString() })
               .eq("id", rb.id);
+            await refundSpend(sb, rb.order_no, "Returned — booking refunded");
           }
         }
       }
