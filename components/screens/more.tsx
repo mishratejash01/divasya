@@ -7,6 +7,7 @@ import { useApp } from "../app-context";
 import { Iconify } from "../iconify";
 import { Logomark, ScreenHeader } from "../ui";
 import { rashiLabel } from "@/lib/astro";
+import { supabaseBrowser } from "@/lib/supabase";
 
 /**
  * The menu used to carry fourteen entries across three sections — Astrology,
@@ -25,8 +26,21 @@ function prettyDob(iso: string) {
 }
 
 export function MoreScreen() {
-  const { back, go, haptic, profile, user, logout, wallet } = useApp();
+  const { back, go, haptic, profile, user, logout } = useApp();
   const [shared, setShared] = useState(false);
+  // The real balance, from the wallet ledger — never the old client-side field.
+  const [balance, setBalance] = useState<number | null>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: s } = await supabaseBrowser().auth.getSession();
+        const token = s.session?.access_token;
+        if (!token) return;
+        const r = await fetch("/api/wallet/summary", { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) setBalance(((await r.json()) as { balance: number }).balance);
+      } catch { /* tile shows the wallet link without a number */ }
+    })();
+  }, []);
 
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
@@ -91,7 +105,9 @@ export function MoreScreen() {
               <Iconify icon="solar:wallet-bold-duotone" width={24} height={24} className="shrink-0 text-[var(--icon-ink)]" />
               <div className="min-w-0 flex-1">
                 <div className="text-[10.5px] leading-none text-muted">Divasya Wallet</div>
-                <div className="mt-1 text-[17px] font-medium leading-none text-ink tnum">₹{wallet.toLocaleString("en-IN")}</div>
+                <div className="mt-1 text-[17px] font-medium leading-none text-ink tnum">
+                  {balance === null ? "Open wallet" : `₹${balance.toLocaleString("en-IN")}`}
+                </div>
               </div>
               <span className="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium btn-saffron">Add money</span>
             </button>
