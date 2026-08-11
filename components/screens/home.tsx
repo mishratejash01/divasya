@@ -252,9 +252,12 @@ export function HomeScreen() {
                 {darshanEmbed(t) && (
                   <iframe className="pointer-events-none absolute inset-0 h-full w-full" src={darshanEmbed(t)!} title={t.name} allow="autoplay; encrypted-media" loading="lazy" />
                 )}
-                <span className="absolute left-1 top-1 z-10 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
-                  <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
-                </span>
+                {/* Live is a claim — only made when a real stream exists */}
+                {darshanEmbed(t) && (
+                  <span className="absolute left-1 top-1 z-10 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
+                    <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
+                  </span>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[12px] font-medium text-ink">{t.name}</div>
@@ -568,10 +571,12 @@ export function HomeScreen() {
                         className="pointer-events-none absolute inset-0"
                         style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 58%)" }}
                       />
-                      <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[3px] px-1.5 py-[2px] text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
-                        <span className="h-1 w-1 rounded-full bg-white" />
-                        Live
-                      </span>
+                      {darshanEmbed(t) && (
+                        <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-[3px] px-1.5 py-[2px] text-[9px] font-medium text-white" style={{ background: "#E11900" }}>
+                          <span className="h-1 w-1 rounded-full bg-white" />
+                          Live
+                        </span>
+                      )}
                       <span className="absolute inset-x-0 bottom-0 p-2.5">
                         <span className="block truncate text-[12.5px] font-medium text-white">{t.name}</span>
                         <span className="mt-0.5 block truncate text-[10px] text-white/75">
