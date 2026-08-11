@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   switch (evt.event) {
     case "payment.captured":
     case "order.paid": {
-      if (order && payment) await markPaid(order.id, payment.id as string, order.total, payment);
+      if (order && payment) await markPaid(order.id, payment.id as string, order.total - (order.wallet_applied ?? 0), payment);
       else if (booking && payment) await markBookingPaid(booking, payment.id as string);
       else if (topup && payment) await creditTopup(sb, topup, payment.id as string);
       break;
