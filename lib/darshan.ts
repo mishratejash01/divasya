@@ -96,9 +96,12 @@ async function resolveLiveVideoId(channelId: string): Promise<string | null> {
  */
 async function isLiveByPlayer(videoId: string): Promise<boolean | null> {
   const j = await innertube("player", { videoId });
-  if (!j) return null;
-  const details = j.videoDetails as { isLive?: boolean } | undefined;
-  return details?.isLive === true;
+  // Only a response that actually carries videoDetails may rule. A blocked
+  // variant (no details) is UNKNOWN — never a verdict of not-live, or it
+  // would override a successful resolve.
+  const details = j?.videoDetails as { isLive?: boolean } | undefined;
+  if (!details) return null;
+  return details.isLive === true;
 }
 
 /** Is this channel live right now, and on which exact video? */
