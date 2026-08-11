@@ -11,6 +11,8 @@ import {
   dpConfigured, loginUser, createPujaOrder, createChadawaOrder,
   poojaById, poojaAddons, listChadawa, DevpunyaError, type Sankalp,
 } from "@/lib/devpunya";
+import { spendForOrder, refundSpend } from "@/lib/wallet";
+import { markBookingPaid } from "../verify/route";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -25,6 +27,7 @@ type Body = {
   wish?: string;
   devoteeName?: string;
   city?: string;
+  useWallet?: boolean;
 };
 
 async function userFromToken(req: Request) {
@@ -157,17 +160,36 @@ export async function POST(req: Request) {
       return bad("booking_failed", 500);
     }
 
-    // ---- Razorpay order for exactly their amount
+    // ---- the wallet first, if asked — a ledger debit tied to this order no.
+    let walletApplied = 0;
+    if (b.useWallet) {
+      walletApplied = await spendForOrder(sb, user.id, orderNo, amount, `Paid toward booking ${orderNo}`);
+      if (walletApplied > 0) await sb.from("devpunya_bookings").update({ wallet_applied: walletApplied }).eq("id", booking.id);
+    }
+    const remainder = amount - walletApplied;
+
+    // fully covered: settled here — DevPunya gets its paid signal at once
+    if (remainder === 0) {
+      await markBookingPaid({
+        id: booking.id, kind: b.kind!, order_no: orderNo, amount,
+        payment_status: "created", dp_paid_notified: false,
+        dp_order_id: String(dpOrder.order_id), phone, devotee_name: devoteeName,
+      }, null);
+      return Response.json({ paid: true, bookingId: booking.id, orderNo, amount, walletApplied, currency: "INR" });
+    }
+
+    // ---- Razorpay order for the remainder of their amount
     try {
-      const rzp = await createRazorpayOrder(amount, orderNo, {
+      const rzp = await createRazorpayOrder(remainder, orderNo, {
         devotion: "1", kind: b.kind!, order_no: orderNo, booking_id: booking.id,
       });
       await sb.from("devpunya_bookings").update({ rzp_order_id: rzp.id }).eq("id", booking.id);
       return Response.json({
-        bookingId: booking.id, orderNo, amount, currency: "INR",
-        rzpOrderId: rzp.id, keyId: rzpKeyId(),
+        bookingId: booking.id, orderNo, amount: remainder, total: amount, walletApplied,
+        currency: "INR", rzpOrderId: rzp.id, keyId: rzpKeyId(),
       });
     } catch (e) {
+      if (walletApplied > 0) await refundSpend(sb, orderNo, "Returned — payment could not start");
       return Response.json({ error: "gateway_error", detail: (e as Error).message }, { status: 502 });
     }
   } catch (e) {
