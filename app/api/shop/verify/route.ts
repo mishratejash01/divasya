@@ -17,24 +17,29 @@ export async function POST(req: Request) {
 
   const sb = supabaseAdmin();
   const { data: order } = await sb
-    .from("orders").select("id, total, payment_status, user_id")
+    .from("orders").select("id, total, payment_status, user_id, wallet_applied")
     .eq("rzp_order_id", razorpay_order_id).maybeSingle();
   if (!order) return Response.json({ ok: false, error: "unknown_order" }, { status: 404 });
 
   // The signature proves the message; ask Razorpay what was actually paid.
+  // The gateway owes the total MINUS whatever the wallet already covered.
+  const gatewayDue = order.total - (order.wallet_applied ?? 0);
   const pay = await fetchPayment(razorpay_payment_id);
   const paidPaise = Number(pay?.amount ?? 0);
-  if (pay && paidPaise !== order.total * 100)
+  if (pay && paidPaise !== gatewayDue * 100)
     return Response.json({ ok: false, error: "amount_mismatch" }, { status: 400 });
 
-  if (order.payment_status !== "paid") await markPaid(order.id, razorpay_payment_id, order.total, pay);
+  if (order.payment_status !== "paid") await markPaid(order.id, razorpay_payment_id, gatewayDue, pay);
 
   return Response.json({ ok: true, orderId: order.id });
 }
 
-/** Shared by this route and the webhook; safe to call twice. */
+/** Shared by this route, the webhook and full-wallet checkout; safe to call
+ *  twice. `amount` is what THIS instrument captured (gateway remainder, or
+ *  the wallet portion), so the payments record stays truthful per payment. */
 export async function markPaid(
-  orderId: string, paymentId: string, total: number, raw: Record<string, unknown> | null
+  orderId: string, paymentId: string | null, amount: number,
+  raw: Record<string, unknown> | null, provider: "razorpay" | "wallet" = "razorpay"
 ) {
   const sb = supabaseAdmin();
   const { data: current } = await sb.from("orders").select("payment_status, user_id").eq("id", orderId).maybeSingle();
@@ -46,9 +51,10 @@ export async function markPaid(
   }).eq("id", orderId);
 
   await sb.from("payments").insert({
-    order_id: orderId, provider: "razorpay", provider_payment_id: paymentId,
-    amount: total, status: "captured",
-    method: (raw?.method as string) ?? null, raw: raw ?? null,
+    order_id: orderId, provider, provider_payment_id: paymentId,
+    amount, status: "captured",
+    method: provider === "wallet" ? "wallet" : ((raw?.method as string) ?? null),
+    raw: raw ?? null,
   });
 
   // Take the stock down and empty the cart the order came from.
