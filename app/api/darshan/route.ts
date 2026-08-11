@@ -20,27 +20,6 @@ let cache: { at: number; body: unknown } | null = null;
 const BURST_MS = 60 * 1000;
 
 export async function GET(req: Request) {
-  // temporary diagnosis: what does YouTube actually serve THIS datacenter?
-  const probe = new URL(req.url).searchParams.get("probe");
-  if (probe) {
-    const r = await fetch(`https://www.youtube.com/channel/${encodeURIComponent(probe)}/live`, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.8",
-        Cookie: "CONSENT=YES+cb; SOCS=CAI",
-      },
-      redirect: "follow", cache: "no-store",
-    }).catch(() => null);
-    const text = r ? await r.text() : "";
-    return Response.json({
-      status: r?.status ?? "fetch-failed",
-      finalUrl: r?.url ?? null,
-      size: text.length,
-      hasCanonicalWatch: /rel="canonical" href="https:\/\/www\.youtube\.com\/watch/.test(text),
-      isLiveCount: (text.match(/"isLive":true/g) || []).length,
-      head: text.slice(0, 260),
-    });
-  }
   const fresh = new URL(req.url).searchParams.get("fresh") === "1";
   if (!fresh && cache && Date.now() - cache.at < BURST_MS) return Response.json(cache.body);
 
@@ -50,7 +29,7 @@ export async function GET(req: Request) {
     sb.from("temple_streams").select("*").order("priority"),
   ]);
 
-  const proven = await refreshStaleStreams(sb, (streams ?? []) as StreamRow[], fresh ? 15000 : 8000);
+  const proven = await refreshStaleStreams(sb, (streams ?? []) as StreamRow[], fresh ? 15000 : 8000, 6, fresh);
   const byTemple = new Map<string, StreamRow[]>();
   for (const s of proven) {
     const list = byTemple.get(s.temple_id) ?? [];
