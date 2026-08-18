@@ -526,17 +526,17 @@ strong { font-weight: 500; }
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 14px;
-  padding: 7px;
+  margin-top: 9px;
+  padding: 5px 7px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fbf7ef;
 }
 
 .mala-material-photo {
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
   border-radius: 8px;
   object-fit: cover;
   object-position: center;
@@ -596,12 +596,12 @@ strong { font-weight: 500; }
 .mala-slide-track {
   position: relative;
   display: flex;
-  height: 44px;
+  height: 38px;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   border: 1px solid rgba(132, 75, 39, 0.2);
-  border-radius: 22px;
+  border-radius: 19px;
   background: rgba(255, 252, 244, 0.72);
   color: #7f6d5d;
   cursor: grab;
@@ -614,7 +614,7 @@ strong { font-weight: 500; }
 }
 
 .mala-slide-label {
-  padding: 0 46px;
+  padding: 0 42px;
   font-size: 10.5px;
   letter-spacing: 0.01em;
   pointer-events: none;
@@ -622,11 +622,11 @@ strong { font-weight: 500; }
 
 .mala-slide-thumb {
   position: absolute;
-  top: 4px;
-  left: 4px;
+  top: 3px;
+  left: 3px;
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   border-radius: 50%;
   color: #fffaf0;
@@ -643,8 +643,8 @@ strong { font-weight: 500; }
 }
 
 .mala-auto-button {
-  min-height: 44px;
-  border-radius: 16px;
+  min-height: 40px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #9c4528, #84351f);
   box-shadow: inset 0 1px 0 rgba(255, 224, 183, 0.24), 0 2px 0 rgba(91, 37, 21, 0.16);
   letter-spacing: -0.01em;
@@ -662,6 +662,28 @@ strong { font-weight: 500; }
   color: #fff9eb;
   background: linear-gradient(180deg, #a4512f, #87351f);
   box-shadow: inset 0 1px 0 rgba(255, 224, 183, 0.2), 0 2px 0 rgba(91, 37, 21, 0.16);
+}
+
+@media (max-height: 620px) {
+  .mala-material-preview {
+    margin-top: 7px;
+    padding: 4px 6px;
+  }
+
+  .mala-material-photo {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .mala-slide-track {
+    height: 36px;
+  }
+
+  .mala-slide-thumb {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 @media (min-width: 640px) {

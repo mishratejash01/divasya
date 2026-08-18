@@ -10,9 +10,8 @@ import { MANTRAS, TARGETS } from "@/lib/demo";
 import { useCatalog, getMantras } from "@/lib/catalog";
 import { bell, startAmbient, stopAmbient, setAmbientMuted, ting } from "@/lib/sound";
 
-const SIZE = 288;
-const CENTER = SIZE / 2;
-const R = 108; // radius of the bead ring
+const DEFAULT_MALA_SIZE = 248;
+const SLIDE_THUMB_TRAVEL_INSET = 38;
 
 // The mala's material — sets the colour of the un-chanted beads and the guru
 // bead. Chanted beads always warm to gold regardless of material.
@@ -39,6 +38,7 @@ export function MalaScreen() {
   const [auto, setAuto] = useState(false);
   const [done, setDone] = useState(false);
   const [musicMuted, setMusicMuted] = useState(false);
+  const [malaSize, setMalaSize] = useState(DEFAULT_MALA_SIZE);
   const [malaSlideDirection, setMalaSlideDirection] = useState<1 | -1>(1);
   const [slideX, setSlideX] = useState(0);
   const slideTrack = useRef<HTMLDivElement>(null);
@@ -49,6 +49,9 @@ export function MalaScreen() {
   const manualHold = useRef(false);
 
   const progress = count / target;
+  const SIZE = malaSize;
+  const CENTER = SIZE / 2;
+  const R = SIZE * 0.375;
   const circ = 2 * Math.PI * R;
 
   // bead geometry — one bead per repetition, beads nearly touching like a real mala
@@ -64,6 +67,25 @@ export function MalaScreen() {
     return () => {
       window.removeEventListener("pointerdown", unlock);
       stopAmbient();
+    };
+  }, []);
+
+  useEffect(() => {
+    const fitMala = () => {
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+      const sizeFromHeight = viewportHeight - 332;
+      const sizeFromWidth = viewportWidth - 108;
+      const nextSize = Math.max(198, Math.min(276, sizeFromHeight, sizeFromWidth));
+      setMalaSize(nextSize);
+    };
+
+    fitMala();
+    window.addEventListener("resize", fitMala);
+    window.visualViewport?.addEventListener("resize", fitMala);
+    return () => {
+      window.removeEventListener("resize", fitMala);
+      window.visualViewport?.removeEventListener("resize", fitMala);
     };
   }, []);
 
@@ -107,8 +129,8 @@ export function MalaScreen() {
     const track = slideTrack.current;
     if (!track) return;
     const rect = track.getBoundingClientRect();
-    const max = Math.max(0, rect.width - 44);
-    const next = Math.max(0, Math.min(max, clientX - rect.left - 22));
+    const max = Math.max(0, rect.width - SLIDE_THUMB_TRAVEL_INSET);
+    const next = Math.max(0, Math.min(max, clientX - rect.left - SLIDE_THUMB_TRAVEL_INSET / 2));
     slideXRef.current = next;
     setSlideX(next);
   }
@@ -121,7 +143,7 @@ export function MalaScreen() {
     if (!sliding.current) return;
     sliding.current = false;
     const track = slideTrack.current;
-    const max = track ? Math.max(1, track.getBoundingClientRect().width - 44) : 1;
+    const max = track ? Math.max(1, track.getBoundingClientRect().width - SLIDE_THUMB_TRAVEL_INSET) : 1;
     if (slideXRef.current / max > 0.68) cycleMala(1);
     slideXRef.current = 0;
     setSlideX(0);
@@ -198,20 +220,20 @@ export function MalaScreen() {
 
       {/* One centered column, not stretched on desktop: the mantra you are
           telling, the mala itself as the hero, then settings, tally, controls. */}
-      <div className="mala-scroll flex-1 overflow-y-auto no-scrollbar">
-        <div className="gutter py-3" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}>
-          <section className="mala-content mx-auto w-full max-w-[430px] p-3.5 lg:max-w-[520px] lg:p-6">
+      <div className="mala-scroll flex-1 overflow-hidden no-scrollbar">
+        <div className="gutter py-1.5" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 6px)" }}>
+          <section className="mala-content mx-auto w-full max-w-[430px] px-3 py-2 lg:max-w-[520px] lg:px-5 lg:py-3">
 
             {/* the mantra — what you're chanting, named first */}
             <div className="text-center">
               <p className="eyebrow text-muted">{mantra.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")} · {mantra.deity}</p>
-              <p className="mt-1.5 font-deva text-[21px] leading-snug text-ink lg:text-[26px]">{mantra.deva}</p>
-              <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13px]">{mantra.translit}</p>
+              <p className="mt-1 font-deva text-[19px] leading-tight text-ink lg:text-[24px]">{mantra.deva}</p>
+              <p className="mt-0.5 truncate text-[10.5px] italic leading-snug text-muted lg:text-[12px]">{mantra.translit}</p>
             </div>
 
             {/* mantra selector — a single scroll strip so pills never wrap ragged.
                 justify-start keeps the selected pill flush-left and unclipped. */}
-            <div className="mt-3 flex justify-start gap-1.5 overflow-x-auto no-scrollbar lg:flex-wrap lg:justify-center">
+            <div className="mt-2 flex justify-start gap-1.5 overflow-x-auto no-scrollbar lg:flex-wrap lg:justify-center">
               {mantras.slice(0, 6).map((m) => {
                 const on = m.id === mantraId;
                 return (
@@ -269,7 +291,7 @@ export function MalaScreen() {
             </div>
 
           {/* the mala — the tap surface, the hero of the screen */}
-          <div className="relative mt-5 flex flex-col items-center">
+          <div className="relative mt-3 flex flex-col items-center">
             <button
               onClick={chant}
               onPointerDown={() => { manualHold.current = true; }}
@@ -354,12 +376,12 @@ export function MalaScreen() {
             </button>
 
             {/* target chips */}
-            <div className="mt-5 flex justify-center gap-1.5">
+            <div className="mt-3 flex justify-center gap-1.5">
               {TARGETS.map((t) => (
                 <button
                   key={t}
                   onClick={() => { setTarget(t); reset(); }}
-                  className={cx("rounded-[5px] px-3 py-1.5 text-[11px] tnum", t === target ? "text-white" : "ring-gold text-muted")}
+                  className={cx("rounded-[5px] px-2.5 py-1 text-[10.5px] tnum", t === target ? "text-white" : "ring-gold text-muted")}
                   style={t === target ? { background: "var(--icon-ink)" } : undefined}
                 >
                   {t}
@@ -370,25 +392,25 @@ export function MalaScreen() {
           </div>{/* /mala */}
 
             {/* japa tally — hairline row, no boxes */}
-            <div className="mt-5 grid grid-cols-3 py-2.5 text-center">
+            <div className="mt-2.5 grid grid-cols-3 py-1.5 text-center">
               {stats.map(([l, v], i) => (
                 <div key={l} className="px-1">
-                  <div className="font-display text-[18px] tnum text-ink lg:text-[22px]">{v}</div>
+                  <div className="font-display text-[16px] tnum text-ink lg:text-[20px]">{v}</div>
                   <div className="mt-0.5 text-[10px] text-muted lg:text-[11.5px]">{l}</div>
                 </div>
               ))}
             </div>
 
             {/* controls */}
-            <div className="mt-3 flex gap-2.5">
-              <button onClick={() => setAuto((a) => !a)} className="mala-auto-button flex flex-1 items-center justify-center py-3 text-[12.5px] font-medium text-white lg:text-[13.5px]">
+            <div className="mt-2 flex gap-2">
+              <button onClick={() => setAuto((a) => !a)} className="mala-auto-button flex flex-1 items-center justify-center py-2.5 text-[12px] font-medium text-white lg:text-[13px]">
                 {auto ? "Pause auto-jaap" : "Hands-free auto-jaap"}
               </button>
-              <button onClick={reset} className="mala-reset-button grid h-[44px] w-[44px] place-items-center lg:h-[46px] lg:w-[46px]"><ArrowCounterClockwise size={16} /></button>
+              <button onClick={reset} className="mala-reset-button grid h-[40px] w-[40px] place-items-center lg:h-[44px] lg:w-[44px]"><ArrowCounterClockwise size={16} /></button>
             </div>
             <div
               ref={slideTrack}
-              className="mala-slide-track mt-2.5"
+              className="mala-slide-track mt-2"
               onPointerDown={onSlidePointerDown}
               onPointerMove={onSlidePointerMove}
               onPointerUp={onSlidePointerUp}
