@@ -1,54 +1,128 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowCounterClockwise, Check, Fire } from "@phosphor-icons/react";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowCounterClockwise, CaretRight, Check, SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
 import { ScreenHeader, cx } from "../ui";
 import { MANTRAS, TARGETS } from "@/lib/demo";
 import { useCatalog, getMantras } from "@/lib/catalog";
-import { bell, ting } from "@/lib/sound";
+import { bell, startAmbient, stopAmbient, setAmbientMuted, ting } from "@/lib/sound";
 
-// Keep the tap target comfortably inside a 320px phone after the card gutter
-// and padding are accounted for. The previous 288px ring could clip the bead
-// cord and make the controls below feel squeezed on narrow screens.
-const SIZE = 252;
+const SIZE = 288;
 const CENTER = SIZE / 2;
-const R = 96; // radius of the bead cord
+const R = 108; // radius of the bead ring
 
 // The mala's material — sets the colour of the un-chanted beads and the guru
 // bead. Chanted beads always warm to gold regardless of material.
 const MALAS = {
-  rudraksha: { label: "Rudraksha", bead: "radial-gradient(circle at 34% 28%, #8A5A2C, #452A12 82%)", guru: "radial-gradient(circle at 34% 28%, #B98A4A, #6E4620 60%, #3E260F)" },
-  tulsi: { label: "Tulsi", bead: "radial-gradient(circle at 34% 28%, #C79B5E, #7A4A2C 82%)", guru: "radial-gradient(circle at 34% 28%, #F5E3B4, #C88131 60%, #8A5A22)" },
-  sphatik: { label: "Sphatik", bead: "radial-gradient(circle at 32% 26%, #FFFFFF, #C7D4DE 60%, #93A6B4 92%)", guru: "radial-gradient(circle at 32% 26%, #FFFFFF, #DDE7EE 55%, #A9B8C4)" },
+  rudraksha: { label: "Rudraksha", bead: "radial-gradient(circle at 34% 28%, #8A5A2C, #452A12 82%)", guru: "radial-gradient(circle at 34% 28%, #B98A4A, #6E4620 60%, #3E260F)", texture: "https://images.unsplash.com/photo-1678920005141-8832ef4a090a?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=1200", beadTexture: "https://www.birthastro.com/rudraksha/images/one-mukhi-rudraksha.png" },
+  tulsi: { label: "Tulsi", bead: "radial-gradient(circle at 34% 28%, #C79B5E, #7A4A2C 82%)", guru: "radial-gradient(circle at 34% 28%, #F5E3B4, #C88131 60%, #8A5A22)", texture: "https://tulsirudra.com/cdn/shop/articles/A53_22312d5e-72ab-443c-b3bf-420a66ebf29a.jpg?crop=center&height=500&v=1751611021&width=600", beadTexture: "https://cdn.shopify.com/s/files/1/0636/2716/5830/files/tulsi_mala_original_3.png?v=1773810078" },
+  sphatik: { label: "Sphatik", bead: "radial-gradient(circle at 32% 26%, #FFFFFF, #C7D4DE 60%, #93A6B4 92%)", guru: "radial-gradient(circle at 32% 26%, #FFFFFF, #DDE7EE 55%, #A9B8C4)", texture: "https://www.shivaago.com/wp-content/uploads/2023/05/Resize_20230516_114651_1482.jpg", beadTexture: "https://www.ratanrashi.com/product_images/product_3611_8624_large.jpg" },
 } as const;
 
+const MALA_TYPES = ["rudraksha", "tulsi", "sphatik"] as const;
+
 export function MalaScreen() {
-  const { back, addJapa, japaLifetime, streak, addPunya, haptic } = useApp();
+  const { back, addJapa, japaLifetime, addPunya, haptic } = useApp();
   const params = useApp().screen.params as { mantraId?: string } | undefined;
   const mantras = useCatalog(getMantras, MANTRAS);
 
   const [mantraId, setMantraId] = useState(params?.mantraId || mantras[0].id);
   const mantra = mantras.find((m) => m.id === mantraId) ?? mantras[0];
   const [target, setTarget] = useState(108);
-  const [malaType, setMalaType] = useState<keyof typeof MALAS>("tulsi");
+  const [malaType, setMalaType] = useState<keyof typeof MALAS>("rudraksha");
   const mala = MALAS[malaType];
   const [count, setCount] = useState(0);
   const [malas, setMalas] = useState(0);
   const [auto, setAuto] = useState(false);
   const [done, setDone] = useState(false);
+  const [musicMuted, setMusicMuted] = useState(false);
+  const [malaSlideDirection, setMalaSlideDirection] = useState<1 | -1>(1);
+  const [slideX, setSlideX] = useState(0);
+  const slideTrack = useRef<HTMLDivElement>(null);
+  const sliding = useRef(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const malaSwipeStart = useRef<number | null>(null);
+  const manualHold = useRef(false);
 
   const progress = count / target;
   const circ = 2 * Math.PI * R;
 
   // bead geometry — one bead per repetition, beads nearly touching like a real mala
-  const spacing = circ / target;
-  const beadR = Math.max(2.6, Math.min(spacing * 0.56, 7));
+  const visibleBeads = target >= 108 ? 54 : target;
+  const spacing = circ / visibleBeads;
+  const beadR = Math.max(5, Math.min(spacing * 0.52, 7));
+  const litBeads = Math.ceil(progress * visibleBeads);
+
+  useEffect(() => {
+    startAmbient();
+    const unlock = () => startAmbient();
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      stopAmbient();
+    };
+  }, []);
+
+  function toggleAmbient() {
+    const next = !musicMuted;
+    setMusicMuted(next);
+    if (!next) startAmbient();
+    setAmbientMuted(next);
+  }
+
+  function cycleMala(direction: 1 | -1) {
+    const current = MALA_TYPES.indexOf(malaType);
+    const next = (current + direction + MALA_TYPES.length) % MALA_TYPES.length;
+    setMalaSlideDirection(direction);
+    setMalaType(MALA_TYPES[next]);
+    haptic(6);
+  }
+
+  function onMalaPointerDown(event: PointerEvent<HTMLDivElement>) {
+    malaSwipeStart.current = event.clientX;
+  }
+
+  function onMalaPointerUp(event: PointerEvent<HTMLDivElement>) {
+    if (malaSwipeStart.current === null) return;
+    const distance = event.clientX - malaSwipeStart.current;
+    malaSwipeStart.current = null;
+    if (Math.abs(distance) < 32) return;
+    cycleMala(distance < 0 ? 1 : -1);
+  }
+
+  function onSlidePointerDown(event: PointerEvent<HTMLDivElement>) {
+    sliding.current = true;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    updateSlide(event.clientX);
+  }
+
+  function updateSlide(clientX: number) {
+    const track = slideTrack.current;
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    const max = Math.max(0, rect.width - 44);
+    setSlideX(Math.max(0, Math.min(max, clientX - rect.left - 22)));
+  }
+
+  function onSlidePointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (sliding.current) updateSlide(event.clientX);
+  }
+
+  function onSlidePointerUp(event: PointerEvent<HTMLDivElement>) {
+    if (!sliding.current) return;
+    sliding.current = false;
+    const track = slideTrack.current;
+    const max = track ? Math.max(1, track.getBoundingClientRect().width - 44) : 1;
+    if (slideX / max > 0.68) setAuto((value) => !value);
+    setSlideX(0);
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+  }
 
   function chant() {
+    startAmbient();
     setDone(false);
     setCount((c) => {
       const n = c + 1;
@@ -79,7 +153,9 @@ export function MalaScreen() {
 
   useEffect(() => {
     if (auto) {
-      timer.current = setInterval(chant, 1900);
+      timer.current = setInterval(() => {
+        if (!manualHold.current) chant();
+      }, 1900);
       return () => { if (timer.current) clearInterval(timer.current); };
     }
     if (timer.current) clearInterval(timer.current);
@@ -96,27 +172,33 @@ export function MalaScreen() {
   ];
 
   return (
-    <div className="flex h-full flex-col">
-      <ScreenHeader
-        title="Mala Jaap"
-        onBack={back}
-        right={
-          <span className="flex shrink-0 items-center gap-1 text-[12.5px] tnum font-medium text-ink">
-            <Fire size={14} weight="fill" /> {streak}
-          </span>
-        }
-      />
+    <div className="mala-screen flex h-full flex-col">
+      <div className="mala-header">
+        <ScreenHeader
+          title="Mala Jaap"
+          onBack={back}
+          right={
+            <button
+              onClick={toggleAmbient}
+              aria-label={musicMuted ? "Unmute spiritual music" : "Mute spiritual music"}
+              className="mala-sound-button grid h-8 w-8 place-items-center rounded-full"
+            >
+              {musicMuted ? <SpeakerSlash size={16} /> : <SpeakerHigh size={16} />}
+            </button>
+          }
+        />
+      </div>
 
       {/* One centered column, not stretched on desktop: the mantra you are
           telling, the mala itself as the hero, then settings, tally, controls. */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="mala-scroll flex-1 overflow-y-auto no-scrollbar">
         <div className="gutter py-3" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}>
-          <section className="mx-auto w-full max-w-[430px] rounded-2xl surface ring-gold p-3.5 lg:max-w-[520px] lg:p-6">
+          <section className="mala-content mx-auto w-full max-w-[430px] p-3.5 lg:max-w-[520px] lg:p-6">
 
             {/* the mantra — what you're chanting, named first */}
             <div className="text-center">
               <p className="eyebrow text-muted">{mantra.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")} · {mantra.deity}</p>
-              <p className="mt-1.5 font-deva text-[19px] leading-snug text-ink lg:text-[26px]">{mantra.deva}</p>
+              <p className="mt-1.5 font-deva text-[21px] leading-snug text-ink lg:text-[26px]">{mantra.deva}</p>
               <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13px]">{mantra.translit}</p>
             </div>
 
@@ -130,7 +212,7 @@ export function MalaScreen() {
                     key={m.id}
                     onClick={() => { setMantraId(m.id); reset(); }}
                     className={cx(
-                      "shrink-0 rounded-[5px] px-3 py-1 text-[11px] transition-colors lg:text-[12.5px]",
+                      "mala-mantra-chip shrink-0 px-3 py-1 text-[11px] transition-colors lg:text-[12.5px]",
                       on ? "text-white" : "ring-gold text-muted"
                     )}
                     style={on ? { background: "var(--icon-ink)" } : undefined}
@@ -141,31 +223,61 @@ export function MalaScreen() {
               })}
             </div>
 
+            <div
+              className="mala-material-preview"
+              role="button"
+              tabIndex={0}
+              aria-label={`${mala.label} mala. Swipe left or right to change material.`}
+              onPointerDown={onMalaPointerDown}
+              onPointerUp={onMalaPointerUp}
+              onPointerCancel={() => { malaSwipeStart.current = null; }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowLeft") cycleMala(-1);
+                if (event.key === "ArrowRight") cycleMala(1);
+              }}
+            >
+              <AnimatePresence initial={false} custom={malaSlideDirection} mode="popLayout">
+                <motion.div
+                  key={malaType}
+                  custom={malaSlideDirection}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  variants={{
+                    enter: (direction: 1 | -1) => ({ x: direction * 34, opacity: 0 }),
+                    center: { x: 0, opacity: 1 },
+                    exit: (direction: 1 | -1) => ({ x: direction * -34, opacity: 0 }),
+                  }}
+                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex min-w-0 flex-1 items-center gap-2.5"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={mala.texture} alt={`${mala.label} mala`} className="mala-material-photo" />
+                  <div>
+                    <div className="text-[12px] font-medium text-ink">{mala.label} mala</div>
+                    <div className="mt-0.5 text-[10.5px] text-muted">Natural material texture</div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
           {/* the mala — the tap surface, the hero of the screen */}
           <div className="relative mt-5 flex flex-col items-center">
-            <button onClick={chant} className="relative active:scale-[0.99]" style={{ width: SIZE, height: SIZE }}>
+            <button
+              onClick={chant}
+              onPointerDown={() => { manualHold.current = true; }}
+              onPointerUp={() => { manualHold.current = false; }}
+              onPointerCancel={() => { manualHold.current = false; }}
+              className="relative active:scale-[0.99]"
+              style={{ width: SIZE, height: SIZE }}
+            >
               {/* the cord — a soft wooden thread the beads are strung on */}
-              <svg width={SIZE} height={SIZE} className="absolute inset-0 -rotate-90">
-                <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(122,74,44,0.22)" strokeWidth={beadR * 2 + 3} />
-                <circle cx={CENTER} cy={CENTER} r={R} fill="none" stroke="rgba(255,244,225,0.35)" strokeWidth={1} />
-                {/* a whisper-thin gold progress arc riding the cord */}
-                <motion.circle
-                  cx={CENTER} cy={CENTER} r={R} fill="none"
-                  stroke="var(--bhagwa)" strokeWidth={2} strokeLinecap="round"
-                  strokeDasharray={circ}
-                  initial={{ strokeDashoffset: circ }}
-                  animate={{ strokeDashoffset: circ * (1 - progress) }}
-                  transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                  opacity={0.5}
-                />
-              </svg>
-
               {/* the 108 beads (or `target` beads) — chanted ones warm to gold */}
-              {Array.from({ length: target }).map((_, i) => {
-                const a = (i / target) * Math.PI * 2 - Math.PI / 2;
+              {Array.from({ length: visibleBeads }).map((_, i) => {
+                const a = (i / visibleBeads) * Math.PI * 2 - Math.PI / 2;
                 const x = CENTER + R * Math.cos(a);
                 const y = CENTER + R * Math.sin(a);
-                const lit = i < count;
+                const lit = i < litBeads;
                 return (
                   <span
                     key={i}
@@ -175,6 +287,9 @@ export function MalaScreen() {
                       background: lit
                         ? "radial-gradient(circle at 34% 28%, #FCEBC6, var(--bhagwa-soft) 52%, var(--bhagwa-deep))"
                         : mala.bead,
+                      backgroundImage: !lit ? `url(${mala.beadTexture})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: `${(i * 17) % 100}% ${(i * 29) % 100}%`,
                       boxShadow: lit ? "0 0 6px rgba(214,84,3,0.45)" : "inset 0 -1px 1px rgba(0,0,0,0.25)",
                     }}
                   />
@@ -183,7 +298,7 @@ export function MalaScreen() {
 
               {/* the moving edge — the next bead to tell, gently pulsing */}
               {!done && count < target && (() => {
-                const a = (count / target) * Math.PI * 2 - Math.PI / 2;
+                const a = (litBeads / visibleBeads) * Math.PI * 2 - Math.PI / 2;
                 const x = CENTER + R * Math.cos(a);
                 const y = CENTER + R * Math.sin(a);
                 return (
@@ -223,7 +338,7 @@ export function MalaScreen() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center">
-                    <span className="font-display text-5xl leading-none text-ink tabular-nums lg:text-6xl">{count}</span>
+                    <span className="font-display text-[52px] leading-none text-ink tabular-nums">{count}</span>
                     <span className="mt-0.5 text-[11.5px] tnum text-muted">of {target}</span>
                     <span className="mt-1.5 eyebrow text-[var(--bhagwa-deep)]">tap to chant</span>
                   </div>
@@ -245,25 +360,12 @@ export function MalaScreen() {
               ))}
             </div>
 
-            {/* mala material */}
-            <div className="mt-2 flex justify-center gap-1.5">
-              {(Object.keys(MALAS) as (keyof typeof MALAS)[]).map((k) => (
-                <button
-                  key={k}
-                  onClick={() => { setMalaType(k); haptic(6); }}
-                  className={cx("rounded-[5px] px-3 py-1.5 text-[11px]", k === malaType ? "text-white" : "ring-gold text-muted")}
-                  style={k === malaType ? { background: "var(--icon-ink)" } : undefined}
-                >
-                  {MALAS[k].label}
-                </button>
-              ))}
-            </div>
           </div>{/* /mala */}
 
             {/* japa tally — hairline row, no boxes */}
-            <div className="mt-5 grid grid-cols-3 border-y py-2.5 text-center" style={{ borderColor: "var(--line)" }}>
+            <div className="mt-5 grid grid-cols-3 py-2.5 text-center">
               {stats.map(([l, v], i) => (
-                <div key={l} className={cx("px-1", i > 0 && "border-l")} style={i > 0 ? { borderColor: "var(--line)" } : undefined}>
+                <div key={l} className="px-1">
                   <div className="font-display text-[18px] tnum text-ink lg:text-[22px]">{v}</div>
                   <div className="mt-0.5 text-[10px] text-muted lg:text-[11.5px]">{l}</div>
                 </div>
@@ -272,10 +374,28 @@ export function MalaScreen() {
 
             {/* controls */}
             <div className="mt-3 flex gap-2.5">
-              <button onClick={() => setAuto((a) => !a)} className="flex flex-1 items-center justify-center rounded-2xl py-3 text-[12.5px] font-medium text-white lg:text-[13.5px]" style={{ background: "var(--icon-ink)" }}>
+              <button onClick={() => setAuto((a) => !a)} className="mala-auto-button flex flex-1 items-center justify-center py-3 text-[12.5px] font-medium text-white lg:text-[13.5px]">
                 {auto ? "Pause auto-jaap" : "Hands-free auto-jaap"}
               </button>
-              <button onClick={reset} className="grid h-[48px] w-[48px] place-items-center rounded-2xl btn-ghost lg:h-[52px] lg:w-[52px]"><ArrowCounterClockwise size={16} /></button>
+              <button onClick={reset} className="mala-reset-button grid h-[44px] w-[44px] place-items-center lg:h-[46px] lg:w-[46px]"><ArrowCounterClockwise size={16} /></button>
+            </div>
+            <div
+              ref={slideTrack}
+              className="mala-slide-track mt-2.5"
+              onPointerDown={onSlidePointerDown}
+              onPointerMove={onSlidePointerMove}
+              onPointerUp={onSlidePointerUp}
+              onPointerCancel={onSlidePointerUp}
+              role="slider"
+              aria-valuemin={0}
+              aria-valuemax={1}
+              aria-valuenow={slideX > 0 ? 1 : 0}
+              aria-label={auto ? "Slide to pause auto-jaap" : "Slide to start auto-jaap"}
+            >
+              <span className="mala-slide-label">{auto ? "Slide to pause auto-jaap" : "Slide to start auto-jaap"}</span>
+              <span className="mala-slide-thumb" style={{ transform: `translateX(${slideX}px)` }}>
+                <CaretRight size={15} weight="bold" />
+              </span>
             </div>
             <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-muted">Chant at your own pace — Divasya keeps the count for you, even with the screen off.</p>
           </section>

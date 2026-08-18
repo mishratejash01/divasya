@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { CaretRight } from "@phosphor-icons/react";
+import { CaretRight, Microphone } from "@phosphor-icons/react";
 import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER } from "../nav-map";
@@ -39,9 +39,8 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
     // Every shelf reads the same way — a mark over the name, three to a row.
     // Guides used to be a row of pills; it now matches its neighbours.
     layout: "stack",
-    // Astrology gets the two-row reference treatment; the other shelves stay
-    // intentionally short so Home remains a digest rather than a directory.
-    blocks: NAV[id].entries.slice(0, id === "astro" ? 6 : 3),
+    // three fills the 3-up grid exactly, leaving no ragged last row.
+    blocks: NAV[id].entries.slice(0, 3),
   }));
 
 // Some tabs open their own page; some scroll to a section of this one. The
@@ -106,10 +105,20 @@ const DARSHAN_TINTS: [string, string][] = [
   ["#5B2160", "#2E0F32"],  // deep plum
 ];
 
+const HOME_DARSHAN = [
+  { name: "Shri Krishna", place: "Vrindavan", image: "https://cdn.pixabay.com/photo/2023/06/23/08/51/lord-krishna-8083043_1280.png", tint: "#2C6470" },
+  { name: "Mahadev", place: "Kashi", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRGxV_rG8tX4ugxNFpqi2SnKdkfJdpVnTuOLzyAG2d0XWY6FRjiNzrDVPL&s=10", tint: "#6E4E36" },
+  { name: "Maa Durga", place: "Kolkata", image: "https://t4.ftcdn.net/jpg/15/55/57/17/360_F_1555571742_rz9E1hJliYaVMJFuLUHrX2J9lRIebA56.jpg", tint: "#A63D34" },
+  { name: "Shri Ganesha", place: "Mumbai", image: "https://t3.ftcdn.net/jpg/16/17/38/56/360_F_1617385643_eiqxEipXigOWHnpm2koSO5aWLEvrgXj6.jpg", tint: "#B76C2A" },
+];
+
+const RUDRAKSHA_PHOTO = "https://images.unsplash.com/photo-1678920005141-8832ef4a090a?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=1200";
+
 export function HomeScreen() {
   const { go, haptic, sendPush, streak, japaToday, profile } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const darshanRef = useRef<HTMLDivElement>(null);
 
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
@@ -121,6 +130,35 @@ export function HomeScreen() {
     if (!sc || !el) return;
     sc.scrollTo({ top: Math.max(0, el.offsetTop - 96), behavior: "smooth" });
   };
+
+  // A quiet, continuous darshan rail: it pauses briefly when touched so a
+  // devotee can inspect a card, then resumes from the same position.
+  useEffect(() => {
+    const track = darshanRef.current;
+    if (!track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    let last = 0;
+    let pausedUntil = 0;
+    const pause = () => { pausedUntil = performance.now() + 3200; };
+    const tick = (now: number) => {
+      if (!last) last = now;
+      const loopWidth = track.scrollWidth / 2;
+      if (now >= pausedUntil && loopWidth > track.clientWidth) {
+        track.scrollLeft += (now - last) * 0.014;
+        if (track.scrollLeft >= loopWidth) track.scrollLeft -= loopWidth;
+      }
+      last = now;
+      frame = requestAnimationFrame(tick);
+    };
+    track.addEventListener("pointerdown", pause);
+    track.addEventListener("wheel", pause, { passive: true });
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      track.removeEventListener("pointerdown", pause);
+      track.removeEventListener("wheel", pause);
+    };
+  }, []);
 
   // live panchang from the jyotish-grade engine (server-side Swiss Ephemeris),
   // fetched via /api/panchang and refreshed every 2 min.
@@ -286,7 +324,7 @@ export function HomeScreen() {
   );
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar screen-bottom lg:pt-3">
+    <div ref={scrollRef} className="home-screen h-full overflow-y-auto no-scrollbar screen-bottom lg:pt-3">
       {/* Top bar — mobile only. Haldi ground, black marks, and a strip of text
           tabs beneath that jump to the sections below. The tabs are content,
           not destinations, so they don't repeat what the bottom bar does. */}
@@ -302,7 +340,6 @@ export function HomeScreen() {
           <button onClick={() => go("menu")} aria-label="Menu" className="shrink-0">
             <Iconify icon="solar:hamburger-menu-linear" width={24} height={24} className="text-ink" />
           </button>
-          <span className="font-display text-[19px] tracking-[-0.01em] text-ink">Divasya</span>
           <div className="ml-auto flex shrink-0 items-center gap-3.5">
             <button
               ref={bellRef}
@@ -349,25 +386,56 @@ export function HomeScreen() {
       <div className="lg:flex lg:items-start lg:gap-2.5 lg:px-2.5">
       <div className="home-bento min-w-0 lg:flex-1 lg:grid lg:grid-cols-2">
 
+      {/* Image-first devotional discovery: a small darshan window before the
+          utility cards, so the home feed feels like a living temple rather
+          than a directory of tools. */}
+      <div className="gutter pt-2 lg:col-span-2">
+        <section className="home-darshan-shelf">
+          <div className="home-darshan-heading">
+            <div>
+              <span className="home-darshan-kicker">Aaj ka darshan</span>
+            </div>
+            <button onClick={() => go("temple")} className="home-shelf-link flex items-center gap-0.5 text-[11px] text-ink">
+              See all <CaretRight size={11} weight="bold" />
+            </button>
+          </div>
+          <div ref={darshanRef} className="home-darshan-track no-scrollbar">
+            {[...HOME_DARSHAN, ...HOME_DARSHAN].map((item, index) => (
+              <button
+                key={`${item.name}-${index}`}
+                onClick={() => go("temple")}
+                className="home-darshan-card"
+                style={{ animationDelay: `${(index % HOME_DARSHAN.length) * 60}ms` }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.image} alt="" className="home-darshan-image" loading={index === 0 ? "eager" : "lazy"} />
+                <span className="home-darshan-sheen" />
+                <span className="home-darshan-copy">
+                  <span>{item.name}</span>
+                  <small>{item.place}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+
       {/* What is running now — the one time-sensitive thing on the screen, so
           it gets a status dot and reads in a single glance. */}
       <div className="gutter pt-2 lg:col-span-2">
         <button
           onClick={() => go("panchang")}
-          className="flex w-full items-center gap-2.5 rounded-2xl surface px-3 py-2.5 text-left"
+          className="panchang-card flex w-full flex-wrap items-start gap-x-2 rounded-2xl surface p-3 text-left"
         >
           {/* The supplied Panchang wheel gives this live reading its own visual
               anchor; the small dot still carries the current status. */}
-          <span className="relative grid h-10 w-10 shrink-0 place-items-center" aria-hidden>
-            <DevotionalIllustration name="panchang" className="h-10 w-10" priority />
-            <span
-              className="absolute bottom-0.5 right-0.5 h-2 w-2 rounded-full"
-              style={{ background: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)", border: "1px solid var(--surface)" }}
-            />
-          </span>
+          <span
+            className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+            style={{ background: chog ? (chog.good ? "var(--good)" : "var(--avoid)") : "var(--muted-2)", border: "1px solid var(--surface)" }}
+          />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="truncate text-[12.5px] text-ink">
+              <span className="text-[13px] leading-tight text-ink">
                 {chog ? (
                   <>
                     <span className="font-medium">{chog.name}</span>
@@ -387,16 +455,22 @@ export function HomeScreen() {
             {/* Sunrise and sunset read as little horizon marks rather than the
                 words — a sun lifting for दिन, dropping for सांझ — with the times
                 beside them. Rahu Kaal stays as a labelled figure. */}
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] tnum text-muted">
-              <span className="inline-flex items-center gap-1">
-                <Iconify icon="meteocons:sunrise-fill" width={20} height={20} className="shrink-0" />
+            <div className="panchang-metrics">
+              <span className="min-w-0 flex flex-col gap-0.5 text-[12px] tnum text-ink">
+                <span className="flex items-center gap-1 text-[10px] text-muted">
+                  <Iconify icon="meteocons:sunrise-fill" width={20} height={20} className="shrink-0" />
+                  Sunrise
+                </span>
                 {pg?.sunrise ?? "…"}
               </span>
-              <span className="inline-flex items-center gap-1">
-                <Iconify icon="meteocons:sunset-fill" width={20} height={20} className="shrink-0" />
+              <span className="min-w-0 flex flex-col gap-0.5 text-[12px] tnum text-ink">
+                <span className="flex items-center gap-1 text-[10px] text-muted">
+                  <Iconify icon="meteocons:sunset-fill" width={20} height={20} className="shrink-0" />
+                  Sunset
+                </span>
                 {pg?.sunset ?? "…"}
               </span>
-              <span className="inline-flex items-center gap-1">
+              <span className="min-w-0 flex flex-col gap-0.5 text-[12px] tnum text-ink">
                 <span className="opacity-70">Rahu</span> {pg?.rahuKaal ?? "—"}
               </span>
             </div>
@@ -410,7 +484,7 @@ export function HomeScreen() {
           the room to actually land. */}
       <div className="gutter pt-2 lg:col-span-2">
         <div className="rounded-2xl surface p-3">
-          <span className="eyebrow text-muted">Aaj ka Sandesh</span>
+          <span data-sandesh-top className="eyebrow text-muted">Aaj ka Sandesh</span>
           <p className="mt-2 measure font-deva text-[18px] leading-[1.85] text-ink">
             {shloka?.deva ?? "…"}
           </p>
@@ -491,12 +565,17 @@ export function HomeScreen() {
       >
         {/* Bare mark, set large. The tinted disc behind it was a container
             doing nothing but shrinking the thing it contained. */}
-        <DevotionalIllustration name="rudraksha" alt="Rudraksha" className="h-11 w-11 shrink-0" />
+        {/* Real bead photography gives the practice card a tactile anchor. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={RUDRAKSHA_PHOTO} alt="Rudraksha mala" className="home-japa-photo h-12 w-12 shrink-0" loading="lazy" />
         <div className="flex-1">
           <div className="text-[12.5px] font-medium text-ink">{streak}-day japa streak</div>
           <div className="text-[11px] text-muted">{japaToday} chants today · keep it alive</div>
         </div>
-        <span className="rounded-[5px] px-4.5 py-2.5 text-[12.5px] btn-saffron">Chant</span>
+        <span className="flex items-center gap-1.5 rounded-[5px] px-4.5 py-2.5 text-[12.5px] btn-saffron">
+          <Microphone size={14} weight="fill" />
+          Chant
+        </span>
       </button>
 
       {/* One white panel per section, holding its title and its blocks
@@ -505,41 +584,31 @@ export function HomeScreen() {
       {SECTIONS.map((sec) => (
         <Fragment key={sec.title}>
         <div data-section={sec.tab} className="gutter pt-1.5">
-          <section className="rounded-2xl surface p-2.5">
-            <div className="mb-1.5 flex items-end justify-between px-1">
-              <h3 className="font-display text-[18px] leading-none tracking-[-0.02em] text-ink">{sec.title}</h3>
+          <section className="home-shelf rounded-2xl surface p-2.5">
+            <div className="home-shelf-heading">
+              <h3 className="home-shelf-title">{sec.title}</h3>
               <button
                 onClick={() => go("category", { id: sec.tab })}
-                className="flex items-center gap-0.5 text-[10.5px] text-muted"
+                className="home-shelf-link flex items-center gap-0.5 text-[11px] text-ink"
               >
                 See all <CaretRight size={11} weight="bold" />
               </button>
             </div>
-            <div
-              className={cx(
-                "grid grid-cols-3",
-                sec.layout === "row" ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3"
-              )}
-            >
+            <div className="home-shelf-grid">
               {sec.blocks.map((b) => (
                 <button
                   key={b.label}
                   onClick={() => go(b.to, b.params)}
-                  className={cx(
-                    "group relative flex min-h-[92px] flex-col items-center justify-center gap-2 border-b border-[var(--line)] px-1 py-3 transition-colors hover:bg-[rgba(200,129,49,0.06)]",
-                    sec.layout === "row"
-                      ? "min-h-[64px] flex-row items-center justify-start gap-2.5 text-left"
-                      : "text-center"
-                  )}
+                  className={cx("home-block", sec.layout === "row" && "home-block-row")}
                 >
                   {b.art ? (
-                    <DevotionalIllustration name={b.art} alt="" className="h-8 w-8 shrink-0 lg:h-10 lg:w-10" />
+                    <DevotionalIllustration name={b.art} alt="" className="home-block-art h-12 w-12 shrink-0 lg:h-14 lg:w-14" />
                   ) : (
                     <Iconify icon={b.icon} className="shrink-0 text-[var(--icon-ink)] h-[22px] w-[22px] lg:h-[24px] lg:w-[24px]" />
                   )}
                   <span
                     className={cx(
-                      "text-[11px] leading-[1.15] text-ink lg:text-[12.5px]",
+                      "home-block-label text-[11px] leading-tight text-ink lg:text-[13px]",
                       sec.layout === "row" ? "truncate" : "text-center"
                     )}
                   >
@@ -556,6 +625,31 @@ export function HomeScreen() {
             it reads as a window into a temple rather than another card. The
             palette is set here rather than taken from the temple records:
             those tints are near-black greys and go muddy at this size. */}
+        {sec.tab === "store" && (
+          <div className="gutter pt-1.5 lg:col-span-2">
+            <div className="rounded-2xl surface p-3">
+              <span className="eyebrow text-muted">Aaj ka Sandesh</span>
+              <p className="mt-2 measure font-deva text-[18px] leading-[1.85] text-ink">
+                {shloka?.deva ?? "â€¦"}
+              </p>
+              <div className="mt-3 rounded-xl p-3" style={{ background: "var(--bhagwa-dark)" }}>
+                <p className="measure text-[11.5px] leading-relaxed text-white/95">
+                  {shloka?.meaning ?? ""}
+                </p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="truncate text-[10.5px] text-white/75">{shloka?.source ?? ""}</span>
+                  <button
+                    onClick={() => go("sandesh")}
+                    className="flex shrink-0 items-center gap-1.5 rounded-[5px] px-3.5 py-2 text-[11.5px] btn-white"
+                  >
+                    <IconShare size={13} /> Share
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {sec.tab === "devotion" && temples.length > 0 && (
           <div className="gutter pt-1.5 lg:hidden">
             <section className="rounded-2xl surface p-2.5">

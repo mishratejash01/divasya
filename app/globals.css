@@ -242,6 +242,442 @@ strong { font-weight: 500; }
   background: var(--surface-2);
   border: 1px solid var(--line);
 }
+
+/* ---------- home shelves ----------
+   The home index uses one editorial face throughout, with white shelves and
+   quiet marks arranged like a small printed devotional directory. */
+.home-screen {
+  background: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.home-screen .gutter:has([data-sandesh-top]) {
+  display: none;
+}
+
+.home-screen .font-display {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.home-shelf.surface {
+  background: #fff;
+  border: 0;
+  box-shadow: 0 1px 0 rgba(76, 54, 31, 0.04), 0 5px 14px rgba(76, 54, 31, 0.055);
+  padding: 13px 12px 10px;
+  animation: homeShelfIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-shelf-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 22px;
+}
+
+.home-shelf-title {
+  margin: 0;
+  color: #26221c;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.home-shelf-link {
+  color: #766b5d;
+  opacity: 0.8;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.home-shelf-link:hover {
+  color: var(--icon-ink);
+  opacity: 1;
+}
+
+.home-darshan-shelf {
+  overflow: hidden;
+  padding: 16px 14px 14px;
+  border: 0;
+  border-radius: 12px;
+  background:
+    radial-gradient(340px 130px at 100% 0%, rgba(255, 210, 126, 0.24), transparent 70%),
+    #fffaf2;
+  box-shadow: 0 3px 12px rgba(80, 48, 22, 0.06);
+  animation: homeShelfIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-darshan-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 2px 11px;
+}
+
+.home-darshan-kicker {
+  display: block;
+  color: #171613;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.home-darshan-title {
+  margin: 3px 0 0;
+  color: #282018;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.home-darshan-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 1px 2px;
+}
+
+.home-darshan-card {
+  position: relative;
+  display: block;
+  width: 124px;
+  height: 154px;
+  flex: 0 0 124px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 11px;
+  background: #493224;
+  box-shadow: 0 4px 10px rgba(75, 43, 23, 0.12);
+  text-align: left;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  animation: homeCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-darshan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(75, 43, 23, 0.18);
+}
+
+.home-darshan-card:active {
+  transform: scale(0.98);
+}
+
+.home-darshan-image,
+.home-darshan-sheen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.home-darshan-image {
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.home-darshan-card:hover .home-darshan-image {
+  transform: scale(1.05);
+}
+
+.home-darshan-sheen {
+  background: linear-gradient(180deg, rgba(15, 9, 5, 0.02) 32%, rgba(15, 9, 5, 0.78) 100%);
+}
+
+.home-darshan-copy {
+  position: absolute;
+  right: 9px;
+  bottom: 8px;
+  left: 9px;
+  color: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.home-darshan-copy span,
+.home-darshan-copy small {
+  display: block;
+}
+
+.home-darshan-copy small {
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.76);
+  font-family: var(--font-body), ui-sans-serif, sans-serif;
+  font-size: 9.5px;
+}
+
+.home-shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 8px;
+  row-gap: 10px;
+  padding-top: 4px;
+}
+
+.home-block {
+  display: flex;
+  min-width: 0;
+  min-height: 108px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 10px 5px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--block-wash, transparent);
+  color: var(--ink);
+  flex-direction: column;
+  text-align: center;
+  transition: background 0.16s ease, transform 0.16s ease;
+  animation: homeTileIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-block:hover {
+  background: var(--block-wash-hover, #fbf6ed);
+}
+
+.home-block:nth-child(1) { --block-wash: #fff0e4; --block-wash-hover: #ffe7d2; --art-wash: #ffe0ca; }
+.home-block:nth-child(2) { --block-wash: #edf4f2; --block-wash-hover: #e1eeeb; --art-wash: #d8ebe7; }
+.home-block:nth-child(3) { --block-wash: #f5edf8; --block-wash-hover: #eee1f2; --art-wash: #eadcf0; }
+.home-block:nth-child(4) { --block-wash: #fff5d9; --block-wash-hover: #ffedb8; --art-wash: #ffebbb; }
+.home-block:nth-child(5) { --block-wash: #edf1fa; --block-wash-hover: #e0e8f7; --art-wash: #dde7f8; }
+.home-block:nth-child(6) { --block-wash: #f9e9e9; --block-wash-hover: #f3dcdc; --art-wash: #f4dada; }
+
+.home-block:active {
+  transform: translateY(1px);
+}
+
+.home-block-art {
+  object-position: center;
+  mix-blend-mode: multiply;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), filter 0.22s ease;
+}
+
+.home-block:hover .home-block-art {
+  transform: translateY(-3px) scale(1.04);
+  filter: saturate(1.06);
+}
+
+.home-block:nth-child(1) { animation-delay: 40ms; }
+.home-block:nth-child(2) { animation-delay: 80ms; }
+.home-block:nth-child(3) { animation-delay: 120ms; }
+.home-block:nth-child(4) { animation-delay: 160ms; }
+.home-block:nth-child(5) { animation-delay: 200ms; }
+.home-block:nth-child(6) { animation-delay: 240ms; }
+
+.home-block-label {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: #29251f;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.home-japa-photo {
+  display: block;
+  border: 2px solid #e2bf87;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  box-shadow: 0 2px 7px rgba(92, 52, 19, 0.16);
+}
+
+.panchang-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.panchang-metrics > span {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-direction: column;
+  padding: 8px 5px;
+  border: 0;
+  border-radius: 9px;
+  background: #f5efe5;
+  font-size: 12px;
+}
+
+.panchang-metrics > span > span {
+  font-size: 10px;
+}
+
+.panchang-card.surface {
+  background: #fff;
+  border: 1px solid #e9e4dc;
+  box-shadow: none;
+}
+
+.mala-material-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbf7ef;
+}
+
+.mala-material-photo {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Mala Jaap is an intimate devotional canvas rather than a floating app card.
+   Keep the ground quiet so the real material preview and bead ring stay
+   visually central. */
+.mala-screen {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: #fbf5e7;
+  background-image: url("/artwork/mala-rangoli-bg.png");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% 100%;
+}
+
+.mala-header,
+.mala-scroll {
+  position: relative;
+  z-index: 1;
+}
+
+.mala-content {
+  position: relative;
+  z-index: 1;
+}
+
+.mala-sound-button {
+  color: var(--ink);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.mala-sound-button:hover {
+  background: rgba(255, 255, 255, 0.32);
+  transform: scale(1.06);
+}
+
+.mala-content > p:last-child {
+  display: none;
+}
+
+.mala-screen .mala-material-preview {
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  background: rgba(255, 252, 244, 0.7);
+  border-color: rgba(118, 75, 37, 0.18);
+}
+
+.mala-screen .mala-material-preview:active {
+  cursor: grabbing;
+}
+
+.mala-slide-track {
+  position: relative;
+  display: flex;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(132, 75, 39, 0.2);
+  border-radius: 22px;
+  background: rgba(255, 252, 244, 0.72);
+  color: #7f6d5d;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.mala-slide-track:active {
+  cursor: grabbing;
+}
+
+.mala-slide-label {
+  padding: 0 46px;
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  pointer-events: none;
+}
+
+.mala-slide-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fffaf0;
+  background: linear-gradient(180deg, #a4512f, #87351f);
+  box-shadow: 0 2px 5px rgba(91, 37, 21, 0.25);
+  pointer-events: none;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mala-mantra-chip {
+  border: 1px solid var(--line-gold);
+  border-radius: 7px;
+  background: rgba(255, 252, 244, 0.68);
+}
+
+.mala-auto-button {
+  min-height: 44px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #9c4528, #84351f);
+  box-shadow: inset 0 1px 0 rgba(255, 224, 183, 0.24), 0 2px 0 rgba(91, 37, 21, 0.16);
+  letter-spacing: -0.01em;
+}
+
+.mala-auto-button:active,
+.mala-reset-button:active {
+  transform: translateY(1px);
+}
+
+.mala-reset-button {
+  flex: 0 0 auto;
+  border: 1px solid rgba(105, 48, 27, 0.28);
+  border-radius: 50%;
+  color: #fff9eb;
+  background: linear-gradient(180deg, #a4512f, #87351f);
+  box-shadow: inset 0 1px 0 rgba(255, 224, 183, 0.2), 0 2px 0 rgba(91, 37, 21, 0.16);
+}
+
+@media (min-width: 640px) {
+  .home-shelf.surface { padding: 14px 15px 11px; }
+  .home-shelf-title { font-size: 18px; }
+  .home-block { min-height: 112px; }
+  .home-block-label { font-size: 12.5px; }
+}
+
+@media (min-width: 1024px) {
+  .home-screen { background: #fff; }
+  .home-shelf.surface {
+    box-shadow: 0 1px 2px rgba(76, 54, 31, 0.045), 0 8px 20px rgba(76, 54, 31, 0.055);
+  }
+}
+
 .hairline { border: 1px solid var(--line); }
 .divider { border-top: 1px solid var(--line); }
 .ring-gold { border: 1px solid var(--line-gold); }
@@ -307,6 +743,21 @@ strong { font-weight: 500; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+@keyframes homeShelfIn {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes homeCardIn {
+  from { opacity: 0; transform: translateX(12px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes homeTileIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .animate-floatY { animation: floatY 4s ease-in-out infinite; }
 
@@ -333,3 +784,12 @@ strong { font-weight: 500; }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .animate-fadeUp { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

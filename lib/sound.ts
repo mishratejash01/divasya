@@ -8,8 +8,93 @@ function ac(): AudioContext | null {
     if (!C) return null;
     ctx = new C();
   }
-  if (ctx.state === "suspended") ctx.resume();
+  if (ctx.state === "suspended") void ctx.resume().catch(() => undefined);
   return ctx;
+}
+
+type AmbientState = {
+  master: GainNode;
+  drones: OscillatorNode[];
+  timer: number;
+  muted: boolean;
+};
+
+let ambient: AmbientState | null = null;
+
+function ambientNote(c: AudioContext, master: GainNode, frequency: number, duration: number, delay = 0) {
+  const start = c.currentTime + delay;
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  const filter = c.createBiquadFilter();
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(frequency, start);
+  osc.frequency.linearRampToValueAtTime(frequency * 1.006, start + duration * 0.52);
+  osc.frequency.linearRampToValueAtTime(frequency, start + duration);
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(1700, start);
+  filter.frequency.linearRampToValueAtTime(2600, start + duration * 0.35);
+  filter.frequency.linearRampToValueAtTime(1500, start + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.055, start + 0.18);
+  gain.gain.setValueAtTime(0.055, start + duration * 0.55);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(master);
+  osc.start(start);
+  osc.stop(start + duration + 0.05);
+}
+
+/** Starts a quiet, generated veena/flute-like ambient bed for the mala screen. */
+export function startAmbient() {
+  const c = ac();
+  if (!c) return;
+  if (ambient) return;
+
+  const master = c.createGain();
+  master.gain.setValueAtTime(0.045, c.currentTime);
+  master.connect(c.destination);
+
+  const drones = [130.81, 196.0].map((frequency, index) => {
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = index === 0 ? "sine" : "triangle";
+    osc.frequency.value = frequency;
+    gain.gain.value = index === 0 ? 0.12 : 0.055;
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start();
+    return osc;
+  });
+
+  ambient = { master, drones, timer: 0, muted: false };
+  const notes = [261.63, 293.66, 329.63, 392.0, 329.63, 293.66];
+  let index = 0;
+  const loop = () => {
+    if (!ambient) return;
+    ambientNote(c, master, notes[index % notes.length], 4.8, 0.08);
+    index += 1;
+    ambient.timer = window.setTimeout(loop, 4800);
+  };
+  loop();
+}
+
+export function setAmbientMuted(muted: boolean) {
+  if (!ambient || !ctx) return;
+  ambient.muted = muted;
+  const now = ctx.currentTime;
+  ambient.master.gain.cancelScheduledValues(now);
+  ambient.master.gain.setTargetAtTime(muted ? 0.0001 : 0.045, now, 0.08);
+}
+
+export function stopAmbient() {
+  if (!ambient) return;
+  window.clearTimeout(ambient.timer);
+  ambient.drones.forEach((osc) => {
+    try { osc.stop(); } catch { /* already stopped */ }
+  });
+  ambient.master.disconnect();
+  ambient = null;
 }
 
 export function bell(freq = 640, dur = 1.8, gain = 0.22) {
