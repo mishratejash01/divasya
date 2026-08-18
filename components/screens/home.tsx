@@ -39,8 +39,9 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
     // Every shelf reads the same way — a mark over the name, three to a row.
     // Guides used to be a row of pills; it now matches its neighbours.
     layout: "stack",
-    // three fills the 3-up grid exactly, leaving no ragged last row.
-    blocks: NAV[id].entries.slice(0, 3),
+    // Astrology gets the two-row reference treatment; the other shelves stay
+    // intentionally short so Home remains a digest rather than a directory.
+    blocks: NAV[id].entries.slice(0, id === "astro" ? 6 : 3),
   }));
 
 // Some tabs open their own page; some scroll to a section of this one. The
@@ -505,18 +506,18 @@ export function HomeScreen() {
         <Fragment key={sec.title}>
         <div data-section={sec.tab} className="gutter pt-1.5">
           <section className="rounded-2xl surface p-2.5">
-            <div className="mb-2.5 flex items-end justify-between">
-              <h3 className="section-title">{sec.title}</h3>
+            <div className="mb-1.5 flex items-end justify-between px-1">
+              <h3 className="font-display text-[18px] leading-none tracking-[-0.02em] text-ink">{sec.title}</h3>
               <button
                 onClick={() => go("category", { id: sec.tab })}
-                className="flex items-center gap-0.5 text-[11px] text-ink"
+                className="flex items-center gap-0.5 text-[10.5px] text-muted"
               >
                 See all <CaretRight size={11} weight="bold" />
               </button>
             </div>
             <div
               className={cx(
-                "grid gap-2",
+                "grid grid-cols-3",
                 sec.layout === "row" ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3"
               )}
             >
@@ -525,20 +526,20 @@ export function HomeScreen() {
                   key={b.label}
                   onClick={() => go(b.to, b.params)}
                   className={cx(
-                    "rounded-xl border border-[var(--tile-line)] bg-[var(--tile-bg)] transition-[filter] hover:brightness-[0.98]",
+                    "group relative flex min-h-[92px] flex-col items-center justify-center gap-2 border-b border-[var(--line)] px-1 py-3 transition-colors hover:bg-[rgba(200,129,49,0.06)]",
                     sec.layout === "row"
-                      ? "flex items-center gap-2.5 px-2.5 py-2.5 text-left"
-                      : "flex flex-col items-center gap-2 px-1 py-3 lg:py-3.5"
+                      ? "min-h-[64px] flex-row items-center justify-start gap-2.5 text-left"
+                      : "text-center"
                   )}
                 >
                   {b.art ? (
-                    <DevotionalIllustration name={b.art} alt="" className="h-9 w-9 shrink-0 lg:h-11 lg:w-11" />
+                    <DevotionalIllustration name={b.art} alt="" className="h-8 w-8 shrink-0 lg:h-10 lg:w-10" />
                   ) : (
                     <Iconify icon={b.icon} className="shrink-0 text-[var(--icon-ink)] h-[22px] w-[22px] lg:h-[24px] lg:w-[24px]" />
                   )}
                   <span
                     className={cx(
-                      "text-[11px] leading-tight text-ink lg:text-[13px]",
+                      "text-[11px] leading-[1.15] text-ink lg:text-[12.5px]",
                       sec.layout === "row" ? "truncate" : "text-center"
                     )}
                   >

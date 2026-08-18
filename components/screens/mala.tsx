@@ -10,9 +10,12 @@ import { MANTRAS, TARGETS } from "@/lib/demo";
 import { useCatalog, getMantras } from "@/lib/catalog";
 import { bell, ting } from "@/lib/sound";
 
-const SIZE = 288;
+// Keep the tap target comfortably inside a 320px phone after the card gutter
+// and padding are accounted for. The previous 288px ring could clip the bead
+// cord and make the controls below feel squeezed on narrow screens.
+const SIZE = 252;
 const CENTER = SIZE / 2;
-const R = 112; // radius of the bead cord
+const R = 96; // radius of the bead cord
 
 // The mala's material — sets the colour of the un-chanted beads and the guru
 // bead. Chanted beads always warm to gold regardless of material.
@@ -108,12 +111,12 @@ export function MalaScreen() {
           telling, the mala itself as the hero, then settings, tally, controls. */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="gutter py-3" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}>
-          <section className="mx-auto w-full max-w-[430px] rounded-2xl surface ring-gold p-4 lg:max-w-[520px] lg:p-6">
+          <section className="mx-auto w-full max-w-[430px] rounded-2xl surface ring-gold p-3.5 lg:max-w-[520px] lg:p-6">
 
             {/* the mantra — what you're chanting, named first */}
             <div className="text-center">
               <p className="eyebrow text-muted">{mantra.name.replace(/ ?(Mantra|Maha Mantra)$/i, "")} · {mantra.deity}</p>
-              <p className="mt-1.5 font-deva text-[21px] leading-snug text-ink lg:text-[26px]">{mantra.deva}</p>
+              <p className="mt-1.5 font-deva text-[19px] leading-snug text-ink lg:text-[26px]">{mantra.deva}</p>
               <p className="mt-1 text-[11.5px] italic leading-snug text-muted lg:text-[13px]">{mantra.translit}</p>
             </div>
 
@@ -220,7 +223,7 @@ export function MalaScreen() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center">
-                    <span className="font-display text-6xl leading-none text-ink tabular-nums">{count}</span>
+                    <span className="font-display text-5xl leading-none text-ink tabular-nums lg:text-6xl">{count}</span>
                     <span className="mt-0.5 text-[11.5px] tnum text-muted">of {target}</span>
                     <span className="mt-1.5 eyebrow text-[var(--bhagwa-deep)]">tap to chant</span>
                   </div>
