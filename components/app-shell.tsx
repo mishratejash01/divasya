@@ -159,12 +159,12 @@ function DailyNamastePopup() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
           aria-live="polite"
-        >
-          <motion.div
-            className="namaste-pop-card"
-            initial={{ y: 18, scale: 0.92, opacity: 0 }}
+          >
+            <motion.div
+              className="namaste-pop-card"
+            initial={{ y: 96, scale: 0.96, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
-            exit={{ y: -8, scale: 0.96, opacity: 0 }}
+            exit={{ y: 72, scale: 0.98, opacity: 0 }}
             transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
