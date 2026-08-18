@@ -43,6 +43,7 @@ export function MalaScreen() {
   const [slideX, setSlideX] = useState(0);
   const slideTrack = useRef<HTMLDivElement>(null);
   const sliding = useRef(false);
+  const slideXRef = useRef(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const malaSwipeStart = useRef<number | null>(null);
   const manualHold = useRef(false);
@@ -81,6 +82,9 @@ export function MalaScreen() {
     haptic(6);
   }
 
+  const nextMalaType = MALA_TYPES[(MALA_TYPES.indexOf(malaType) + 1) % MALA_TYPES.length];
+  const nextMala = MALAS[nextMalaType];
+
   function onMalaPointerDown(event: PointerEvent<HTMLDivElement>) {
     malaSwipeStart.current = event.clientX;
   }
@@ -104,7 +108,9 @@ export function MalaScreen() {
     if (!track) return;
     const rect = track.getBoundingClientRect();
     const max = Math.max(0, rect.width - 44);
-    setSlideX(Math.max(0, Math.min(max, clientX - rect.left - 22)));
+    const next = Math.max(0, Math.min(max, clientX - rect.left - 22));
+    slideXRef.current = next;
+    setSlideX(next);
   }
 
   function onSlidePointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -116,7 +122,8 @@ export function MalaScreen() {
     sliding.current = false;
     const track = slideTrack.current;
     const max = track ? Math.max(1, track.getBoundingClientRect().width - 44) : 1;
-    if (slideX / max > 0.68) setAuto((value) => !value);
+    if (slideXRef.current / max > 0.68) cycleMala(1);
+    slideXRef.current = 0;
     setSlideX(0);
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   }
@@ -390,9 +397,9 @@ export function MalaScreen() {
               aria-valuemin={0}
               aria-valuemax={1}
               aria-valuenow={slideX > 0 ? 1 : 0}
-              aria-label={auto ? "Slide to pause auto-jaap" : "Slide to start auto-jaap"}
+              aria-label={`Slide to change mala to ${nextMala.label}`}
             >
-              <span className="mala-slide-label">{auto ? "Slide to pause auto-jaap" : "Slide to start auto-jaap"}</span>
+              <span className="mala-slide-label">Slide for {nextMala.label} mala</span>
               <span className="mala-slide-thumb" style={{ transform: `translateX(${slideX}px)` }}>
                 <CaretRight size={15} weight="bold" />
               </span>
