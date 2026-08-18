@@ -2,6 +2,7 @@
 
 import { IconContext } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
@@ -40,6 +41,15 @@ import { OnboardingScreen } from "./screens/onboarding";
 // allow-list, so most screens dropped the bar and stranded the user with only
 // a back button.
 const HIDE_NAV: ScreenName[] = ["mala", "mandir"];
+const NAMASTE_IMAGE = "https://png.pngtree.com/png-vector/20260422/ourmid/pngtree-3d-animated-indian-girl-doing-namaste-greeting-pose-png-image_19153601.webp";
+
+function localDateKey() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function Screen() {
   const { screen } = useApp();
@@ -108,6 +118,65 @@ function DeskTopBar() {
   );
 }
 
+function DailyNamastePopup() {
+  const { screen, haptic } = useApp();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (screen.name !== "home") {
+      setVisible(false);
+      return;
+    }
+
+    const today = localDateKey();
+    try {
+      if (localStorage.getItem("divasya:namaste-seen") === today) return;
+    } catch {
+      return;
+    }
+
+    const showTimer = window.setTimeout(() => {
+      try { localStorage.setItem("divasya:namaste-seen", today); } catch {}
+      setVisible(true);
+      haptic(8);
+    }, 2000);
+
+    const hideTimer = window.setTimeout(() => setVisible(false), 4000);
+
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [screen.name, haptic]);
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          className="namaste-pop-wrap"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          aria-live="polite"
+        >
+          <motion.div
+            className="namaste-pop-card"
+            initial={{ y: 18, scale: 0.92, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: -8, scale: 0.96, opacity: 0 }}
+            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={NAMASTE_IMAGE} alt="" className="namaste-pop-image" />
+            <div className="namaste-pop-title">Namaste</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function RoutedApp() {
   const { screen } = useApp();
   return (
@@ -136,6 +205,7 @@ function RoutedApp() {
             </motion.div>
           </AnimatePresence>
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
+          <DailyNamastePopup />
         </div>
       </main>
     </div>
