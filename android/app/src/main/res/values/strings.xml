@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Divasya</string>
+    <string name="title_activity_main">Divasya</string>
+    <string name="package_name">life.divasya.app</string>
+    <string name="custom_url_scheme">life.divasya.app</string>
+</resources>
