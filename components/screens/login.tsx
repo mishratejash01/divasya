@@ -34,9 +34,12 @@ export function LoginScreen() {
     setBusy("google"); setNote(null);
     try {
       await signInGoogle();  // full-page redirect
-    } catch {
+    } catch (e) {
       setBusy(null);
-      setNote("Couldn't start Google sign-in. Please try again.");
+      // Show the real cause — a generic apology hides exactly the detail
+      // that lets a sign-in problem be fixed remotely.
+      const detail = (e as Error)?.message?.slice(0, 140);
+      setNote(detail ? `Google sign-in failed: ${detail}` : "Couldn't start Google sign-in. Please try again.");
     }
   }
 
@@ -218,7 +221,7 @@ export function LoginScreen() {
         {note && <p className="mt-2.5 text-center text-[11px] leading-relaxed text-[#FFB4A2]">{note}</p>}
 
         <p className="mt-3 text-center text-[10px] leading-relaxed text-white/55">
-          Invite-only. Your birth details stay private.
+          Your birth details stay private.
         </p>
       </motion.div>
     </div>
