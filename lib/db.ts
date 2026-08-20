@@ -57,7 +57,10 @@ export async function signInGoogle() {
 
   if (social) {
     await social.initialize({ google: { webClientId: GOOGLE_WEB_CLIENT_ID, mode: "online" } });
-    const res = await social.login({ provider: "google", options: { scopes: ["email", "profile"] } });
+    // no scopes: the default ID token already carries email + profile, and
+    // requesting scopes forces a native MainActivity modification (the exact
+    // plugin error a device surfaced). Supabase only needs the ID token.
+    const res = await social.login({ provider: "google", options: {} });
     // plugin versions differ on nesting — accept both shapes
     const idToken =
       res?.result?.idToken ?? (res as { idToken?: string } | undefined)?.idToken;
