@@ -356,6 +356,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("popstate", onPop);
   }, [popApp]);
 
+  // Inside the native shell the hardware back is a NATIVE event: once the
+  // App plugin is installed, Capacitor hands it to this listener and does
+  // nothing else — so the behaviour is fully ours: pop one screen per press,
+  // and at home let Android put the app in the background.
+  useEffect(() => {
+    type AppPlugin = {
+      addListener: (ev: string, cb: () => void) => Promise<{ remove: () => void }> | { remove: () => void };
+      minimizeApp?: () => void;
+      exitApp?: () => void;
+    };
+    const cap = (window as unknown as {
+      Capacitor?: { isNativePlatform?: () => boolean; Plugins?: { App?: AppPlugin } };
+    }).Capacitor;
+    const app = cap?.isNativePlatform?.() ? cap.Plugins?.App : undefined;
+    if (!app) return;
+    let removed = false;
+    let handle: { remove: () => void } | null = null;
+    Promise.resolve(
+      app.addListener("backButton", () => {
+        if (pushedRef.current > 0) {
+          // one path only: rewind history, and the popstate listener above
+          // performs the single app-level pop — never pop here as well
+          window.history.back();
+        } else {
+          (app.minimizeApp ?? app.exitApp)?.();
+        }
+      })
+    ).then((h) => { if (removed) h.remove(); else handle = h; });
+    return () => { removed = true; handle?.remove(); };
+  }, [popApp]);
+
   const haptic = useCallback((pattern: number | number[] = 14) => {
     try { navigator.vibrate?.(pattern); } catch {}
   }, []);
