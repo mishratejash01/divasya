@@ -133,6 +133,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // restored right after mount, and re-saved as you navigate. sessionStorage —
   // it survives a reload but doesn't hijack a fresh visit.
   const navRestored = useRef(false);
+  // How many history entries WE pushed. The app navigates with React state,
+  // so the WebView's history never grew and Android's hardware back exited
+  // the app immediately. Every go() now mirrors a browser history entry,
+  // popstate performs the app-level back, and in-app back buttons route
+  // through history.back() so the two stacks can never drift apart.
+  const pushedRef = useRef(0);
   useEffect(() => {
     if (navRestored.current) return;
     navRestored.current = true;
@@ -143,6 +149,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (saved?.screen?.name) {
           setScreen(saved.screen);
           if (Array.isArray(saved.history)) setHistory(saved.history);
+          // rebuild the browser stack to match, so hardware back walks the
+          // restored screens home instead of exiting from a deep screen
+          const backs = saved.history?.length
+            ? saved.history.length
+            : saved.screen.name !== "home" ? 1 : 0;
+          for (let i = 0; i < backs; i++) window.history.pushState({ divasya: true }, "");
+          pushedRef.current = backs;
         }
       }
     } catch { /* private mode / bad JSON — start on home */ }
@@ -303,16 +316,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const go = useCallback((name: ScreenName, params?: Record<string, unknown>) => {
     setHistory((h) => [...h, screen]);
     setScreen({ name, params });
+    if (typeof window !== "undefined") {
+      window.history.pushState({ divasya: true }, "");
+      pushedRef.current += 1;
+    }
     logEvent("navigate", { to: name });
   }, [screen]);
 
-  const back = useCallback(() => {
+  /** The app-level pop — shared by popstate and the no-history fallback. */
+  const popApp = useCallback(() => {
     setHistory((h) => {
       if (h.length === 0) { setScreen({ name: "home" }); return h; }
       setScreen(h[h.length - 1]);
       return h.slice(0, -1);
     });
   }, []);
+
+  const back = useCallback(() => {
+    // Route through the browser stack when we own entries there, so the
+    // hardware button and on-screen back arrows stay perfectly in step.
+    if (typeof window !== "undefined" && pushedRef.current > 0) {
+      window.history.back(); // popstate performs the pop
+      return;
+    }
+    popApp();
+  }, [popApp]);
+
+  // Hardware/browser back: pop the app exactly once per entry we pushed.
+  // At the stack's bottom (home) the event isn't ours — Android exits the
+  // app, which is the platform's own convention.
+  useEffect(() => {
+    const onPop = () => {
+      if (pushedRef.current > 0) {
+        pushedRef.current -= 1;
+        popApp();
+      }
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [popApp]);
 
   const haptic = useCallback((pattern: number | number[] = 14) => {
     try { navigator.vibrate?.(pattern); } catch {}
