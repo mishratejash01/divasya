@@ -40,17 +40,28 @@ type CapacitorGlobal = {
   };
 };
 
+// The web OAuth client id — public by design (it rides in every Google login
+// URL). The env var wins when present; the literal is the safety net so a
+// build where the env failed to bake can never silently break native login.
+const GOOGLE_WEB_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  "474770938673-kj851svo7je3flfcstb6p6kuh5bskfjv.apps.googleusercontent.com";
+
 export async function signInGoogle() {
   const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
   const social = cap?.isNativePlatform?.() ? cap.Plugins?.SocialLogin : undefined;
 
+  if (cap?.isNativePlatform?.() && !social) {
+    throw new Error("native shell has no SocialLogin plugin (rebuild the app)");
+  }
+
   if (social) {
-    await social.initialize({
-      google: { webClientId: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "" },
-    });
+    await social.initialize({ google: { webClientId: GOOGLE_WEB_CLIENT_ID, mode: "online" } });
     const res = await social.login({ provider: "google", options: { scopes: ["email", "profile"] } });
-    const idToken = res?.result?.idToken;
-    if (!idToken) throw new Error("Google sign-in returned no token.");
+    // plugin versions differ on nesting — accept both shapes
+    const idToken =
+      res?.result?.idToken ?? (res as { idToken?: string } | undefined)?.idToken;
+    if (!idToken) throw new Error("Google returned no ID token.");
     const { error } = await supabaseBrowser().auth.signInWithIdToken({ provider: "google", token: idToken });
     if (error) throw error;
     return; // SIGNED_IN fires in-page; no redirect needed
