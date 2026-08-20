@@ -25,7 +25,37 @@ export async function getUser() {
   return data.user;
 }
 
+// Inside the Android shell, Capacitor injects window.Capacitor with the
+// natively installed plugins. SocialLogin drives Google's on-device account
+// sheet (Credential Manager) — no browser tab anywhere — and returns an ID
+// token that Supabase verifies directly. On the web, nothing changes: the
+// same full-page OAuth redirect as always.
+type CapacitorGlobal = {
+  isNativePlatform?: () => boolean;
+  Plugins?: {
+    SocialLogin?: {
+      initialize: (o: object) => Promise<void>;
+      login: (o: object) => Promise<{ result?: { idToken?: string } }>;
+    };
+  };
+};
+
 export async function signInGoogle() {
+  const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
+  const social = cap?.isNativePlatform?.() ? cap.Plugins?.SocialLogin : undefined;
+
+  if (social) {
+    await social.initialize({
+      google: { webClientId: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "" },
+    });
+    const res = await social.login({ provider: "google", options: { scopes: ["email", "profile"] } });
+    const idToken = res?.result?.idToken;
+    if (!idToken) throw new Error("Google sign-in returned no token.");
+    const { error } = await supabaseBrowser().auth.signInWithIdToken({ provider: "google", token: idToken });
+    if (error) throw error;
+    return; // SIGNED_IN fires in-page; no redirect needed
+  }
+
   const { error } = await supabaseBrowser().auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: window.location.origin, queryParams: { prompt: "select_account" } },
