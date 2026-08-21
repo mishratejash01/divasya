@@ -522,56 +522,77 @@ strong { font-weight: 500; }
   box-shadow: none;
 }
 
-.namaste-pop-wrap {
+/* The daily greeting takes the whole screen — a warm saffron welcome, not a
+   card. Tap anywhere (the wrap is clickable) to dismiss early. */
+.namaste-full {
   position: absolute;
   inset: 0;
-  z-index: 60;
-  display: grid;
-  place-items: end center;
-  padding: 7.5vh 7.5vw calc(env(safe-area-inset-bottom, 0px) + 18px);
-  pointer-events: none;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.namaste-pop-card {
+  z-index: 70;
   display: flex;
-  width: min(85vw, 390px);
-  min-height: min(85vh, 620px);
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  padding: 26px 24px 30px;
-  border: 1px solid rgba(192, 223, 255, 0.58);
-  border-radius: 24px;
-  background: linear-gradient(180deg, #eaf6ff 0%, #cfeaff 48%, #a9d4ff 100%);
-  box-shadow: 0 24px 64px rgba(18, 63, 121, 0.28), 0 2px 0 rgba(255, 255, 255, 0.88) inset;
+  text-align: center;
+  cursor: pointer;
+  padding: calc(env(safe-area-inset-top, 0px) + 28px) 24px
+           calc(env(safe-area-inset-bottom, 0px) + 28px);
+  background:
+    radial-gradient(115% 78% at 50% 6%, #FFF8ED 0%, #FFE9CC 44%, #F7C67F 100%);
 }
 
-.namaste-pop-image {
+.namaste-full-imgwrap {
+  display: flex;
+  justify-content: center;
+}
+
+.namaste-full-image {
   display: block;
-  width: min(68vw, 280px);
-  height: min(58vh, 360px);
+  width: min(80vw, 400px);
+  height: auto;
+  max-height: 54vh;
   object-fit: contain;
-  object-position: center;
-  filter: drop-shadow(0 16px 26px rgba(28, 81, 137, 0.28));
+  filter: drop-shadow(0 22px 42px rgba(150, 80, 20, 0.30));
 }
 
-.namaste-pop-title {
-  margin-top: 16px;
-  color: #123f79;
-  font-family: var(--font-display);
-  font-size: clamp(30px, 9vw, 46px);
+.namaste-full-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 22px;
+}
+
+.namaste-full-deva {
+  font-family: var(--font-deva, serif);
+  font-size: clamp(32px, 9.5vw, 56px);
   line-height: 1;
-  letter-spacing: 0;
+  color: var(--bhagwa-deep, #C1440E);
 }
 
-@media (min-width: 768px) {
-  .namaste-pop-wrap {
-    place-items: center;
-    padding: 7.5vh 7.5vw;
-  }
+.namaste-full-title {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5.5vw, 30px);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--ink, #171613);
+}
+
+.namaste-full-sub {
+  margin-top: 9px;
+  font-size: clamp(12px, 3.4vw, 15px);
+  color: var(--icon-ink, #8A2B22);
+  opacity: 0.82;
+}
+
+.namaste-full-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(138, 43, 34, 0.55);
 }
 
 .mala-material-preview {

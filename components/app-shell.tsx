@@ -8,7 +8,7 @@ import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
 import { CategoryScreen } from "./screens/category";
 import { PushToast } from "./push-toast";
-import { Logomark } from "./ui";
+import { Logomark, BrandWordmark } from "./ui";
 import { Iconify } from "./iconify";
 
 import { HomeScreen } from "./screens/home";
@@ -102,8 +102,8 @@ function DeskTopBar() {
       className="hidden h-14 shrink-0 items-center justify-between px-5 lg:flex"
       style={{ background: "var(--bar-yellow)", borderBottom: "1px solid rgba(0,0,0,0.10)" }}
     >
-      <button onClick={() => go("home")} className="text-left">
-        <span className="font-display text-[19px] leading-none tracking-[-0.01em] text-ink">Divasya</span>
+      <button onClick={() => go("home")} className="text-left" aria-label="Divasya — Home">
+        <BrandWordmark height={26} tone="ink" priority />
       </button>
       {/* Account lives here now — the user-circle mark, not an avatar. */}
       <button
@@ -139,9 +139,12 @@ function DailyNamastePopup() {
       try { localStorage.setItem("divasya:namaste-seen", today); } catch {}
       setVisible(true);
       haptic(8);
-    }, 2000);
+    }, 1500);
 
-    const hideTimer = window.setTimeout(() => setVisible(false), 4000);
+    // Full-screen greeting: it appears at 1.5s and holds until 6.8s (~5.3s on
+    // screen) so it reads as a proper welcome, not a flash. A tap dismisses it
+    // early.
+    const hideTimer = window.setTimeout(() => setVisible(false), 6800);
 
     return () => {
       window.clearTimeout(showTimer);
@@ -153,24 +156,35 @@ function DailyNamastePopup() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="namaste-pop-wrap"
+          className="namaste-full"
+          onClick={() => setVisible(false)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
+          transition={{ duration: 0.32, ease: "easeOut" }}
           aria-live="polite"
-          >
-            <motion.div
-              className="namaste-pop-card"
-            initial={{ y: 96, scale: 0.96, opacity: 0 }}
+          role="dialog"
+        >
+          <motion.div
+            className="namaste-full-imgwrap"
+            initial={{ y: 26, scale: 0.94, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
-            exit={{ y: 72, scale: 0.98, opacity: 0 }}
-            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={NAMASTE_IMAGE} alt="" className="namaste-pop-image" />
-            <div className="namaste-pop-title">Namaste</div>
+            <img src={NAMASTE_IMAGE} alt="" className="namaste-full-image" />
           </motion.div>
+          <motion.div
+            className="namaste-full-text"
+            initial={{ y: 16, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="namaste-full-deva">नमस्ते</div>
+            <div className="namaste-full-title">Namaste</div>
+            <div className="namaste-full-sub">Wishing you a blessed day</div>
+          </motion.div>
+          <div className="namaste-full-hint">tap to continue</div>
         </motion.div>
       )}
     </AnimatePresence>

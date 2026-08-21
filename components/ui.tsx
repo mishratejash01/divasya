@@ -143,6 +143,30 @@ export function Wordmark({ className, size = 22 }: { className?: string; size?: 
 }
 
 /**
+ * The real Divasya wordmark — the supplied logo lettering (sun over the i, a
+ * crescent moon, the ™), background keyed to transparent so it drops onto any
+ * surface. Height-driven; the width follows the artwork's aspect. Use this for
+ * brand chrome (top bar, rail); the text Wordmark stays for tiny inline uses.
+ */
+export function BrandWordmark({ className, height = 22, priority = false, tone = "brand" }: { className?: string; height?: number; priority?: boolean; tone?: "brand" | "ink" }) {
+  // "brand" = the orange lettering, for white/cream/dark surfaces.
+  // "ink"   = a dark mono knockout, for the haldi-yellow chrome where orange on
+  //           yellow washes out.
+  const src = tone === "ink" ? "/brand/divasya-wordmark-ink.png" : "/brand/divasya-wordmark.png";
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt="Divasya"
+      draggable={false}
+      loading={priority ? "eager" : "lazy"}
+      className={cx("w-auto select-none", className)}
+      style={{ height }}
+    />
+  );
+}
+
+/**
  * Monogram for a name. Strips honorifics, then anything that isn't a letter —
  * otherwise the full stop left behind by "Dr." becomes an initial and the mark
  * reads ".A".

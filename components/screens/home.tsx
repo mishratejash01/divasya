@@ -5,7 +5,7 @@ import { CaretRight, Microphone } from "@phosphor-icons/react";
 import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER } from "../nav-map";
-import { DeityPortrait, DevotionalIllustration, Logomark, cx, type DevotionalIllustrationName } from "../ui";
+import { DeityPortrait, DevotionalIllustration, Logomark, BrandWordmark, cx, type DevotionalIllustrationName } from "../ui";
 import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
 import {
@@ -339,6 +339,9 @@ export function HomeScreen() {
               size the global "light" stroke went spindly on the yellow. */}
           <button onClick={() => go("menu")} aria-label="Menu" className="shrink-0">
             <Iconify icon="solar:hamburger-menu-linear" width={24} height={24} className="text-ink" />
+          </button>
+          <button onClick={() => go("home")} aria-label="Divasya — Home" className="shrink-0">
+            <BrandWordmark height={22} tone="ink" priority />
           </button>
           <div className="ml-auto flex shrink-0 items-center gap-3.5">
             <button

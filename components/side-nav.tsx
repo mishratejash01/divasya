@@ -2,7 +2,7 @@
 
 import { Iconify } from "./iconify";
 import { useApp, ScreenName } from "./app-context";
-import { Logomark, cx } from "./ui";
+import { Logomark, BrandWordmark, cx } from "./ui";
 
 type NavItem = {
   id: string;
@@ -55,9 +55,7 @@ export function SideNav() {
           <Logomark size={26} className="text-ink" />
         </span>
         {screen.name !== "home" && (
-          <span className="min-w-0 whitespace-nowrap font-display text-[17px] leading-none tracking-[-0.01em] text-ink opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-            Divasya
-          </span>
+          <BrandWordmark height={22} tone="ink" className="min-w-0 opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
         )}
       </button>
 
