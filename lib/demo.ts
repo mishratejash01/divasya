@@ -764,19 +764,19 @@ export const BABY_NAMES: { n: string; deva?: string; g: "m" | "f"; m: string; mh
 
 // Warm tints from the brand palette. These were dark hexes left over from an
 // earlier theme, which rendered as grey slabs on the cream cards.
-export const LIBRARY: { id: string; title: string; sub: string; read: string; grad: string[]; content?: string }[] = [
+export const LIBRARY: { id: string; title: string; sub: string; read: string; grad: string[]; content?: string; image?: string }[] = [
   {
-    id: "l1", title: "What is Meditation?", sub: "Unlocking inner peace", read: "2 min", grad: ["#CEB976", "#9C8544"],
+    id: "l1", title: "What is Meditation?", sub: "Unlocking inner peace", read: "2 min", grad: ["#CEB976", "#9C8544"], image: "/library/l1.jpg",
     content:
       "Dhyana, the seventh limb of Patanjali's ashtanga yoga, is not the emptying of the mind but the steady holding of it. Where dharana fixes attention on a single point, dhyana is the unbroken flow of that attention, oil poured from one vessel to another without a break.\n\nThe practice begins with the breath. Sit with the spine upright, the eyes soft, and follow the air as it comes and goes. Thoughts will rise; this is their nature. The work is not to fight them but to return, gently and without judgement, to the breath each time you notice you have wandered.\n\nOver weeks the returning grows easier, and the gaps between thoughts widen. In those gaps is the quiet the rishis spoke of — not an achievement to be seized, but a stillness that was always there, waiting under the noise.",
   },
   {
-    id: "l2", title: "The 7 Chakras", sub: "Energy centres of the body", read: "4 min", grad: ["#C88131", "#A5661F"],
+    id: "l2", title: "The 7 Chakras", sub: "Energy centres of the body", read: "4 min", grad: ["#C88131", "#A5661F"], image: "/library/l2.jpg",
     content:
       "Along the sushumna, the central channel of the subtle body, sit seven wheels of energy. Each governs a region of the body and a register of the mind, and each turns freely when we are well and stiffens when we are not.\n\nMuladhara, at the base of the spine, is the root — earth, survival, the ground beneath us. Above it Svadhishthana holds water and desire; Manipura, at the navel, is fire and will. Anahata, the heart, is where the lower three meet the higher three, the seat of compassion.\n\nHigher still are Vishuddha at the throat, the centre of speech and truth; Ajna between the brows, the eye of insight; and Sahasrara at the crown, the thousand-petalled lotus where the individual self dissolves into the whole. To work with the chakras is to tend each in turn, so the energy may rise clean from root to crown.",
   },
   {
-    id: "l3", title: "Power of Hanuman Chalisa", sub: "Daily protection", read: "3 min", grad: ["#B4564B", "#7A4A2C"],
+    id: "l3", title: "Power of Hanuman Chalisa", sub: "Daily protection", read: "3 min", grad: ["#B4564B", "#7A4A2C"], image: "/library/l3.jpg",
     content:
       "Composed by Tulsidas in the sixteenth century, the Hanuman Chalisa is forty verses of praise to the son of the wind. It is among the most recited hymns in the Hindu world, spoken at dawn and dusk, in temples and on trains, by the devout and the merely hopeful alike.\n\nIts power is held to be protective. Hanuman is the remover of fear — the one who leapt the ocean, who carried a mountain, who set his own tail alight and walked unburnt. To recite his Chalisa is to call that fearlessness into oneself, to meet the day's troubles with a steadier heart.\n\nThe words need not be understood to be felt. Say them slowly, let the rhythm settle the breath, and the mind grows quiet in the saying. That quiet, the tradition holds, is Hanuman's blessing — the strength to carry what must be carried.",
   },

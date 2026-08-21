@@ -314,9 +314,9 @@ export function ConsultChatScreen() {
       <AnimatePresence>
         {phase === "ended" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}>
+            className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}>
             <motion.div initial={{ y: 60 }} animate={{ y: 0 }}
-              className="w-full rounded-t-3xl p-4 pb-6" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
+              className="w-full rounded-t-3xl p-4" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)" }}>
               <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />
               <div className="font-display text-lg text-ink">Continue with {astro.name.split(" ").slice(-1)[0]}</div>
               <div className="mt-1 text-[11px] text-muted">Your free session ended. Recharge your wallet to keep chatting at ₹{astro.rate}/min.</div>

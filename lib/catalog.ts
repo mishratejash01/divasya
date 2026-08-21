@@ -26,6 +26,7 @@ export type Article = {
   id: string; title: string; sub: string; read: string; kind: string;
   content: string; tint: string; grad: [string, string];
   title_hi: string; sub_hi: string; content_hi: string; category: string;
+  image?: string;
 };
 export type Shloka = { id: number; deva: string; translit: string; meaning: string; meaning_hi: string | null; source: string; deity: string };
 export type VastuZone = { dir: string; zone: string; use: string; tip: string; zone_hi: string; use_hi: string; tip_hi: string };
@@ -125,6 +126,15 @@ export async function getUpcomingFestivals(limit = 6): Promise<Festival[]> {
   return (up.length ? up : all).slice(0, limit);
 }
 
+// Article artwork keyed by id, applied whatever the source is — the Supabase
+// library_articles rows carry no image column, so without this map the seeded
+// pictures only ever showed on the demo fallback (i.e. not in the real app).
+const LIBRARY_IMAGES: Record<string, string> = {
+  l1: "/library/l1.jpg",
+  l2: "/library/l2.jpg",
+  l3: "/library/l3.jpg",
+};
+
 export const getLibrary = () =>
   cached<Article[]>("library", async () => {
     const r = await rows<Record<string, never>>("library_articles");
@@ -133,11 +143,13 @@ export const getLibrary = () =>
       content: l["content"], tint: l["tint"], grad: [l["tint"], shade(l["tint"])] as [string, string],
       title_hi: l["title_hi"] ?? l["title"], sub_hi: l["sub_hi"] ?? l["sub"],
       content_hi: l["content_hi"] ?? l["content"], category: l["category"] ?? "wisdom",
+      image: l["image"] ?? LIBRARY_IMAGES[l["id"]],
     }));
   }, LIBRARY.map((l) => ({
     id: l.id, title: l.title, sub: l.sub, read: l.read, kind: "read",
     content: l.content ?? "", tint: l.grad[0], grad: l.grad as [string, string],
     title_hi: l.title, sub_hi: l.sub, content_hi: l.content ?? "", category: "wisdom",
+    image: l.image ?? LIBRARY_IMAGES[l.id],
   })));
 
 export const getShlokas = () =>

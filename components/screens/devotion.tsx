@@ -333,11 +333,11 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="absolute inset-0 z-40 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}
+      className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}
       onClick={() => step !== "paying" && onClose()}>
       <motion.div initial={{ y: 80 }} animate={{ y: 0 }} onClick={(e) => e.stopPropagation()}
-        className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl p-4 pb-6 no-scrollbar lg:mx-auto lg:max-w-[560px]"
-        style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)" }}>
+        className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl p-4 no-scrollbar lg:mx-auto lg:max-w-[560px]"
+        style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)" }}>
         <div className="mx-auto mb-4 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />
 
         {step === "form" && (

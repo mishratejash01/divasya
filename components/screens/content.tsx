@@ -469,7 +469,12 @@ export function LibraryScreen() {
         {/* hero frame — read time straddles the bottom edge, centred */}
         <div className="gutter pt-3">
           <div className="relative">
-            <div className="h-44 w-full rounded-lg" style={{ background: `linear-gradient(160deg, ${article.tint}44, ${article.tint}14)` }} />
+            {article.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={article.image} alt="" className="h-44 w-full rounded-lg object-cover" style={{ border: "1px solid var(--line)" }} />
+            ) : (
+              <div className="h-44 w-full rounded-lg" style={{ background: `linear-gradient(160deg, ${article.tint}44, ${article.tint}14)` }} />
+            )}
             <span
               className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 whitespace-nowrap rounded-[3px] px-2 py-[2.5px] text-[9.5px] tnum text-ink"
               style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
@@ -531,7 +536,12 @@ export function LibraryScreen() {
             style={{ background: "var(--surface-2)" }}
           >
             <div className="relative">
-              <div className="h-[92px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+              {l.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={l.image} alt="" className="h-[92px] w-full rounded-lg object-cover" />
+              ) : (
+                <div className="h-[92px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+              )}
               <span
                 className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[9px] tnum text-ink"
                 style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}

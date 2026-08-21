@@ -95,29 +95,29 @@ export function MandirScreen() {
         {/* right — the shrine + ritual actions, filling the remaining width */}
         <div className="flex min-h-0 flex-1 flex-col">
 
-          {/* the shrine — a temple hall housing the chosen deity's mandir */}
-          <div className="relative mx-3 mt-3 flex-1 overflow-hidden rounded-3xl lg:mx-0 lg:mt-0 lg:h-[560px] lg:flex-none"
-            style={{ background: "radial-gradient(120% 90% at 50% 12%, #FFF7E6 0%, #F5E7C4 55%, #EAD6A6 100%)", border: "1px solid var(--line-gold)", boxShadow: "inset 0 0 0 1px rgba(206,185,118,0.25)" }}>
+          {/* the shrine — the ornate golden mandir sits directly on the page,
+              no card or backdrop, so the temple artwork is the whole view */}
+          <div className="relative mx-3 mt-2 flex-1 overflow-hidden lg:mx-0 lg:mt-0 lg:h-[560px] lg:flex-none">
 
-            {/* marble floor */}
-            <div className="absolute inset-x-0 bottom-0 h-[26%]"
-              style={{ background: "linear-gradient(180deg, rgba(160,110,40,0) 0%, rgba(160,110,40,0.10) 40%, rgba(140,95,34,0.22) 100%)", borderTop: "1px solid rgba(185,138,46,0.35)" }} />
-
-            {/* the mandir + caption, centred in the hall */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-              <div className="relative h-[64%] max-h-[430px] lg:h-[80%] lg:max-h-[480px]">
-                <Temple deity={deity} lit={lit} />
-              </div>
-              <div className="mt-3 text-center">
-                <div className="font-deva text-[20px] leading-none text-gold lg:text-[22px]">{deity.deva}</div>
-                <div className="mt-1 text-[11px] tracking-wide text-muted">{deity.tagline}</div>
+            {/* the mandir artwork, with the deity installed on its pedestal.
+                The inner box carries the artwork's exact aspect ratio, so the
+                murti's percentage position always lands on the pedestal. */}
+            <div className="absolute inset-0 flex items-center justify-center p-4 lg:p-6">
+              <div className="relative h-[88%]" style={{ aspectRatio: "1024 / 1536" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/artwork/mandir-frame.png" alt="" className="h-full w-full object-contain" />
+                {/* the deity murti — standing on the pedestal, inside the niche */}
+                <div className="absolute left-1/2 -translate-x-1/2"
+                  style={{ bottom: "21.5%", width: "27%", height: "29%", filter: lit ? "drop-shadow(0 0 20px rgba(255,198,98,0.7))" : "drop-shadow(0 3px 8px rgba(60,30,6,0.45))" }}>
+                  <MurtiImg deity={deity} />
+                </div>
               </div>
             </div>
 
             {/* hanging bell */}
             <motion.div key={bellKey} animate={{ rotate: [0, 16, -14, 10, -7, 0] }} transition={{ duration: 0.7 }}
               className="absolute right-6 top-6 origin-top">
-              <Iconify icon="game-icons:ringing-bell" width={26} height={26} className="text-[var(--icon-ink)]" />
+              <Iconify icon="game-icons:ringing-bell" width={26} height={26} className="text-[#EBC66A]" />
             </motion.div>
 
             {/* falling petals */}
@@ -175,141 +175,12 @@ export function MandirScreen() {
 }
 
 /**
- * A carved home-mandir: a curvilinear shikhara topped by a kalash, an
- * entablature on two fluted pillars, a marigold garland draped over the cusped
- * sanctum arch, a stepped plinth, and diyas on the base. The chosen deity's
- * murti sits in the sanctum.
+ * The deity murti installed on the mandir's pedestal. Prefers the 2D statue at
+ * /deity/<id>-2d.png, falls back to the photo, then a quiet ॐ. It fills its
+ * positioned box and sits on the box's bottom edge (object-bottom), so the
+ * figure always stands on the pedestal whether it is seated or standing.
  */
-function Temple({ deity, lit }: { deity: God; lit: boolean }) {
-  const garland = Array.from({ length: 15 }).map((_, i) => {
-    const t = i / 14;
-    const ang = Math.PI * (1 - t);
-    return { x: 160 + Math.cos(ang) * 72, y: 258 - Math.sin(ang) * 72, i };
-  });
-
-  return (
-    <div className="relative h-full">
-      <svg viewBox="0 0 320 500" className="h-full w-auto" aria-hidden>
-        <defs>
-          <linearGradient id="mBrass" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#EBCC77" />
-            <stop offset="0.5" stopColor="#C99A3C" />
-            <stop offset="1" stopColor="#966420" />
-          </linearGradient>
-          <linearGradient id="mPillar" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#8E6220" />
-            <stop offset="0.5" stopColor="#F0D890" />
-            <stop offset="1" stopColor="#8E6220" />
-          </linearGradient>
-          <linearGradient id="mDome" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#F3DE9A" />
-            <stop offset="1" stopColor="#B9862C" />
-          </linearGradient>
-          <radialGradient id="mSanc" cx="0.5" cy="0.34" r="0.8">
-            <stop offset="0" stopColor="#FFF1D0" />
-            <stop offset="0.7" stopColor="#F1CE88" />
-            <stop offset="1" stopColor="#E1AF5E" />
-          </radialGradient>
-        </defs>
-
-        {/* sanctum opening — drawn first so the frame sits on top of it */}
-        <rect x="96" y="168" width="128" height="256" fill="url(#mSanc)" />
-
-        <g stroke="#79521F" strokeWidth="1.2" strokeLinejoin="round">
-          {/* stepped plinth */}
-          <path d="M20 490 H300 L288 468 H32 Z" fill="url(#mBrass)" />
-          <path d="M40 468 H280 L270 446 H50 Z" fill="url(#mBrass)" />
-          <rect x="60" y="424" width="200" height="22" rx="2" fill="url(#mBrass)" />
-
-          {/* pillars — capital sits under the lintel, shaft lands on the plinth */}
-          {[64, 224].map((px) => (
-            <g key={px}>
-              <rect x={px - 8} y="170" width="48" height="16" rx="2" fill="url(#mBrass)" />
-              <rect x={px} y="186" width="32" height="238" fill="url(#mPillar)" />
-              <line x1={px + 10} y1="190" x2={px + 10} y2="420" stroke="#79521F" strokeWidth="0.8" opacity="0.45" />
-              <line x1={px + 22} y1="190" x2={px + 22} y2="420" stroke="#79521F" strokeWidth="0.8" opacity="0.45" />
-            </g>
-          ))}
-
-          {/* lintel across the pillars */}
-          <rect x="52" y="150" width="216" height="20" rx="2" fill="url(#mBrass)" />
-          {Array.from({ length: 12 }).map((_, i) => (
-            <rect key={i} x={60 + i * 17} y="164" width="8" height="6" fill="rgba(121,82,31,0.4)" stroke="none" />
-          ))}
-
-          {/* shikhara dome + kalash, centred on the lintel */}
-          <rect x="102" y="136" width="116" height="16" rx="2" fill="url(#mBrass)" />
-          <path d="M108 138 Q108 74 160 66 Q212 74 212 138 Z" fill="url(#mDome)" />
-          <path d="M124 132 Q124 94 160 86 Q196 94 196 132" fill="none" stroke="rgba(121,82,31,0.4)" strokeWidth="1" />
-          <path d="M140 124 Q140 104 160 98 Q180 104 180 124" fill="none" stroke="rgba(121,82,31,0.4)" strokeWidth="1" />
-          <ellipse cx="160" cy="64" rx="19" ry="6" fill="url(#mBrass)" />
-          <circle cx="160" cy="52" r="6.5" fill="url(#mBrass)" />
-          <path d="M152 52 Q152 41 160 37 Q168 41 168 52 Z" fill="url(#mBrass)" />
-          <line x1="160" y1="37" x2="160" y2="18" stroke="#966420" strokeWidth="2.2" />
-          <path d="M160 18 L178 24 L160 30 Z" fill="var(--bhagwa)" stroke="none" />
-
-          {/* singhasan — the deity's seat */}
-          <rect x="118" y="402" width="84" height="22" rx="2" fill="url(#mBrass)" />
-          <rect x="130" y="388" width="60" height="14" rx="2" fill="url(#mBrass)" />
-        </g>
-
-        {/* decorative cusped arch inside the opening (springs from the pillars) */}
-        <path d="M96 250 Q96 192 160 188 Q224 192 224 250" fill="none" stroke="url(#mBrass)" strokeWidth="11" strokeLinecap="round" />
-        <path d="M104 248 Q104 200 160 196 Q216 200 216 248" fill="none" stroke="rgba(121,82,31,0.3)" strokeWidth="1" />
-
-        {/* marigold garland draped over the arch */}
-        <g stroke="none">
-          {garland.map((g) => (
-            <circle key={g.i} cx={g.x} cy={g.y} r={g.i % 3 === 1 ? 4 : 5.4}
-              fill={g.i % 3 === 1 ? "#6E8A3C" : g.i % 2 ? "#EFA436" : "#E07C25"} />
-          ))}
-          {[90, 230].map((x) => (
-            <g key={x}>
-              {[0, 1, 2].map((k) => (
-                <circle key={k} cx={x} cy={252 + k * 12} r={5 - k * 0.6} fill={k % 2 ? "#EFA436" : "#E07C25"} />
-              ))}
-            </g>
-          ))}
-        </g>
-      </svg>
-
-      {/* the deity murti, standing on the singhasan. Static, no drop-shadow —
-          only a soft golden aura when the diya is lit, so darshan still pays off. */}
-      <div
-        className="absolute left-1/2 top-[62%] -translate-x-1/2 -translate-y-1/2"
-        style={{ filter: lit ? "drop-shadow(0 0 22px rgba(200,129,49,0.5))" : "none" }}>
-        <span className="lg:hidden"><DeityMurti deity={deity} size={112} /></span>
-        <span className="hidden lg:block"><DeityMurti deity={deity} size={132} /></span>
-      </div>
-
-      {/* diyas on the plinth */}
-      {[28, 72].map((x) => (
-        <div key={x} className="absolute flex flex-col items-center" style={{ left: `${x}%`, bottom: "9%", transform: "translateX(-50%)" }}>
-          <AnimatePresence>
-            {lit && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
-                className="mb-0.5 h-5 w-3 rounded-full flame-glow"
-                style={{ background: "radial-gradient(circle at 50% 70%, #FFF3C0, #E89B45 60%, #C86A28)" }}>
-                <motion.div animate={{ scaleY: [1, 1.25, 0.9, 1.15, 1], opacity: [1, 0.85, 1] }} transition={{ duration: 0.5, repeat: Infinity }} className="h-full w-full" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <span className="block h-3 w-7 rounded-b-[12px]"
-            style={{ background: "linear-gradient(180deg,#C99A3C,#8A5A22)", border: "1px solid #79521F", borderTop: "none" }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * The murti in the sanctum. Prefers the 2D illustrated statue at
- * /deity/<id>-2d.png — a transparent, portrait cut-out that stands in the
- * sanctum like a real idol — then falls back to the photographic /deity/<id>.jpg
- * (framed), then a quiet ॐ tile, so the sanctum is never a broken frame.
- */
-function DeityMurti({ deity, size }: { deity: God; size: number }) {
+function MurtiImg({ deity }: { deity: God }) {
   const candidates = [`/deity/${deity.id}-2d.png`, `/deity/${deity.id}.jpg`];
   const [i, setI] = useState(0);
   const ref = useRef<HTMLImageElement>(null);
@@ -321,21 +192,10 @@ function DeityMurti({ deity, size }: { deity: God; size: number }) {
   });
   const src = candidates[i];
   if (!src)
-    return (
-      <span className="grid place-items-center rounded-[12px] font-deva text-[var(--bhagwa-deep)]"
-        style={{
-          width: size, height: size, fontSize: Math.round(size * 0.4),
-          background: "radial-gradient(circle at 40% 30%, rgba(200,129,49,0.18), var(--surface-2) 74%)",
-          border: "1px solid var(--line-gold)",
-        }}>ॐ</span>
-    );
-  const is2d = src.endsWith("-2d.png");
+    return <span className="grid h-full w-full place-items-center font-deva text-[40px] text-[#F0D890]">ॐ</span>;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img ref={ref} key={src} src={src} alt={deity.name} onError={() => setI((n) => n + 1)}
-      className={is2d ? "object-contain object-bottom" : "rounded-[12px] object-cover"}
-      style={is2d
-        ? { width: Math.round(size * 1.12), height: Math.round(size * 1.5) }
-        : { width: size, height: size, border: "1px solid var(--line-gold)" }} />
+      className="h-full w-full object-contain object-bottom" />
   );
 }
