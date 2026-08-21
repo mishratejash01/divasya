@@ -60,14 +60,36 @@ function useCompass(active: boolean): CompassCore {
     };
     raf = requestAnimationFrame(tick);
 
+    // Android fires BOTH deviceorientationabsolute (referenced to true north)
+    // and deviceorientation (referenced to wherever the phone was when the app
+    // opened). Feeding the relative stream into the heading points the compass
+    // the wrong way, so once an absolute reading has arrived the plain event is
+    // ignored. iOS fires only deviceorientation, but carries webkitCompassHeading
+    // (true north) — always trust that when present.
+    let gotAbsolute = false;
     const onOrient = (e: DeviceOrientationEvent) => {
       const ev = e as DeviceOrientationEvent & { webkitCompassHeading?: number; webkitCompassAccuracy?: number };
-      const h = ev.webkitCompassHeading != null ? ev.webkitCompassHeading : e.alpha != null ? 360 - e.alpha : null;
-      if (h != null) targetRef.current = h;
-      // iOS reports accuracy in degrees (negative = uncalibrated); Android
-      // flags non-absolute events. Either way: show the figure-8 hint.
+      const isAbsolute = e.type === "deviceorientationabsolute";
+      if (isAbsolute) gotAbsolute = true;
+
+      let h: number | null = null;
+      if (ev.webkitCompassHeading != null) {
+        h = ev.webkitCompassHeading;                       // iOS — true north
+      } else if (isAbsolute && e.alpha != null) {
+        h = (360 - e.alpha) % 360;                         // Android absolute — true north
+      } else if (!gotAbsolute && e.absolute === true && e.alpha != null) {
+        h = (360 - e.alpha) % 360;                         // some browsers flag the plain event absolute
+      } else {
+        // A relative-only reading is not a compass heading — ignore it (it is
+        // what made the dial point the wrong way) and ask for calibration.
+        if (!gotAbsolute && ev.webkitCompassHeading == null) setNeedsCal(true);
+        return;
+      }
+      targetRef.current = h;
+      // iOS reports accuracy in degrees (negative = uncalibrated); otherwise a
+      // clean absolute reading clears the hint.
       if (ev.webkitCompassAccuracy != null) setNeedsCal(ev.webkitCompassAccuracy < 0 || ev.webkitCompassAccuracy > 30);
-      else if (e.absolute === false) setNeedsCal(true);
+      else setNeedsCal(false);
     };
     window.addEventListener("deviceorientationabsolute", onOrient as EventListener, true);
     window.addEventListener("deviceorientation", onOrient as EventListener, true);
