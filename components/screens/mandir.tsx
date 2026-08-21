@@ -120,14 +120,20 @@ export function MandirScreen() {
               <Iconify icon="game-icons:ringing-bell" width={26} height={26} className="text-[#EBC66A]" />
             </motion.div>
 
-            {/* falling petals */}
+            {/* falling flowers — little marigold blooms, not plain dots */}
             <AnimatePresence>
               {petals.map((p) => (
                 <motion.span key={p.id} className="absolute" style={{ left: `${p.x}%`, top: "26%" }}
                   initial={{ y: 0, opacity: 0, rotate: 0 }}
-                  animate={{ y: 260, opacity: [0, 1, 1, 0], rotate: 180 }}
+                  animate={{ y: 260, opacity: [0, 1, 1, 0], rotate: 200 }}
                   transition={{ duration: 2.4, ease: "easeIn" }}>
-                  <span className="block h-2.5 w-2.5 rounded-full" style={{ background: p.e, opacity: 0.9 }} />
+                  <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden style={{ filter: "drop-shadow(0 1px 1px rgba(120,60,10,0.25))" }}>
+                    {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+                      <ellipse key={a} cx="12" cy="6.4" rx="2.7" ry="5.1" fill={p.e} transform={`rotate(${a} 12 12)`} />
+                    ))}
+                    <circle cx="12" cy="12" r="3" fill="#9A5A1E" />
+                    <circle cx="12" cy="12" r="1.4" fill="#C88131" />
+                  </svg>
                 </motion.span>
               ))}
             </AnimatePresence>
