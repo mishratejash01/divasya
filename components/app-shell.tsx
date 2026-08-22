@@ -41,7 +41,7 @@ import { OnboardingScreen } from "./screens/onboarding";
 // allow-list, so most screens dropped the bar and stranded the user with only
 // a back button.
 const HIDE_NAV: ScreenName[] = ["mala", "mandir"];
-const NAMASTE_IMAGE = "https://png.pngtree.com/png-vector/20260422/ourmid/pngtree-3d-animated-indian-girl-doing-namaste-greeting-pose-png-image_19153601.webp";
+const NAMASTE_IMAGE = "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393254/divasya/app/namaste-greeting.webp";
 
 function localDateKey() {
   const now = new Date();
