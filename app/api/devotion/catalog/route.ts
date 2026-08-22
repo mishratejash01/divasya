@@ -34,11 +34,11 @@ function trim(p: DpProduct) {
     image: p.default_image ?? p.png_default_image ?? (p.images?.[0] ?? null),
     images: (p.images ?? []).slice(0, 4),
     packages: (p.packages ?? []).map((x) => ({
-      id: x.id, name: x.name, price: x.price, image: x.image ?? null,
+      id: Number(x.id), name: x.name, price: Number(x.price), image: x.image ?? null,
       description: x.description ?? null,
     })),
     offerings: (p.offerings ?? []).map((x) => ({
-      id: x.id, name: x.name, price: x.price, image: x.image ?? null,
+      id: Number(x.id), name: x.name, price: Number(x.price), image: x.image ?? null,
       description: x.description ?? null,
     })),
   };
@@ -105,7 +105,7 @@ export async function GET(req: Request) {
         const payload = {
           product: trim(product),
           addons: addons.map((a) => ({
-            id: a.id, name: (a.name ?? "").trim(), price: a.price,
+            id: Number(a.id), name: (a.name ?? "").trim(), price: Number(a.price),
             description: a.description ?? null, image: a.image_url ?? null,
             optional: a.optional !== false,
           })),
