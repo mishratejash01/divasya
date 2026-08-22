@@ -82,13 +82,13 @@ export async function POST(req: Request) {
       const pkg = (p.packages ?? []).find((x) => x.id === packageId);
       if (!pkg) return bad("package_not_found", 404);
       packageName = pkg.name;
-      expected = pkg.price;
+      expected = Number(pkg.price) || 0;
       if (addonIds.length) {
         const addons = await poojaAddons(productId, packageId);
         for (const id of addonIds) {
           const a = addons.find((x) => x.id === id);
           if (!a) return bad("addon_not_found", 404);
-          expected += a.price;
+          expected += Number(a.price) || 0;
         }
       }
     } else {
@@ -104,13 +104,13 @@ export async function POST(req: Request) {
         const pkg = pkgs.find((x) => x.id === packageId);
         if (!pkg) return bad("package_not_found", 404);
         packageName = pkg.name;
-        expected = pkg.price;
+        expected = Number(pkg.price) || 0;
       }
       const offers = p.offerings ?? [];
       for (const id of addonIds) {
         const o = offers.find((x) => x.id === id);
         if (!o) return bad("offering_not_found", 404);
-        expected += o.price;
+        expected += Number(o.price) || 0;
       }
     }
 
