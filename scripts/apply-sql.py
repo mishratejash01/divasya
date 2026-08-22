@@ -36,7 +36,9 @@ def main():
         with urllib.request.urlopen(req, timeout=120) as r:
             out = r.read().decode()
             print(f"OK {r.status}")
-            print(out[:1200] if out.strip() not in ("", "[]") else "(no rows returned)")
+            # full output when piped (queries need real data); trimmed on a tty
+            limit = None if not sys.stdout.isatty() else 1200
+            print(out[:limit] if out.strip() not in ("", "[]") else "(no rows returned)")
     except urllib.error.HTTPError as e:
         print(f"HTTP {e.code}")
         print(e.read().decode()[:1500])
