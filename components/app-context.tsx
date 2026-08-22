@@ -8,6 +8,35 @@ import { Profile, UserState, EMPTY_STATE } from "@/lib/types";
 import { rashiLabel } from "@/lib/astro";
 import { logEvent } from "@/lib/chat";
 
+// ---------------------------------------------------------------------------
+// Offline copies. Japa done in a tunnel must never vanish, and an offline
+// cold start must never dump a signed-in user back into onboarding. So the
+// state row and the profile each keep a local mirror: state carries a dirty
+// flag meaning "the server has not seen this yet", and every write path
+// clears it only after Supabase confirms. All storage access is best-effort;
+// with storage blocked the app behaves exactly as it did before.
+const stateKey = (uid: string) => `divasya:state:${uid}`;
+const profileKey = (uid: string) => `divasya:profile:${uid}`;
+function saveLocalState(uid: string, st: UserState, dirty: boolean) {
+  try { localStorage.setItem(stateKey(uid), JSON.stringify({ st, dirty, at: Date.now() })); } catch {}
+}
+function readLocalState(uid: string): { st: UserState; dirty: boolean } | null {
+  try {
+    const raw = localStorage.getItem(stateKey(uid));
+    const v = raw ? JSON.parse(raw) : null;
+    return v && v.st ? v : null;
+  } catch { return null; }
+}
+function saveLocalProfile(uid: string, p: Profile) {
+  try { localStorage.setItem(profileKey(uid), JSON.stringify(p)); } catch {}
+}
+function readLocalProfile(uid: string): Profile | null {
+  try {
+    const raw = localStorage.getItem(profileKey(uid));
+    return raw ? (JSON.parse(raw) as Profile) : null;
+  } catch { return null; }
+}
+
 export type ScreenName =
   | "home" | "mala" | "mandir" | "ai" | "consult" | "consultChat"
   | "panchang" | "festivals" | "library" | "vastu" | "naamkaran"
@@ -181,12 +210,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     markProfileLoaded(false);
     try {
       let p = await withTimeout(db.getProfile(u.id), 6000, null);
+      // Offline (or a Supabase blip): the last known profile, NOT a fresh
+      // one — a null here would route a signed-in user back into onboarding.
+      if (!p) p = readLocalProfile(u.id);
       if (!p) p = await withTimeout(db.saveProfile(u.id, {}), 6000, null);
       let st = await withTimeout(db.getState(u.id), 6000, { ...EMPTY_STATE });
+      // This device may hold progress the server never received: japa tapped
+      // offline (dirty flag), or the state fetch itself just failed and came
+      // back as zeros while the mirror holds a real lifetime count.
+      const local = readLocalState(u.id);
+      const useLocal =
+        !!local && (local.dirty || (st.japa_lifetime ?? 0) < (local.st.japa_lifetime ?? 0));
+      if (useLocal) st = local!.st;
       if (st.last_japa !== todayStr()) st = { ...st, japa_today: 0 };
       statsRef.current = st;
       setProfile(p);
       setStats(st);
+      saveLocalState(u.id, st, useLocal);
+      if (useLocal) {
+        // push the recovered progress up; the mirror stays dirty until it lands
+        db.patchState(u.id, st).then((ok) => { if (ok) saveLocalState(u.id, statsRef.current, false); });
+      }
     } catch (e) {
       // Never strand the user on the splash — fall through with what we have.
       console.error("loadUserData failed", e);
@@ -291,25 +335,60 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => { active = false; clearTimeout(watchdog); sub.subscription.unsubscribe(); };
   }, [loadUserData, checkAllowed, markProfileLoaded]);
 
+  // The one server write for state. Local mirror is marked dirty before the
+  // attempt and clean only on confirmed success, so offline progress survives
+  // an app kill and is retried later instead of silently dropped.
+  const flushState = useCallback(() => {
+    if (PREVIEW || !userRef.current) return;
+    const uid = userRef.current.id;
+    saveLocalState(uid, statsRef.current, true);
+    db.patchState(uid, statsRef.current).then((ok) => {
+      if (ok) saveLocalState(uid, statsRef.current, false);
+    });
+  }, []);
+
   const scheduleFlush = useCallback(() => {
     if (PREVIEW) return;              // no backend to persist to in preview mode
     if (!userRef.current) return;
     if (flushT.current) clearTimeout(flushT.current);
-    flushT.current = setTimeout(() => {
-      if (userRef.current) db.patchState(userRef.current.id, statsRef.current);
-    }, 1200);
-  }, []);
+    flushT.current = setTimeout(flushState, 1200);
+  }, [flushState]);
 
   // flush on tab hide / unload so nothing is lost
   useEffect(() => {
-    const flush = () => { if (!PREVIEW && userRef.current) db.patchState(userRef.current.id, statsRef.current); };
+    const flush = flushState;
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
     window.addEventListener("pagehide", flush);
     return () => window.removeEventListener("pagehide", flush);
-  }, []);
+  }, [flushState]);
+
+  // back online: if the mirror still carries unsent progress, send it now
+  useEffect(() => {
+    const onOnline = () => {
+      if (PREVIEW || !userRef.current) return;
+      const local = readLocalState(userRef.current.id);
+      if (local?.dirty) flushState();
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [flushState]);
+
+  // Mirror the profile locally whenever it changes — one effect covers every
+  // mutation path (onboarding, deity choice, edits), and an offline cold
+  // start reads this instead of treating the user as brand new.
+  useEffect(() => {
+    if (!PREVIEW && user && profile) saveLocalProfile(user.id, profile);
+  }, [user, profile]);
 
   const apply = useCallback((updater: (s: UserState) => UserState) => {
-    setStats((prev) => { const next = updater(prev); statsRef.current = next; return next; });
+    // statsRef is the source of truth (every flush reads it), so compute from
+    // it directly — that lets the local mirror capture the tap immediately,
+    // not 1.2s later when the debounce fires; an app killed mid-japa keeps
+    // its count.
+    const next = updater(statsRef.current);
+    statsRef.current = next;
+    setStats(next);
+    if (!PREVIEW && userRef.current) saveLocalState(userRef.current.id, next, true);
     scheduleFlush();
   }, [scheduleFlush]);
 
