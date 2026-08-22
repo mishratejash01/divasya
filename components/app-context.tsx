@@ -56,7 +56,6 @@ type Ctx = {
   profileLoaded: boolean;
   profile: Profile | null;
   needsOnboarding: boolean;
-  denied: boolean;
   signInGoogle: () => Promise<void>;
   completeOnboarding: (fields: Partial<Profile>) => Promise<void>;
   logout: () => Promise<void>;
@@ -150,7 +149,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<UserState>(EMPTY_STATE);
-  const [denied, setDenied] = useState(false);
 
   const [screen, setScreen] = useState<ScreenState>({ name: "home" });
   const [history, setHistory] = useState<ScreenState[]>([]);
@@ -239,26 +237,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [markProfileLoaded]);
 
-  // Is the signed-in user's email on the backend allow-list? Three-valued:
-  // true/false are the server's actual verdict; null means the check could
-  // not run (offline, timeout) — the caller decides what null means, because
-  // "the server said no" and "the server was unreachable" must not both
-  // log the user out.
-  const checkAllowed = useCallback(async (): Promise<boolean | null> => {
-    try {
-      return await withTimeout<boolean | null>(
-        supabaseBrowser()
-          .rpc("is_email_allowed")
-          .then((r) => (r.error ? (console.error("allow-check error", r.error), null) : (r.data === true))),
-        6000,
-        null
-      );
-    } catch (e) {
-      console.error("allow-check failed", e);
-      return null;
-    }
-  }, []);
-
   useEffect(() => {
     let active = true;
 
@@ -300,21 +278,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // already fully in for this user — don't reload on token refresh etc.
       if (userRef.current?.id === u.id && profileLoadedRef.current) { setLoading(false); return; }
 
-      // The app is open for all, so the gate NEVER stands between a session
-      // and the app — enter first, check in the background. Only a definitive
-      // server "no" acts (that is: access_mode flipped to invite and this
-      // email is not on the list). Open mode always answers yes, and an
-      // unreachable server (offline launch) is not a "no".
-      setDenied(false);
+      // The app is open for all: a session enters, full stop. No allow-check
+      // runs on the client at all — the earlier background variant ejected
+      // real users whenever it ran with a stale token (an anon RPC looks
+      // exactly like "not allowed"). The access_mode switch and allowed_users
+      // stay in the backend; if invite mode ever returns, enforce it there.
       userRef.current = u; setUser(u);
-      checkAllowed().then((allowed) => {
-        if (!active || allowed !== false) return;
-        setDenied(true);
-        userRef.current = null; setUser(null);
-        setProfile(null); markProfileLoaded(false);
-        db.signOut().catch(() => {});
-        logEvent("login_denied");
-      });
       await loadUserData(u);
       if (active) setLoading(false);
     };
@@ -336,7 +305,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     return () => { active = false; clearTimeout(watchdog); sub.subscription.unsubscribe(); };
-  }, [loadUserData, checkAllowed, markProfileLoaded]);
+  }, [loadUserData, markProfileLoaded]);
 
   // The one server write for state. Local mirror is marked dirty before the
   // attempt and clean only on confirmed success, so offline progress survives
@@ -510,7 +479,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInGoogle = useCallback(async () => {
-    setDenied(false);
     await db.signInGoogle();   // full-page redirect to Google; SIGNED_IN handled on return
     logEvent("login_google_start");
   }, []);
@@ -548,7 +516,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await db.signOut();
-    setUser(null); userRef.current = null; setProfile(null); markProfileLoaded(false); setDenied(false);
+    setUser(null); userRef.current = null; setProfile(null); markProfileLoaded(false);
   }, [markProfileLoaded]);
 
   const sendPush = useCallback((p: PushPayload) => {
@@ -562,7 +530,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppCtx.Provider
       value={{
-        user, loading, profileLoaded, profile, needsOnboarding, denied,
+        user, loading, profileLoaded, profile, needsOnboarding,
         signInGoogle, completeOnboarding, logout,
         screen, go, back,
         deityId, setDeity,
