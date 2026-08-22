@@ -36,19 +36,6 @@ function readLocalProfile(uid: string): Profile | null {
     return raw ? (JSON.parse(raw) as Profile) : null;
   } catch { return null; }
 }
-// "This user passed the allow-check on this device." Lets an offline launch
-// through for someone already verified here; a server-confirmed denial clears
-// it. Never consulted when the server actually answers.
-const allowedKey = (uid: string) => `divasya:allowed:${uid}`;
-function readAllowedCache(uid: string): boolean {
-  try { return localStorage.getItem(allowedKey(uid)) === "1"; } catch { return false; }
-}
-function saveAllowedCache(uid: string) {
-  try { localStorage.setItem(allowedKey(uid), "1"); } catch {}
-}
-function clearAllowedCache(uid: string) {
-  try { localStorage.removeItem(allowedKey(uid)); } catch {}
-}
 
 export type ScreenName =
   | "home" | "mala" | "mandir" | "ai" | "consult" | "consultChat"
@@ -313,49 +300,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // already fully in for this user — don't reload on token refresh etc.
       if (userRef.current?.id === u.id && profileLoadedRef.current) { setLoading(false); return; }
 
-      // Hard gate: only allow-listed Google emails get in. A server "no" is
-      // final: deny, sign out, forget the device verdict. An UNREACHABLE
-      // server is not a "no" — someone this device has verified before goes
-      // through on the cached verdict (offline flight, dead spot), and the
-      // next online launch re-checks for real. Someone never verified here
-      // waits for connectivity; their session is left intact so coming back
-      // online resumes without a fresh sign-in.
-      const allowed = await checkAllowed();
-      if (!active) return;
-      if (allowed === false || (allowed === null && !readAllowedCache(u.id))) {
-        setDenied(allowed === false);
-        userRef.current = null; setUser(null);
-        setProfile(null); markProfileLoaded(false);
-        setLoading(false);
-        if (allowed === false) {
-          clearAllowedCache(u.id);
-          db.signOut().catch(() => {});
-          logEvent("login_denied");
-        }
-        return;
-      }
-      if (allowed === true) saveAllowedCache(u.id);
-
+      // The app is open for all, so the gate NEVER stands between a session
+      // and the app — enter first, check in the background. Only a definitive
+      // server "no" acts (that is: access_mode flipped to invite and this
+      // email is not on the list). Open mode always answers yes, and an
+      // unreachable server (offline launch) is not a "no".
       setDenied(false);
       userRef.current = u; setUser(u);
+      checkAllowed().then((allowed) => {
+        if (!active || allowed !== false) return;
+        setDenied(true);
+        userRef.current = null; setUser(null);
+        setProfile(null); markProfileLoaded(false);
+        db.signOut().catch(() => {});
+        logEvent("login_denied");
+      });
       await loadUserData(u);
       if (active) setLoading(false);
     };
-
-    // Connectivity returning is our cue to finish a boot that got parked by
-    // an unreachable allow-check (session intact, user not yet let in).
-    const onOnline = () => {
-      if (!active || userRef.current || !sb) return;
-      sb.auth.getSession()
-        .then(({ data }) => {
-          if (active && !userRef.current && data.session?.user) {
-            setLoading(true);
-            enter(data.session.user);
-          }
-        })
-        .catch(() => {});
-    };
-    window.addEventListener("online", onOnline);
 
     withTimeout(
       sb.auth.getSession(),
@@ -373,12 +335,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // TOKEN_REFRESHED / USER_UPDATED: ignore — don't re-check or reload.
     });
 
-    return () => {
-      active = false;
-      clearTimeout(watchdog);
-      window.removeEventListener("online", onOnline);
-      sub.subscription.unsubscribe();
-    };
+    return () => { active = false; clearTimeout(watchdog); sub.subscription.unsubscribe(); };
   }, [loadUserData, checkAllowed, markProfileLoaded]);
 
   // The one server write for state. Local mirror is marked dirty before the
