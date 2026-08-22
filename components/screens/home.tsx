@@ -358,12 +358,6 @@ export function HomeScreen() {
             >
               <Iconify icon="solar:bell-linear" width={23} height={23} className="text-ink" />
             </button>
-            <button onClick={() => go("menu")} aria-label="Wallet" className="shrink-0">
-              <Iconify icon="solar:wallet-linear" width={23} height={23} className="text-ink" />
-            </button>
-            <button onClick={() => go("menu")} aria-label="Search" className="shrink-0">
-              <Iconify icon="solar:magnifer-linear" width={22} height={22} className="text-ink" />
-            </button>
           </div>
         </div>
 
