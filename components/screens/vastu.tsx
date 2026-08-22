@@ -268,14 +268,26 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
 
   useEffect(() => () => { streamRef.current?.getTracks().forEach((t) => t.stop()); }, []);
 
+  const [camErr, setCamErr] = useState<string | null>(null);
   async function startCam() {
+    setCamErr(null);
     try {
       const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
       streamRef.current = s;
       if (videoRef.current) { videoRef.current.srcObject = s; await videoRef.current.play(); }
       setCamOn(true);
       if (!c.live) c.enable();
-    } catch { /* camera denied — the copy below explains what the Lens does */ }
+    } catch (e) {
+      // say WHY, honestly — a silent button reads as broken
+      const name = (e as DOMException)?.name;
+      setCamErr(
+        name === "NotAllowedError"
+          ? "Camera permission was denied. Allow it when asked — or enable Camera for Divasya in your phone's app settings — then try again."
+          : name === "NotFoundError"
+          ? "No camera was found on this device."
+          : "The camera could not start. Close other camera apps and try again."
+      );
+    }
   }
 
   function freeze() {
@@ -342,6 +354,12 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
           </>
         )}
       </div>
+
+      {camErr && (
+        <div className="mt-2 rounded-xl p-2.5 text-[11px] leading-relaxed text-ink" style={{ background: "var(--surface-2)" }}>
+          {camErr}
+        </div>
+      )}
 
       {!camOn && (
         <p className="mt-2 text-[10.5px] leading-relaxed text-muted">
