@@ -128,12 +128,16 @@ export async function getState(id: string): Promise<UserState> {
   }, { ...EMPTY_STATE });
 }
 
-export async function patchState(id: string, fields: Partial<UserState>) {
-  await safe(async () => {
-    await supabaseBrowser()
+/** True only if the row is really on the server — callers use this to decide
+ *  whether locally saved progress still needs a retry (offline japa). */
+export async function patchState(id: string, fields: Partial<UserState>): Promise<boolean> {
+  return safe(async () => {
+    const { error } = await supabaseBrowser()
       .from("user_state")
       .upsert({ id, ...fields, updated_at: new Date().toISOString() });
-  }, undefined);
+    if (error) throw error;
+    return true;
+  }, false);
 }
 
 export async function getMessages(uid: string, thread: string): Promise<ChatMsg[]> {
