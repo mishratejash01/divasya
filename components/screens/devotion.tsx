@@ -236,11 +236,13 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
   const p = detail?.product ?? product;
   const extras: Pkg[] | Addon[] = kind === "chadhava" ? p.offerings : (detail?.addons ?? []);
   const pkg = p.packages.find((x) => x.id === pkgId) ?? p.packages[0] ?? null;
+  // Number() on every price: an upstream API that returns "891" as text would
+  // otherwise turn + into concatenation and the total into a monster.
   const extrasTotal = [...picked].reduce((n, id) => {
     const e = (extras as { id: number; price: number }[]).find((x) => x.id === id);
-    return n + (e?.price ?? 0);
+    return n + (Number(e?.price) || 0);
   }, 0);
-  const total = (pkg?.price ?? 0) + extrasTotal;
+  const total = (Number(pkg?.price) || 0) + extrasTotal;
 
   const phoneOk = /^\d{10}$/.test(phone.replace(/\D/g, "").slice(-10));
   const membersOk = members.length >= 1 && members.every((m) => m.name.trim());
