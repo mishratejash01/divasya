@@ -191,6 +191,36 @@ function DailyNamastePopup() {
   );
 }
 
+/** A quiet pill while the device has no internet. Saved content keeps
+ *  working underneath it; this only names why live things are unavailable. */
+function OfflineBanner() {
+  const { lang } = useApp();
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const sync = () => setOffline(!navigator.onLine);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
+  if (!offline) return null;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-2 z-40 flex justify-center px-4">
+      <div
+        className="rounded-full px-3.5 py-1.5 text-[11px] font-medium shadow-md"
+        style={{ background: "#2A2118", color: "#FFF3DC", border: "1px solid #00000033" }}
+      >
+        {lang === "hi"
+          ? "आप ऑफ़लाइन हैं। सहेजी गई सामग्री दिख रही है।"
+          : "You are offline. Showing saved content."}
+      </div>
+    </div>
+  );
+}
+
 function RoutedApp() {
   const { screen } = useApp();
   return (
@@ -219,6 +249,7 @@ function RoutedApp() {
             </motion.div>
           </AnimatePresence>
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
+          <OfflineBanner />
           <DailyNamastePopup />
         </div>
       </main>
