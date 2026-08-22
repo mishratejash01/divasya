@@ -38,4 +38,11 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Vastu Lens: the WebView's camera request is auto-denied unless the
+         app itself declares CAMERA; with it declared, Capacitor shows the
+         system permission dialog on first use. required=false keeps the
+         Play listing available to devices without a camera. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>
