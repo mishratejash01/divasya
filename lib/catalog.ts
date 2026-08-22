@@ -126,14 +126,20 @@ export async function getUpcomingFestivals(limit = 6): Promise<Festival[]> {
   return (up.length ? up : all).slice(0, limit);
 }
 
-// Article artwork keyed by id, applied whatever the source is — the Supabase
-// library_articles rows carry no image column, so without this map the seeded
-// pictures only ever showed on the demo fallback (i.e. not in the real app).
-const LIBRARY_IMAGES: Record<string, string> = {
-  l1: "/library/l1.jpg",
-  l2: "/library/l2.jpg",
-  l3: "/library/l3.jpg",
-};
+// Article artwork keyed by id. The database's image column is the source of
+// truth (migration 020); this map only backs the offline demo fallback, and
+// every id ships with a real photograph under public/library.
+const LIBRARY_IMAGES: Record<string, string> = Object.fromEntries(
+  [
+    "l1", "l2", "l3", "l4", "l5", "l6",
+    "prc-puja", "prc-japa", "prc-surya",
+    "dei-krishna", "dei-shiva", "dei-durga", "dei-ganesha",
+    "dei-lakshmi", "dei-ram", "dei-hanuman", "dei-saraswati",
+    "wis-dharma", "wis-yugas", "wis-moksha", "wis-gunas", "wis-yoga-paths",
+    "fes-diwali", "fes-holi", "fes-navratri", "fes-janmashtami", "fes-shivratri", "fes-ganesh",
+    "jyo-kundli", "jyo-grahas", "jyo-houses", "jyo-nakshatras", "jyo-dasha", "jyo-rashi",
+  ].map((id) => [id, `/library/${id}.jpg`]),
+);
 
 export const getLibrary = () =>
   cached<Article[]>("library", async () => {
