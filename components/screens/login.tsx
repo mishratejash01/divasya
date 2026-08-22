@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { CaretLeft, CircleNotch, ShieldWarning } from "@phosphor-icons/react";
+import { CaretLeft, CircleNotch } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
 import * as db from "@/lib/db";
@@ -19,7 +19,7 @@ type Step = "phone" | "code";
 const PHONE_LOGIN_LIVE = false;
 
 export function LoginScreen() {
-  const { signInGoogle, denied } = useApp();
+  const { signInGoogle } = useApp();
   const [busy, setBusy] = useState<null | "google" | "otp" | "verify">(null);
   const [note, setNote] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("phone");
@@ -117,18 +117,6 @@ export function LoginScreen() {
           आपकी आध्यात्मिक यात्रा
         </p>
 
-        {denied && (
-          <div className="mt-4 flex items-start gap-2.5 rounded-[6px] px-3 py-2.5"
-            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,140,120,0.45)" }}>
-            <ShieldWarning size={15} className="mt-px shrink-0 text-[#FF9E8A]" />
-            <div>
-              <div className="text-[11.5px] font-medium text-white">Access is invite-only</div>
-              <div className="mt-0.5 text-[10.5px] leading-snug text-white/75">
-                This account isn&apos;t on the approved list. Use an authorised one, or contact the admin.
-              </div>
-            </div>
-          </div>
-        )}
 
         {step === "phone" ? (
           <div className="mt-5">
