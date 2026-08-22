@@ -105,14 +105,16 @@ const DARSHAN_TINTS: [string, string][] = [
   ["#5B2160", "#2E0F32"],  // deep plum
 ];
 
+// Our own Cloudinary copies of credited Wikimedia artwork (see
+// public/library/CREDITS.md) — no third-party or stock hotlinks.
 const HOME_DARSHAN = [
-  { name: "Shri Krishna", place: "Vrindavan", image: "https://cdn.pixabay.com/photo/2023/06/23/08/51/lord-krishna-8083043_1280.png", tint: "#2C6470" },
-  { name: "Mahadev", place: "Kashi", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRGxV_rG8tX4ugxNFpqi2SnKdkfJdpVnTuOLzyAG2d0XWY6FRjiNzrDVPL&s=10", tint: "#6E4E36" },
-  { name: "Maa Durga", place: "Kolkata", image: "https://t4.ftcdn.net/jpg/15/55/57/17/360_F_1555571742_rz9E1hJliYaVMJFuLUHrX2J9lRIebA56.jpg", tint: "#A63D34" },
-  { name: "Shri Ganesha", place: "Mumbai", image: "https://t3.ftcdn.net/jpg/16/17/38/56/360_F_1617385643_eiqxEipXigOWHnpm2koSO5aWLEvrgXj6.jpg", tint: "#B76C2A" },
+  { name: "Shri Krishna", place: "Vrindavan", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393068/divasya/library/dei-krishna.jpg", tint: "#2C6470" },
+  { name: "Mahadev", place: "Kashi", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393089/divasya/library/dei-shiva.jpg", tint: "#6E4E36" },
+  { name: "Maa Durga", place: "Kolkata", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393089/divasya/library/dei-durga.jpg", tint: "#A63D34" },
+  { name: "Shri Ganesha", place: "Mumbai", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393089/divasya/library/dei-ganesha.jpg", tint: "#B76C2A" },
 ];
 
-const RUDRAKSHA_PHOTO = "https://images.unsplash.com/photo-1678920005141-8832ef4a090a?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=85&w=1200";
+const RUDRAKSHA_PHOTO = "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393177/divasya/home/rudraksha.jpg";
 
 export function HomeScreen() {
   const { go, haptic, sendPush, streak, japaToday, profile } = useApp();
