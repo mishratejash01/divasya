@@ -749,7 +749,11 @@ export function HomeScreen() {
                       time is a chip straddling its lower edge — a label on the
                       image rather than another line of text under it. */}
                   <div className="relative">
-                    <div className="h-[58px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+                    {l.image ? (
+                      <img src={l.image} alt="" loading="lazy" className="h-[58px] w-full rounded-lg object-cover" style={{ background: `${l.tint}3a` }} />
+                    ) : (
+                      <div className="h-[58px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+                    )}
                     <span
                       className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[8.5px] tnum text-ink"
                       style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
