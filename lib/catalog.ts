@@ -44,11 +44,33 @@ export function shade(hex: string, f = 0.72): string {
 }
 
 const cache = new Map<string, Promise<unknown>>();
+
+// Offline shelf: every successful load is mirrored to localStorage, and a
+// failed load (offline, outage) serves that mirror before falling back to the
+// bundled seed data. So content the user has seen once stays available with
+// no network at all — and the mirror refreshes itself on every online load.
+const SHELF = "divasya:cat:";
+function shelfRead<T>(key: string): T | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = localStorage.getItem(SHELF + key);
+    return raw ? (JSON.parse(raw).d as T) : null;
+  } catch { return null; }
+}
+function shelfWrite(key: string, data: unknown) {
+  try {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(SHELF + key, JSON.stringify({ d: data, at: Date.now() }));
+  } catch { /* storage full or blocked — online behaviour is unchanged */ }
+}
+
 function cached<T>(key: string, load: () => Promise<T>, fallback: T): Promise<T> {
   if (!cache.has(key)) {
     cache.set(
       key,
-      load().catch(() => { cache.delete(key); return fallback; })
+      load()
+        .then((data) => { shelfWrite(key, data); return data; })
+        .catch(() => { cache.delete(key); return shelfRead<T>(key) ?? fallback; })
     );
   }
   return cache.get(key) as Promise<T>;
