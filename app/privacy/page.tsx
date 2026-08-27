@@ -73,7 +73,8 @@ export default function PrivacyPolicy() {
 
         <S title="Changes and contact">
           If this policy changes, the new version will be published at this address with a new
-          effective date. Questions or requests: <a href="mailto:officeneuralai@gmail.com" style={{ color: "#B4560F" }}>officeneuralai@gmail.com</a>.
+          effective date. Questions or requests:{" "}
+          <a href="mailto:divasya.app@gmail.com" style={{ color: "#B4560F" }}>divasya.app@gmail.com</a>.
         </S>
       </div>
     </main>
