@@ -6,6 +6,7 @@ import { useApp } from "../app-context";
 import { ScreenHeader, cx } from "../ui";
 import { useCatalog, getDeities } from "@/lib/catalog";
 import { DEITIES } from "@/lib/demo";
+import { supabaseBrowser } from "@/lib/supabase";
 
 /**
  * Birth details are not settings — they are the input to every chart, dasha and
@@ -36,7 +37,43 @@ const chipStyle = (on: boolean) => ({
 });
 
 export function ProfileScreen() {
-  const { back, haptic, profile, completeOnboarding } = useApp();
+  const { back, haptic, profile, completeOnboarding, logout } = useApp();
+
+  // Account deletion lives here, one level deep, per Play policy: it must be
+  // reachable in the app, not paraded on the Account tab. Two taps: the first
+  // arms for a few seconds, the second calls the server wipe.
+  const [armDelete, setArmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const deleteAccount = async () => {
+    if (deleting) return;
+    if (!armDelete) {
+      haptic(8);
+      setArmDelete(true);
+      setTimeout(() => setArmDelete(false), 6000);
+      return;
+    }
+    setDeleting(true);
+    try {
+      const { data: s } = await supabaseBrowser().auth.getSession();
+      const token = s.session?.access_token;
+      if (!token) throw new Error("no session");
+      const r = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!r.ok) throw new Error("delete failed");
+      try {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith("divasya"))
+          .forEach((k) => localStorage.removeItem(k));
+      } catch { /* storage blocked: server data is gone regardless */ }
+      await supabaseBrowser().auth.signOut().catch(() => {});
+      await logout().catch(() => {});
+    } catch {
+      setDeleting(false);
+      setArmDelete(false);
+    }
+  };
   const deities = useCatalog(getDeities, DEITIES);
 
   const [name, setName] = useState(profile?.name ?? "");
@@ -141,6 +178,17 @@ export function ProfileScreen() {
             Your chart, dasha and daily readings are recomputed when you save.
           </div>
         )}
+
+        <button
+          onClick={deleteAccount}
+          className="mx-auto mt-8 block pb-2 text-center text-[11px] font-medium text-[#A83226]"
+        >
+          {deleting
+            ? "Deleting your account…"
+            : armDelete
+              ? "Tap again to permanently delete your account and all data"
+              : "Delete account"}
+        </button>
       </div>
     </div>
   );
