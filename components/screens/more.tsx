@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bag, Check, PencilSimple, ShareNetwork, SignOut, Star, Trash } from "@phosphor-icons/react";
+import { Bag, Check, PencilSimple, ShareNetwork, SignOut, Star } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { Iconify } from "../iconify";
 import { Logomark, ScreenHeader } from "../ui";
@@ -41,41 +41,6 @@ export function MoreScreen() {
       } catch { /* tile shows the wallet link without a number */ }
     })();
   }, []);
-
-  // Permanent deletion, two taps: the first arms the button for a few
-  // seconds, the second calls the server wipe, then everything local goes too.
-  const [armDelete, setArmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const deleteAccount = async () => {
-    if (deleting) return;
-    if (!armDelete) {
-      haptic(8);
-      setArmDelete(true);
-      setTimeout(() => setArmDelete(false), 6000);
-      return;
-    }
-    setDeleting(true);
-    try {
-      const { data: s } = await supabaseBrowser().auth.getSession();
-      const token = s.session?.access_token;
-      if (!token) throw new Error("no session");
-      const r = await fetch("/api/account/delete", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!r.ok) throw new Error("delete failed");
-      try {
-        Object.keys(localStorage)
-          .filter((k) => k.startsWith("divasya"))
-          .forEach((k) => localStorage.removeItem(k));
-      } catch { /* storage blocked: server data is gone regardless */ }
-      await supabaseBrowser().auth.signOut().catch(() => {});
-      await logout().catch(() => {});
-    } catch {
-      setDeleting(false);
-      setArmDelete(false);
-    }
-  };
 
   const name = profile?.name || "Devotee";
   const rashi = rashiLabel(profile || { rashi: null, dob: null });
@@ -163,25 +128,6 @@ export function MoreScreen() {
               ))}
             </div>
             {shared && <div className="mt-1 flex items-center gap-1 px-1 text-[10.5px] text-[var(--good)]"><Check size={11} weight="bold" /> Link copied</div>}
-
-            {/* danger zone: Play policy requires in-app account deletion */}
-            <button
-              onClick={deleteAccount}
-              className="mt-3 flex w-full items-center gap-2.5 rounded-xl px-3 py-3 text-left"
-              style={{
-                border: "1px solid rgba(168,50,38,0.35)",
-                background: armDelete ? "rgba(168,50,38,0.10)" : "transparent",
-              }}
-            >
-              <Trash size={16} weight="regular" className="shrink-0 text-[#A83226]" />
-              <span className="flex-1 text-[12.5px] font-medium text-[#A83226]">
-                {deleting
-                  ? "Deleting your account…"
-                  : armDelete
-                    ? "Tap again to permanently delete everything"
-                    : "Delete account"}
-              </span>
-            </button>
           </div>
 
           {/* what Divasya gives you — desktop promo */}
