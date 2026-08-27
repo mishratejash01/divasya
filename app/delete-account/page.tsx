@@ -19,7 +19,8 @@ export default function DeleteAccount() {
         <h2 style={{ fontSize: 17, fontWeight: 600, marginTop: 28, marginBottom: 8 }}>Delete inside the app</h2>
         <ol style={{ paddingLeft: 18, fontSize: 14, lineHeight: 1.9, color: "#4A4237" }}>
           <li>Open Divasya and go to the <b>Account</b> tab</li>
-          <li>Tap <b>Delete account</b></li>
+          <li>Tap <b>Edit profile</b></li>
+          <li>Scroll to the bottom and tap <b>Delete account</b></li>
           <li>Tap it again to confirm. Your data is removed immediately.</li>
         </ol>
 
