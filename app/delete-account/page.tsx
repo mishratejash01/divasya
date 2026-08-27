@@ -25,8 +25,8 @@ export default function DeleteAccount() {
 
         <h2 style={{ fontSize: 17, fontWeight: 600, marginTop: 28, marginBottom: 8 }}>Or request deletion by email</h2>
         <p style={{ fontSize: 14, lineHeight: 1.7, color: "#4A4237" }}>
-          Email <a href="mailto:officeneuralai@gmail.com" style={{ color: "#B4560F" }}>officeneuralai@gmail.com</a> from
-          the Google email address you sign in with, with the subject &quot;Delete my account&quot;.
+          Email <a href="mailto:divasya.app@gmail.com" style={{ color: "#B4560F" }}>divasya.app@gmail.com</a>{" "}
+          from the Google email address you sign in with, with the subject &quot;Delete my account&quot;.
           We complete emailed requests within 7 days.
         </p>
 
