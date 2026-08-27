@@ -7,10 +7,12 @@ import type { CapacitorConfig } from "@capacitor/cli";
 // on-device account sheet, which is what removes the browser from sign-in
 // (the bridge for it lives in lib/db.ts signInGoogle).
 //
-// appId must stay life.divasya.app forever: it is the live Play Store listing,
-// and with the original keystore this ships as a normal update.
+// appId must stay com.sanatanivibes.astro_app forever: the client's live Play
+// Store listing carries that package name (their original app), and Divasya
+// ships as an update to it. The internal Android namespace remains
+// life.divasya.app so no source moves; only the applicationId differs.
 const config: CapacitorConfig = {
-  appId: "life.divasya.app",
+  appId: "com.sanatanivibes.astro_app",
   appName: "Divasya",
   webDir: "public",
   server: {
