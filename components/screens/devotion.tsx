@@ -129,7 +129,9 @@ export function PujaScreen() {
         {cat && list && list.length > 0 && (
           <div className="pt-2 lg:grid lg:grid-cols-3 lg:gap-3 xl:grid-cols-4">
             {list.map((p) => {
-              const from = p.packages.length ? Math.min(...p.packages.map((x) => x.price)) : null;
+              // pujas price by package, chadhawa by its cheapest offering
+              const prices = [...p.packages, ...p.offerings].map((x) => Number(x.price)).filter((n) => n > 0);
+              const from = prices.length ? Math.min(...prices) : null;
               const date = fmtEventDate(p.startingAt);
               return (
                 <button
@@ -246,14 +248,21 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
 
   const phoneOk = /^\d{10}$/.test(phone.replace(/\D/g, "").slice(-10));
   const membersOk = members.length >= 1 && members.every((m) => m.name.trim());
-  const ready = phoneOk && membersOk && (p.packages.length === 0 || pkg != null);
+  // chadhawa has no packages: the devotee picks offerings, at least one
+  const needsPick = kind === "chadhava" && p.packages.length === 0;
+  const ready = phoneOk && membersOk && (p.packages.length === 0 || pkg != null) && (!needsPick || picked.size > 0);
 
   const toggle = (id: number) =>
     setPicked((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
 
   async function pay() {
     setErr(null);
-    if (!ready) { setErr("Add the sankalp name and a 10 digit WhatsApp number."); return; }
+    if (!ready) {
+      setErr(needsPick && picked.size === 0
+        ? "Choose at least one offering to make."
+        : "Add the sankalp name and a 10 digit WhatsApp number.");
+      return;
+    }
     haptic(10);
     setStep("paying");
     try {
@@ -266,7 +275,7 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
         body: JSON.stringify({
           kind: apiKind,
           productId: p.id,
-          packageId: pkg?.id ?? 1,
+          packageId: pkg?.id ?? 0,
           addonIds: [...picked],
           sankalp: members.map((m) => ({ name: m.name.trim(), gotra: m.gotra.trim() || "—" })),
           phone,
