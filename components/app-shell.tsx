@@ -8,6 +8,7 @@ import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
 import { CategoryScreen } from "./screens/category";
 import { PushToast } from "./push-toast";
+import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark } from "./ui";
 import { Iconify } from "./iconify";
 
@@ -295,6 +296,8 @@ function Inner() {
     <>
       <Gate />
       <PushToast />
+      {/* Global offline takeover — sits above everything, dismisses on reconnect. */}
+      <OfflineGate />
     </>
   );
 }

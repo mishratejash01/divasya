@@ -543,6 +543,49 @@ const DARSHAN_CHIPS = [
 
 const thumb = (videoId: string) => `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
+// Real temple photos (cropped from the Divasya Temple Collection) shown on the
+// darshan cards. Any temple without one falls back to its tinted tile.
+const TEMPLE_PHOTOS: Record<string, string> = {
+  somnath: "/temples/somnath.jpg", jagannath: "/temples/jagannath.jpg",
+  vaishno: "/temples/vaishno.jpg", kedarnath: "/temples/kedarnath.jpg",
+  mahakal: "/temples/mahakal.jpg", badrinath: "/temples/badrinath.jpg",
+  rameshwaram: "/temples/rameshwaram.jpg", kashi: "/temples/kashi.jpg",
+  tirupati: "/temples/tirupati.jpg", dwarka: "/temples/dwarka.jpg",
+  ayodhya: "/temples/ayodhya.jpg", siddhi: "/temples/siddhi.jpg",
+};
+
+// Clean line-art temple artifacts (transparent) — the temple's own emblem.
+// Shown on the darshan cards and, crucially, as the visual when a stream is not
+// open (offline temple, or a YouTube-only feed that can't embed).
+const TEMPLE_ART: Record<string, string> = {
+  siddhi: "/temples/siddhi-art.png", vaishno: "/temples/vaishno-art.png",
+  somnath: "/temples/somnath-art.png", jagannath: "/temples/jagannath-art.png",
+  kedarnath: "/temples/kedarnath-art.png", badrinath: "/temples/badrinath-art.png",
+  rameshwaram: "/temples/rameshwaram-art.png", dwarka: "/temples/dwarka-art.png",
+  ayodhya: "/temples/ayodhya-art.png", khatushyam: "/temples/khatushyam-art.png",
+  haridwar: "/temples/haridwar-art.png",
+};
+
+// A built-in directory shown when /api/darshan can't be reached (e.g. a local
+// dev without the service key, or a transient outage). No live streams — just
+// the temples with their photos and aarti timings, so the screen is never empty.
+const FALLBACK_TEMPLES: DarshanTemple[] = [
+  ["somnath", "Somnath", "Lord Shiva", "shiva", "Prabhas Patan, GJ", "Aarti 7:00 AM", "#5E7C93"],
+  ["jagannath", "Jagannath", "Lord Jagannath", "vishnu", "Puri, OD", "Mangala Aarti 5:00 AM", "#B07A4E"],
+  ["vaishno", "Vaishno Devi", "Maa Vaishnavi", "devi", "Katra, J&K", "Aarti 6:00 AM & 7:00 PM", "#A45E6B"],
+  ["kedarnath", "Kedarnath", "Lord Shiva", "shiva", "Rudraprayag, UK", "Aarti 4:00 AM", "#7D8FA4"],
+  ["mahakal", "Mahakaleshwar", "Lord Shiva", "shiva", "Ujjain, MP", "Bhasma Aarti 4:00 AM", "#B07A4E"],
+  ["badrinath", "Badrinath", "Lord Vishnu", "vishnu", "Chamoli, UK", "Aarti 4:30 PM", "#9C8544"],
+  ["rameshwaram", "Rameshwaram", "Lord Shiva", "shiva", "Rameswaram, TN", "Aarti 5:00 AM", "#8A7C6E"],
+  ["kashi", "Kashi Vishwanath", "Lord Shiva", "shiva", "Varanasi, UP", "Mangala Aarti 3:00 AM", "#7D728F"],
+  ["tirupati", "Tirupati Balaji", "Lord Venkateswara", "vishnu", "Tirumala, AP", "Suprabhatam 3:00 AM", "#9C8544"],
+  ["dwarka", "Dwarkadhish", "Lord Krishna", "vishnu", "Dwarka, GJ", "Mangala Aarti 6:30 AM", "#5E7C93"],
+  ["ayodhya", "Ram Mandir", "Lord Ram", "vishnu", "Ayodhya, UP", "Aarti 6:30 AM", "#CF924A"],
+  ["siddhi", "Siddhivinayak", "Lord Ganesha", "other", "Mumbai, MH", "Kakad Aarti 5:30 AM", "#CF924A"],
+].map(([id, name, deity, deityGroup, location, timing, tint]) => ({
+  id, name, deity, deityGroup, location, timing, about: null, tint, live: null,
+}));
+
 function LivePill({ small }: { small?: boolean }) {
   return (
     <span
@@ -570,10 +613,13 @@ export function TempleScreen() {
       const r = await fetch(`/api/darshan${fresh ? "?fresh=1" : ""}`);
       if (!r.ok) throw new Error();
       const d = (await r.json()) as { temples: DarshanTemple[] };
-      setDir(d.temples);
+      setDir(d.temples.length ? d.temples : FALLBACK_TEMPLES);
       setLoadErr(false);
     } catch {
-      setLoadErr(true);
+      // Never strand the screen — show the built-in directory (keep live data
+      // if we already had some from an earlier successful load).
+      setDir((prev) => (prev && prev.length ? prev : FALLBACK_TEMPLES));
+      setLoadErr(false);
     }
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -614,24 +660,33 @@ export function TempleScreen() {
             )}
             {open.live && !open.live.embeddable && (
               // the temple streams, but blocks in-app playback — hand off honestly
-              <div className="grid h-full w-full place-items-center p-4 text-center"
-                style={{ background: `linear-gradient(160deg, ${open.tint}55, ${open.tint}22)` }}>
-                <div>
+              <div className="relative grid h-full w-full place-items-end overflow-hidden p-4 text-center"
+                style={{ background: `linear-gradient(160deg, ${open.tint}44, ${open.tint}18)` }}>
+                {TEMPLE_ART[open.id] && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={TEMPLE_ART[open.id]} alt="" className="pointer-events-none absolute inset-x-0 top-3 mx-auto max-h-[56%] w-auto object-contain opacity-95" />
+                )}
+                <div className="relative z-10 w-full pb-1">
                   <div className="text-[12.5px] text-ink">This temple streams on YouTube only.</div>
                   <a href={open.live.watchUrl} target="_blank" rel="noreferrer"
-                    className="mt-3 inline-block rounded-full px-4 py-2 text-[11.5px] btn-saffron">
+                    className="mt-2 inline-block rounded-full px-4 py-2 text-[11.5px] btn-saffron">
                     Watch live on YouTube
                   </a>
                 </div>
               </div>
             )}
             {!open.live && (
-              <div className="grid h-full w-full place-items-center p-4 text-center">
-                <div>
-                  <div className="text-[12.5px] text-ink">Not streaming right now</div>
-                  {open.timing && <div className="mt-1 text-[11px] text-gold">{open.timing}</div>}
+              <div className="relative grid h-full w-full place-items-center overflow-hidden p-4 text-center"
+                style={{ background: `linear-gradient(160deg, ${open.tint}22, ${open.tint}0a)` }}>
+                <div className="absolute inset-0 shimmer opacity-15" />
+                {TEMPLE_ART[open.id] && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={TEMPLE_ART[open.id]} alt="" className="pointer-events-none relative z-10 max-h-[78%] w-auto object-contain" />
+                )}
+                <div className="absolute inset-x-0 bottom-2.5 z-10 text-center">
+                  <div className="text-[12px] font-medium text-ink">Not streaming right now</div>
+                  {open.timing && <div className="text-[10.5px] text-gold">{open.timing}</div>}
                 </div>
-                <div className="absolute inset-0 shimmer opacity-20" />
               </div>
             )}
             {open.live && (
@@ -788,10 +843,22 @@ export function TempleScreen() {
                   className="flex w-full items-center gap-3 py-2.5 text-left"
                   style={i ? { borderTop: "1px solid var(--line)" } : undefined}
                 >
-                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
-                    style={{ background: `linear-gradient(150deg, ${t.tint}44, ${t.tint}14)`, color: "var(--bhagwa-deep)" }}>
-                    <Bank size={18} />
-                  </div>
+                  {TEMPLE_ART[t.id] ? (
+                    <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl"
+                      style={{ background: `linear-gradient(150deg, ${t.tint}26, ${t.tint}0d)`, border: "1px solid var(--line)" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={TEMPLE_ART[t.id]} alt="" loading="lazy" className="h-[86%] w-[86%] object-contain" />
+                    </div>
+                  ) : TEMPLE_PHOTOS[t.id] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={TEMPLE_PHOTOS[t.id]} alt="" loading="lazy"
+                      className="h-11 w-11 shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
+                  ) : (
+                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+                      style={{ background: `linear-gradient(150deg, ${t.tint}44, ${t.tint}14)`, color: "var(--bhagwa-deep)" }}>
+                      <Bank size={18} />
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[12.5px] font-medium text-ink">{t.name}</div>
                     <div className="truncate text-[10.5px] text-muted">{[t.deity ?? undefined, t.location ?? undefined].filter(Boolean).join(" · ")}</div>

@@ -268,6 +268,19 @@ const FESTIVAL_ICONS: Record<string, Icon> = {
   flower: FlowerLotus, sword: Sword, moon: Moon, coins: Coins, sparkles: Sparkle,
 };
 const festivalIcon = (icon?: string) => (icon && FESTIVAL_ICONS[icon]) || FlowerLotus;
+
+// Hand-illustrated festival cards, matched to a festival by name so they attach
+// automatically as the DB fills the calendar. Anything unmatched keeps its icon.
+function festivalArt(name?: string | null, nameHi?: string | null): string | undefined {
+  const s = `${name ?? ""} ${nameHi ?? ""}`.toLowerCase();
+  if (s.includes("janmashtami") || s.includes("कृष्ण") || s.includes("krishna")) return "/festivals/janmashtami.jpg";
+  if (s.includes("ganesh") || s.includes("गणेश") || s.includes("vinayaka")) return "/festivals/ganesh-chaturthi.jpg";
+  if (s.includes("navratri") || s.includes("navaratri") || s.includes("durga") || s.includes("dussehra") || s.includes("dashain") || s.includes("नवरात्रि") || s.includes("दुर्गा")) return "/festivals/navratri.jpg";
+  if (s.includes("ram navami") || s.includes("ramnavami") || s.includes("राम नवमी")) return "/festivals/ram-navami.jpg";
+  if (s.includes("karwa") || s.includes("karva") || s.includes("करवा")) return "/festivals/karwa-chauth.jpg";
+  if (s.includes("diwali") || s.includes("deepavali") || s.includes("dhanteras") || s.includes("lakshmi") || s.includes("laxmi") || s.includes("दिवाली") || s.includes("दीपावली") || s.includes("धनतेरस") || s.includes("लक्ष्मी")) return "/festivals/diwali.jpg";
+  return undefined;
+}
 const fmtFestivalDate = (iso: string, lang: "en" | "hi" = "en") =>
   new Date(iso).toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric" });
 
@@ -346,9 +359,18 @@ export function FestivalsScreen() {
       <div>
       {hero && (
         <div className="gutter pt-3">
-          <div className="eyebrow text-muted">{fmtFestivalDate(hero.date, lang)}</div>
-          <div className="font-display text-xl text-ink">{tr(lang, hero.name, hero.name_hi)}</div>
-          {hero.deva && <div className="mt-0.5 font-deva text-[13.5px] text-gold">{hero.deva}</div>}
+          <div className="flex items-start gap-3.5">
+            {festivalArt(hero.name, hero.name_hi) && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={festivalArt(hero.name, hero.name_hi)} alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover lg:h-32 lg:w-32"
+                style={{ border: "1px solid var(--line-gold)" }} />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="eyebrow text-muted">{fmtFestivalDate(hero.date, lang)}</div>
+              <div className="font-display text-xl text-ink">{tr(lang, hero.name, hero.name_hi)}</div>
+              {hero.deva && <div className="mt-0.5 font-deva text-[13.5px] text-gold">{hero.deva}</div>}
+            </div>
+          </div>
           {(hero.about || hero.about_hi) && <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">{tr(lang, hero.about, hero.about_hi)}</p>}
           {(hero.muhurat || hero.muhurat_hi) && <div className="mt-2 text-[11px] text-gold">{lang === "hi" ? "मुहूर्त" : "Muhurat"} · {tr(lang, hero.muhurat, hero.muhurat_hi)}</div>}
         </div>
@@ -399,13 +421,19 @@ export function FestivalsScreen() {
         <div className="gutter pt-4">
           <h3 className="mb-2 section-title">{lang === "hi" ? "आगामी" : "Upcoming"}</h3>
           <div className="overflow-hidden">
-            {rest.map((f, i) => {
+            {rest.map((f) => {
               const Icon = festivalIcon(f.icon);
+              const art = festivalArt(f.name, f.name_hi);
               return (
                 <div key={f.id} className="flex items-center gap-3 border-t border-[var(--line)] py-3 first:border-t-0">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--tile-line)]">
-                    <Icon size={15} className="text-[var(--bhagwa)]" />
-                  </span>
+                  {art ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={art} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
+                  ) : (
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--tile-line)]">
+                      <Icon size={15} className="text-[var(--bhagwa)]" />
+                    </span>
+                  )}
                   <span className="flex-1 text-[12.5px] text-ink">{tr(lang, f.name, f.name_hi)}</span>
                   <span className="text-[11px] text-muted">{fmtFestivalDate(f.date, lang)}</span>
                 </div>
@@ -424,12 +452,21 @@ export function FestivalsScreen() {
 // grid. The id matches library_articles.category; labels carry both languages.
 const LIBRARY_SHELVES: { id: string; en: string; hi: string }[] = [
   { id: "all", en: "All", hi: "सभी" },
+  { id: "temples", en: "Temples", hi: "मंदिर" },
   { id: "deities", en: "Deities", hi: "देव" },
   { id: "festivals", en: "Festivals", hi: "पर्व" },
   { id: "practice", en: "Practice", hi: "साधना" },
   { id: "wisdom", en: "Wisdom", hi: "ज्ञान" },
   { id: "jyotish", en: "Jyotish", hi: "ज्योतिष" },
 ];
+
+// Long-form temple profiles from public/library/temples.json (85 temples).
+type TempleDoc = {
+  id: string; num: number; name: string; location: string; deity: string;
+  category: string; significance: string; read: string; sections: { h: string; b: string }[];
+};
+// Jewel tones cycled across the temple cards so the grid reads as a warm set.
+const TEMPLE_TINTS = ["#B07A4E", "#7D728F", "#A45E6B", "#5E7C93", "#9C8544", "#4E7A6B", "#8A5A9C", "#B5482A"];
 
 function LangToggle() {
   const { lang, setLang, haptic } = useApp();
@@ -452,10 +489,50 @@ export function LibraryScreen() {
   const { lang } = useApp();
   const [open, setOpen] = useState<string | null>(null);
   const [shelf, setShelf] = useState("all");
+  const [temples, setTemples] = useState<TempleDoc[]>([]);
+  const [openTemple, setOpenTemple] = useState<TempleDoc | null>(null);
   const items = useCatalog(getLibrary, []);
   const article = open ? items.find((x) => x.id === open) : undefined;
   const heading = lang === "hi" ? "आध्यात्मिक पुस्तकालय" : "Spiritual Library";
   const readWord = lang === "hi" ? "पढ़ने का समय" : "read";
+
+  useEffect(() => {
+    let on = true;
+    fetch("/library/temples.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d: TempleDoc[]) => { if (on) setTemples(d); })
+      .catch(() => {});
+    return () => { on = false; };
+  }, []);
+
+  // ----- a single temple profile: masthead + its narrative sections -----
+  if (openTemple) {
+    const t = openTemple;
+    const tint = TEMPLE_TINTS[t.num % TEMPLE_TINTS.length];
+    return (
+      <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+        <ScreenHeader title={heading} onBack={() => setOpenTemple(null)} />
+        <div className="gutter pt-3 lg:mx-auto lg:max-w-2xl">
+          <div className="rounded-2xl p-5" style={{ background: `linear-gradient(157deg, ${tint}22, ${tint}0a 55%, var(--surface))`, border: "1px solid var(--line-gold)" }}>
+            <div className="eyebrow text-muted">{t.location}</div>
+            <h1 className="mt-1 font-display text-[24px] leading-tight text-ink">{t.name}</h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px]">
+              {t.deity && <span style={{ color: tint }}>{t.deity}</span>}
+              {t.deity && <span className="text-[var(--muted-2)]">·</span>}
+              <span className="text-muted">{t.read} {readWord}</span>
+            </div>
+            {t.significance && <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-dim measure">{t.significance}</p>}
+          </div>
+          {t.sections.map((s, i) => (
+            <div key={i} className="pt-5">
+              <h3 className="section-title mb-1.5" style={{ color: tint }}>{s.h}</h3>
+              <p className="whitespace-pre-wrap text-[12.5px] leading-[1.72] text-ink">{s.b}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (article) {
     return (
@@ -527,36 +604,63 @@ export function LibraryScreen() {
       </div>
       {/* Same card as the home shelf: an inset picture with the read time as a
           chip straddling its lower edge, the title beneath. */}
-      <div className="grid grid-cols-2 gap-2.5 gutter pt-3">
-        {shown.map((l) => (
-          <button
-            key={l.id}
-            onClick={() => setOpen(l.id)}
-            className="rounded-xl p-1.5 text-left"
-            style={{ background: "var(--surface-2)" }}
-          >
-            <div className="relative">
-              {l.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={l.image} alt="" className="h-[92px] w-full rounded-lg object-cover" />
-              ) : (
-                <div className="h-[92px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
-              )}
-              <span
-                className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[9px] tnum text-ink"
-                style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
-              >
-                {l.read} {readWord}
-              </span>
-            </div>
-            <div className="px-1 pb-1 pt-4">
-              <div className="line-clamp-2 min-h-[2.3em] text-[11.5px] font-medium leading-tight text-ink">
-                {tr(lang, l.title, l.title_hi)}
+      {shelf === "temples" ? (
+        <div className="grid grid-cols-2 gap-2.5 gutter pt-3">
+          {temples.length === 0 && (
+            <div className="col-span-2 py-8 text-center text-[11.5px] text-muted">Loading temple profiles…</div>
+          )}
+          {temples.map((t) => {
+            const tint = TEMPLE_TINTS[t.num % TEMPLE_TINTS.length];
+            return (
+              <button key={t.id} onClick={() => setOpenTemple(t)} className="rounded-xl p-1.5 text-left" style={{ background: "var(--surface-2)" }}>
+                <div className="relative grid h-[92px] w-full place-items-center overflow-hidden rounded-lg"
+                  style={{ background: `linear-gradient(150deg, ${tint}3a, ${tint}12)` }}>
+                  <Bank size={26} style={{ color: tint }} />
+                  <span className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[9px] tnum text-ink"
+                    style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}>
+                    {t.read} {readWord}
+                  </span>
+                </div>
+                <div className="px-1 pb-1 pt-4">
+                  <div className="line-clamp-2 min-h-[2.3em] text-[11.5px] font-medium leading-tight text-ink">{t.name}</div>
+                  <div className="mt-0.5 line-clamp-1 text-[10px] text-muted">{t.location}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2.5 gutter pt-3">
+          {shown.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setOpen(l.id)}
+              className="rounded-xl p-1.5 text-left"
+              style={{ background: "var(--surface-2)" }}
+            >
+              <div className="relative">
+                {l.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={l.image} alt="" className="h-[92px] w-full rounded-lg object-cover" />
+                ) : (
+                  <div className="h-[92px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
+                )}
+                <span
+                  className="absolute bottom-0 right-1.5 translate-y-1/2 whitespace-nowrap rounded-[3px] px-1.5 py-[1.5px] text-[9px] tnum text-ink"
+                  style={{ background: "var(--surface)", border: "1px solid var(--line-strong)" }}
+                >
+                  {l.read} {readWord}
+                </span>
               </div>
-            </div>
-          </button>
-        ))}
-      </div>
+              <div className="px-1 pb-1 pt-4">
+                <div className="line-clamp-2 min-h-[2.3em] text-[11.5px] font-medium leading-tight text-ink">
+                  {tr(lang, l.title, l.title_hi)}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

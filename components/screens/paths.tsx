@@ -151,6 +151,18 @@ function BookTile({ color, size = 46 }: { color: string; size?: number }) {
 
 function PathMark({ path, size = 46 }: { path: Path; size?: number }) {
   if (path.book) return <BookTile color={path.accent} size={size} />;
+  // A hand-painted deity portrait — richer than the glyph. Falls back to the
+  // glyph for any path whose deity has no illustration yet.
+  if (path.deity.id)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={`/deity/${path.deity.id}-art.png`}
+        alt=""
+        className="shrink-0 rounded-2xl object-cover object-top"
+        style={{ width: size, height: size, border: `1px solid ${path.accent}55`, background: "var(--surface)" }}
+      />
+    );
   return <DeityGlyph deity={path.deity} size={size} />;
 }
 
