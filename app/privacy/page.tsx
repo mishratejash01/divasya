@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
         <S title="Deleting your account">
           You can permanently delete your account and data at any time, inside the app under
           Account, or by following the steps at{" "}
-          <a href="/delete-account" style={{ color: "#B4560F" }}>divasya-seven.vercel.app/delete-account</a>.
+          <a href="/delete-account" style={{ color: "#B4560F" }}>the account deletion page</a>.
           Deletion removes your profile, birth details, japa history, wallet ledger, bookings,
           chats, and vastu data, and closes your sign-in account.
         </S>
