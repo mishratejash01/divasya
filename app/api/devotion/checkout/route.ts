@@ -52,9 +52,11 @@ export async function POST(req: Request) {
   // ---- validate the request shape strictly; reject anything odd
   if (b.kind !== "puja" && b.kind !== "chadhawa") return bad("bad_kind");
   const productId = Number(b.productId);
-  const packageId = Number(b.packageId);
+  const packageId = Number(b.packageId ?? 0);
   if (!Number.isInteger(productId) || productId <= 0) return bad("bad_product");
-  if (!Number.isInteger(packageId) || packageId <= 0) return bad("bad_package");
+  // pujas always carry a package; chadhawa is offerings-only (package 0)
+  if (!Number.isInteger(packageId) || packageId < 0) return bad("bad_package");
+  if (b.kind === "puja" && packageId === 0) return bad("bad_package");
   const addonIds = Array.isArray(b.addonIds) ? b.addonIds.map(Number) : [];
   if (addonIds.some((n) => !Number.isInteger(n) || n <= 0)) return bad("bad_addons");
   const phone = String(b.phone ?? "").replace(/\D/g, "").slice(-10);
@@ -105,6 +107,9 @@ export async function POST(req: Request) {
         if (!pkg) return bad("package_not_found", 404);
         packageName = pkg.name;
         expected = Number(pkg.price) || 0;
+      } else if (addonIds.length === 0) {
+        // nothing chosen and nothing to default to: there is no order to make
+        return bad("no_offerings");
       }
       const offers = p.offerings ?? [];
       for (const id of addonIds) {
@@ -128,7 +133,7 @@ export async function POST(req: Request) {
     const common = { sankalp, devoteeName, wish, city, referenceId: orderNo };
     const dpOrder = b.kind === "puja"
       ? await createPujaOrder(dpUser.token, { pujaId: productId, packageId, addonIds, ...common })
-      : await createChadawaOrder(dpUser.token, { productId, packageId, offeringIds: addonIds, ...common });
+      : await createChadawaOrder(dpUser.token, { productId, packageId: packageId || null, offeringIds: addonIds, ...common });
 
     const amount = Number(dpOrder.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
