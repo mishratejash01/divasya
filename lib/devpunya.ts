@@ -97,9 +97,13 @@ export type DpProduct = {
   tithi?: string | null; rating?: number | null;
   default_image?: string | null; png_default_image?: string | null;
   images?: string[] | null; packages?: DpPackage[] | null; benefits?: unknown;
-  // chadawa listings may carry offerings under one of these keys — shape kept
-  // loose on purpose until their catalog is assigned and observable.
+  // chadawa: normalised by listChadawa() into DpPackage[] (see there)
   offerings?: DpPackage[] | null;
+};
+/** Raw chadawa offering as their listing sends it — ids and prices as text. */
+type RawOffering = {
+  id: number | string; name?: string | null; description?: string | null;
+  image_url?: string | null; price: number | string; currency?: string;
 };
 export type DpAddon = {
   id: number; name: string; description?: string | null; image_url?: string | null;
@@ -109,8 +113,27 @@ export type DpAddon = {
 export const listPujas = () =>
   dp<DpProduct[]>(NOAUTH, `/product/pooja?country_code=${COUNTRY}`);
 
+// Their chadawa rows are NOT shaped like pujas (observed 2026-08-29): `packages`
+// is an object of FAQs, Benefits and guidelines — content, not purchasable —
+// and the purchasable items live in `offeringDetails` with ids and prices as
+// text. Treating it like a puja called .map on an object, threw, and blanked
+// the whole tab. Normalised here so every consumer sees one clean shape:
+// packages = [] (nothing to choose), offerings = the priced items.
+function normalizeChadawa(p: DpProduct): DpProduct {
+  const raw = p as DpProduct & { offeringDetails?: RawOffering[] | null };
+  const packages = Array.isArray(p.packages) ? p.packages : [];
+  const offerings = Array.isArray(p.offerings) && p.offerings.length
+    ? p.offerings
+    : (raw.offeringDetails ?? []).map((o) => ({
+        id: Number(o.id), name: (o.name ?? "").trim(), price: Number(o.price),
+        image: o.image_url ?? null, description: o.description ?? null, currency: o.currency,
+      })).filter((o) => Number.isFinite(o.id) && o.id > 0);
+  return { ...p, packages, offerings };
+}
+
 export const listChadawa = () =>
-  dp<DpProduct[]>(NOAUTH, `/chadawa/getProductListing?country_code=${COUNTRY}`);
+  dp<DpProduct[]>(NOAUTH, `/chadawa/getProductListing?country_code=${COUNTRY}`)
+    .then((list) => (Array.isArray(list) ? list.map(normalizeChadawa) : []));
 
 export const poojaById = (id: number | string) =>
   dp<DpProduct>(NOAUTH, `/product/poojaById?pooja_id=${encodeURIComponent(id)}`);
@@ -182,7 +205,7 @@ export function createPujaOrder(token: string, p: {
 }
 
 export function createChadawaOrder(token: string, p: {
-  productId: number; packageId: number; offeringIds: number[]; sankalp: Sankalp[];
+  productId: number; packageId?: number | null; offeringIds: number[]; sankalp: Sankalp[];
   devoteeName?: string; wish?: string; city?: string; referenceId: string;
 }): Promise<DpOrderResult> {
   return dp<DpOrderResult>(AUTH, "/chadawa/partner/createChadawaOrderWithoutPayment", {
@@ -190,7 +213,7 @@ export function createChadawaOrder(token: string, p: {
     token,
     body: {
       product_id: p.productId,
-      package_id: p.packageId,
+      ...(p.packageId ? { package_id: p.packageId } : {}),
       offeringIds: p.offeringIds,
       sankalp_details: p.sankalp,
       details: { sankalp_deetails: p.sankalp },
