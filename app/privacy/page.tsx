@@ -24,8 +24,8 @@ export default function PrivacyPolicy() {
         <S title="Who we are">
           Divasya is a spiritual companion app operated by Sanatani Vibes Private Limited
           (&quot;we&quot;, &quot;us&quot;). This policy explains what information the Divasya app and
-          website collect, why, and the choices you have. It applies to the Android app
-          (life.divasya.app) and the website.
+          website collect, why, and the choices you have. It applies to the Divasya mobile app
+          and the website.
         </S>
 
         <S title="What we collect">
