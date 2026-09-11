@@ -49,7 +49,9 @@ const GOOGLE_WEB_CLIENT_ID =
 // iOS needs its own OAuth client (type iOS, bundle com.sanatanivibes.divasya).
 // Passing it is harmless on Android; without it the plugin refuses to
 // initialise the google provider on iPhone ("No provider was initialized").
-const GOOGLE_IOS_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID || "";
+const GOOGLE_IOS_CLIENT_ID =
+  process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+  "474770938673-ku1lh7ot24v6s2qi10ced9uthro2u3b8.apps.googleusercontent.com";
 
 export async function signInGoogle() {
   const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
