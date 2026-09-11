@@ -1,23 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useApp } from "../app-context";
 import { cx } from "../ui";
 
 /**
- * Google-only sign-in. Phone OTP was removed from the screen entirely: no SMS
- * provider is configured, so the field could only ever apologise. When phone
- * login is introduced for real, rebuild the flow against lib/db.ts
- * sendPhoneOtp/verifyPhoneOtp, which remain in place and working.
+ * Google sign-in everywhere; Apple sign-in additionally inside the iOS shell
+ * (App Store rule 4.8). Phone OTP was removed from the screen: no SMS provider
+ * is configured, so the field could only ever apologise. When phone login is
+ * introduced for real, rebuild against lib/db.ts sendPhoneOtp/verifyPhoneOtp.
  */
 export function LoginScreen() {
-  const { signInGoogle } = useApp();
-  const [busy, setBusy] = useState(false);
+  const { signInGoogle, signInApple } = useApp();
+  const [busy, setBusy] = useState<false | "google" | "apple">(false);
   const [note, setNote] = useState<string | null>(null);
+  // Apple's button belongs only inside the iPhone app (App Store rule 4.8);
+  // detected after mount so server and first client render agree.
+  const [isIos, setIsIos] = useState(false);
+  useEffect(() => {
+    const cap = (window as unknown as { Capacitor?: { getPlatform?: () => string } }).Capacitor;
+    setIsIos(cap?.getPlatform?.() === "ios");
+  }, []);
 
   async function google() {
-    setBusy(true); setNote(null);
+    setBusy("google"); setNote(null);
     try {
       await signInGoogle();  // full-page redirect
     } catch (e) {
@@ -26,6 +33,17 @@ export function LoginScreen() {
       // that lets a sign-in problem be fixed remotely.
       const detail = (e as Error)?.message?.slice(0, 140);
       setNote(detail ? `Google sign-in failed: ${detail}` : "Couldn't start Google sign-in. Please try again.");
+    }
+  }
+
+  async function apple() {
+    setBusy("apple"); setNote(null);
+    try {
+      await signInApple();   // native sheet; SIGNED_IN fires in-page
+    } catch (e) {
+      setBusy(false);
+      const detail = (e as Error)?.message?.slice(0, 140);
+      setNote(detail ? `Apple sign-in failed: ${detail}` : "Couldn't start Apple sign-in. Please try again.");
     }
   }
 
@@ -69,15 +87,29 @@ export function LoginScreen() {
 
         <button
           onClick={google}
-          disabled={busy}
+          disabled={busy !== false}
           className={cx(
             "mt-6 flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-ink",
-            busy && "opacity-60",
+            busy !== false && "opacity-60",
           )}
           style={{ background: "#FFFFFF" }}
         >
-          <GoogleMark /> {busy ? "Connecting…" : "Continue with Google"}
+          <GoogleMark /> {busy === "google" ? "Connecting…" : "Continue with Google"}
         </button>
+
+        {isIos && (
+          <button
+            onClick={apple}
+            disabled={busy !== false}
+            className={cx(
+              "mt-2 flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-white",
+              busy !== false && "opacity-60",
+            )}
+            style={{ background: "#000000", border: "1px solid rgba(255,255,255,0.35)" }}
+          >
+            <AppleMark /> {busy === "apple" ? "Connecting…" : "Continue with Apple"}
+          </button>
+        )}
 
         {note && <p className="mt-2.5 text-center text-[11px] leading-relaxed text-[#FFB4A2]">{note}</p>}
 
@@ -89,6 +121,14 @@ export function LoginScreen() {
   );
 }
 
+
+function AppleMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden>
+      <path d="M17.05 12.54c-.03-2.92 2.39-4.32 2.5-4.39-1.36-1.99-3.48-2.26-4.23-2.29-1.8-.18-3.51 1.06-4.42 1.06-.9 0-2.32-1.03-3.81-1-1.96.03-3.77 1.14-4.78 2.9-2.04 3.54-.52 8.78 1.47 11.65.97 1.4 2.13 2.98 3.65 2.92 1.46-.06 2.01-.95 3.78-.95 1.77 0 2.26.95 3.81.92 1.58-.03 2.58-1.43 3.54-2.84 1.12-1.63 1.58-3.21 1.6-3.29-.03-.02-3.08-1.18-3.11-4.69zM14.14 3.96c.8-.97 1.34-2.32 1.19-3.66-1.15.05-2.55.77-3.38 1.74-.74.86-1.39 2.23-1.22 3.55 1.29.1 2.6-.65 3.41-1.63z"/>
+    </svg>
+  );
+}
 function GoogleMark() {
   return (
     <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden>
