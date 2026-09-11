@@ -90,6 +90,28 @@ export async function signInGoogle() {
 }
 
 /**
+ * Sign in with Apple — iOS native only (App Store rule 4.8: any app offering
+ * Google login must offer Apple's too). The native AuthenticationServices
+ * sheet returns an identity token whose audience is the app's bundle id;
+ * Supabase verifies it directly, same shape as the Google flow. The login
+ * screen only shows the button inside the iOS shell, so this never runs on
+ * web or Android.
+ */
+export async function signInApple() {
+  const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
+  const social = cap?.isNativePlatform?.() ? cap.Plugins?.SocialLogin : undefined;
+  if (!social) throw new Error("Apple sign-in is available in the iPhone app only.");
+
+  await social.initialize({ apple: {} });
+  const res = await social.login({ provider: "apple", options: { scopes: ["email", "name"] } });
+  const idToken =
+    res?.result?.idToken ?? (res as { idToken?: string } | undefined)?.idToken;
+  if (!idToken) throw new Error("Apple returned no identity token.");
+  const { error } = await supabaseBrowser().auth.signInWithIdToken({ provider: "apple", token: idToken });
+  if (error) throw error;
+}
+
+/**
  * Phone sign-in, in two steps: request a code, then verify it. Supabase sends
  * the SMS through whichever provider is configured on the project — with none
  * set up, sendPhoneOtp throws and the screen says so rather than sitting on a
