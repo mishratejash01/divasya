@@ -57,6 +57,7 @@ type Ctx = {
   profile: Profile | null;
   needsOnboarding: boolean;
   signInGoogle: () => Promise<void>;
+  signInApple: () => Promise<void>;
   completeOnboarding: (fields: Partial<Profile>) => Promise<void>;
   logout: () => Promise<void>;
   // nav
@@ -483,6 +484,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     logEvent("login_google_start");
   }, []);
 
+  const signInApple = useCallback(async () => {
+    await db.signInApple();    // native sheet; SIGNED_IN fires in-page
+    logEvent("login_apple_start");
+  }, []);
+
   const completeOnboarding = useCallback(async (fields: Partial<Profile>) => {
     if (!userRef.current) return;
     // Real Vedic identity: sidereal moon rashi + janma nakshatra from the
@@ -531,7 +537,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppCtx.Provider
       value={{
         user, loading, profileLoaded, profile, needsOnboarding,
-        signInGoogle, completeOnboarding, logout,
+        signInGoogle, signInApple, completeOnboarding, logout,
         screen, go, back,
         deityId, setDeity,
         japaToday: stats.japa_today, japaLifetime: stats.japa_lifetime, streak: stats.streak,
