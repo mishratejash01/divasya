@@ -22,6 +22,17 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.474770938673-ku1lh7ot24v6s2qi10ced9uthro2u3b8</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>474770938673-ku1lh7ot24v6s2qi10ced9uthro2u3b8.apps.googleusercontent.com</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Divasya uses your camera only for the live Vastu Lens view. Nothing is recorded, stored, or uploaded.</string>
 	<key>LSRequiresIPhoneOS</key>
