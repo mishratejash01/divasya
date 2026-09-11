@@ -46,6 +46,10 @@ type CapacitorGlobal = {
 const GOOGLE_WEB_CLIENT_ID =
   process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
   "474770938673-kj851svo7je3flfcstb6p6kuh5bskfjv.apps.googleusercontent.com";
+// iOS needs its own OAuth client (type iOS, bundle com.sanatanivibes.divasya).
+// Passing it is harmless on Android; without it the plugin refuses to
+// initialise the google provider on iPhone ("No provider was initialized").
+const GOOGLE_IOS_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_IOS_CLIENT_ID || "";
 
 export async function signInGoogle() {
   const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
@@ -56,7 +60,13 @@ export async function signInGoogle() {
   }
 
   if (social) {
-    await social.initialize({ google: { webClientId: GOOGLE_WEB_CLIENT_ID, mode: "online" } });
+    await social.initialize({
+      google: {
+        webClientId: GOOGLE_WEB_CLIENT_ID,
+        ...(GOOGLE_IOS_CLIENT_ID ? { iOSClientId: GOOGLE_IOS_CLIENT_ID } : {}),
+        mode: "online",
+      },
+    });
     // no scopes: the default ID token already carries email + profile, and
     // requesting scopes forces a native MainActivity modification (the exact
     // plugin error a device surfaced). Supabase only needs the ID token.
