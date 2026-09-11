@@ -20,6 +20,9 @@ importers:
       '@capacitor/core':
         specifier: ^8.5.0
         version: 8.5.0
+      '@capacitor/ios':
+        specifier: ^8.5.1
+        version: 8.5.1(@capacitor/core@8.5.0)
       '@capgo/capacitor-social-login':
         specifier: ^8.4.3
         version: 8.4.3(@capacitor/core@8.5.0)
@@ -130,6 +133,11 @@ packages:
 
   '@capacitor/core@8.5.0':
     resolution: {integrity: sha512-Ca4krtqH1hothjtBIwf2J2TW7IhYq1ujp8QeItTiJohNsqij8ja2DYYH3DU0l8RmxCWaBAFTGA2TgOgOMCSNsQ==}
+
+  '@capacitor/ios@8.5.1':
+    resolution: {integrity: sha512-0EVqwCYf3RUp2JAjUGZ04xmG6dSpIsPmPacI9zKxn6mu9RSiHhmFF230ghe00HrkyB6ig6SfNdoADvVODxYhlQ==}
+    peerDependencies:
+      '@capacitor/core': ^8.5.0
 
   '@capgo/capacitor-social-login@8.4.3':
     resolution: {integrity: sha512-d5jb2k/g4k4eUSmymZ0JIRqY3HAynKP0PeXMtxQvT6UeNF1yrfiyb+xAWysayf8PHo7wofG62iUumvPZRTsp4Q==}
@@ -1256,6 +1264,10 @@ snapshots:
   '@capacitor/core@8.5.0':
     dependencies:
       tslib: 2.8.1
+
+  '@capacitor/ios@8.5.1(@capacitor/core@8.5.0)':
+    dependencies:
+      '@capacitor/core': 8.5.0
 
   '@capgo/capacitor-social-login@8.4.3(@capacitor/core@8.5.0)':
     dependencies:
