@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useApp } from "../app-context";
-import { cx } from "../ui";
+import { cx, BrandWordmark } from "../ui";
 
 /**
  * Google sign-in everywhere; Apple sign-in additionally inside the iOS shell
@@ -78,8 +78,8 @@ export function LoginScreen() {
         <p className="text-[12.5px] font-medium leading-none tracking-[0.01em] text-white">
           India&apos;s No.1 spiritual companion
         </p>
-        <h1 className="mt-2 font-display text-[40px] leading-none tracking-[-0.025em] text-white">
-          Divasya
+        <h1 className="mt-2" aria-label="Divasya">
+          <BrandWordmark height={48} priority className="drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)]" />
         </h1>
         <p className="mt-2 font-deva text-[13px] leading-none text-[var(--bhagwa-soft)]">
           आपकी आध्यात्मिक यात्रा

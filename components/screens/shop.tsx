@@ -309,7 +309,11 @@ export function CartScreen() {
 
       {cart.lines.length === 0 ? (
         <div className="gutter pt-6">
-          <div className="rounded-2xl surface p-6 text-center">
+          <div className="flex flex-col items-center rounded-2xl surface p-6 text-center">
+            {!cart.loading && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/spot/cart.png" alt="" className="mb-3 h-28 w-28 object-contain" />
+            )}
             <div className="text-[12.5px] text-ink">{cart.loading ? "Loading…" : "Your cart is empty."}</div>
             {!cart.loading && (
               <button onClick={() => go("shop")} className="mt-3 rounded-full px-4 py-2 text-[11.5px] btn-saffron">

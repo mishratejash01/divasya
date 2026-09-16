@@ -142,7 +142,8 @@ export function OrdersScreen() {
 
       {orders?.length === 0 && bookings?.length === 0 && (
         <div className="flex flex-col items-center gutter pt-16 text-center">
-          <EmptyParcel />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/spot/orders.png" alt="" className="h-36 w-36 object-contain" />
           <div className="mt-4 font-display text-[15px] text-ink">No orders yet</div>
           <p className="mt-1.5 measure text-[11.5px] leading-relaxed text-muted">
             When you buy something from the store, it will show up here with its progress.

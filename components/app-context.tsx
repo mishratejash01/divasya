@@ -439,8 +439,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => { removed = true; handle?.remove(); };
   }, [popApp]);
 
+  // Callers pass an intent as a small number (a tap, ~4–14) or an array (a
+  // celebratory rhythm). A raw 6ms buzz is barely felt, so single taps are
+  // scaled up to a perceptible light/medium/heavy duration; arrays play as
+  // given. navigator.vibrate fires on the web and inside the Android WebView
+  // (the app declares the VIBRATE permission in its manifest).
   const haptic = useCallback((pattern: number | number[] = 14) => {
-    try { navigator.vibrate?.(pattern); } catch {}
+    try {
+      if (Array.isArray(pattern)) { navigator.vibrate?.(pattern); return; }
+      const ms = pattern <= 6 ? 12 : pattern <= 11 ? 20 : 32;
+      navigator.vibrate?.(ms);
+    } catch {}
   }, []);
 
   // Language preference (EN / हिं) — remembered across sessions. Read after mount
@@ -527,7 +536,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const sendPush = useCallback((p: PushPayload) => {
     setPush(p);
-    try { navigator.vibrate?.([10, 40, 10]); } catch {}
+    try { navigator.vibrate?.([12, 40, 12]); } catch {}
   }, []);
 
   const deityId = profile?.deity_id || "krishna";

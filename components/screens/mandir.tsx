@@ -156,9 +156,13 @@ export function MandirScreen() {
             <AnimatePresence>
               {blessing && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                  className="absolute inset-x-4 bottom-3 mx-auto max-w-sm rounded-2xl px-4 py-2.5 text-center surface ring-gold">
-                  <div className="font-deva text-[12.5px] text-ink">दर्शन सम्पूर्ण</div>
-                  <div className="text-[10.5px] text-muted">{deity.name} blesses you · +21 Punya</div>
+                  className="absolute inset-x-4 bottom-3 mx-auto flex max-w-sm items-center gap-3 rounded-2xl px-4 py-2.5 text-left surface ring-gold">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/spot/darshan-done.png" alt="" className="h-12 w-12 shrink-0 object-contain" />
+                  <div>
+                    <div className="font-deva text-[12.5px] text-ink">दर्शन सम्पूर्ण</div>
+                    <div className="text-[10.5px] text-muted">{deity.name} blesses you · +21 Punya</div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

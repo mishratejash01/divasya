@@ -2,7 +2,7 @@
 
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowCounterClockwise, CaretRight, Check, SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, CaretRight, SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
 import { ScreenHeader, cx } from "../ui";
@@ -362,7 +362,8 @@ export function MalaScreen() {
               <div className="absolute inset-0 grid place-items-center">
                 {done ? (
                   <div className="flex flex-col items-center">
-                    <Check size={36} className="text-[var(--good)]" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/spot/mala-done.png" alt="" className="h-16 w-16 object-contain" />
                     <span className="mt-1 font-deva text-[13.5px] text-ink">माला पूर्ण</span>
                   </div>
                 ) : (

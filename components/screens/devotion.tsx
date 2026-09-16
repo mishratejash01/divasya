@@ -499,9 +499,8 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
 
         {step === "done" && (
           <div className="flex flex-col items-center py-6 text-center">
-            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="grid h-16 w-16 place-items-center rounded-full" style={{ background: "rgba(95,134,87,0.16)" }}>
-              <Check size={31} className="text-[var(--good)]" />
-            </motion.div>
+            <motion.img initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              src="/spot/puja-booked.png" alt="" className="h-28 w-28 object-contain" />
             <div className="mt-3 font-display text-xl text-ink">Booking Confirmed</div>
             <div className="mt-1 measure text-[11.5px] leading-relaxed text-muted">
               {p.name} will be performed in the name of <span className="text-ink">{members[0].name}</span>

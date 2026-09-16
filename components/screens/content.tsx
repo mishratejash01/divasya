@@ -339,7 +339,8 @@ export function FestivalsScreen() {
           guessed. Say so rather than showing a blank screen. */}
       {!list.length && (
         <div className="gutter-m mt-8 flex flex-col items-center text-center lg:mt-14">
-          <DiyaArtifact />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/spot/festivals.png" alt="" className="h-36 w-36 object-contain" />
           <div className="mt-4 text-[14px] font-medium text-ink">{lang === "hi" ? "अभी कोई तिथि उपलब्ध नहीं" : "No festival dates loaded"}</div>
           <p className="mx-auto mt-1.5 measure text-[11.5px] leading-relaxed text-muted">
             {lang === "hi"

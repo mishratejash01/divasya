@@ -39,6 +39,9 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Haptics: the WebView's navigator.vibrate is a no-op unless the app
+         declares VIBRATE. With it, taps and confirmations buzz on device. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Vastu Lens: the WebView's camera request is auto-denied unless the
          app itself declares CAMERA; with it declared, Capacitor shows the
          system permission dialog on first use. required=false keeps the

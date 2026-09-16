@@ -182,6 +182,11 @@ body {
   font-family: var(--font-deva), ui-sans-serif, sans-serif;
   letter-spacing: 0;          /* Devanagari must never be tracked */
 }
+/* Ceremonial serif — the rashi reveal name and similar accent moments. */
+.font-serif {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  letter-spacing: 0.01em;
+}
 /* Small meta label above a value — sentence case, never shouted. */
 .eyebrow {
   font-size: 11px;
