@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bag, Check, PencilSimple, ShareNetwork, SignOut, Star } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
+import { useIsIosApp } from "@/lib/platform";
 import { Iconify } from "../iconify";
 import { Logomark, ScreenHeader } from "../ui";
 import { rashiLabel } from "@/lib/astro";
@@ -26,6 +27,7 @@ function prettyDob(iso: string) {
 }
 
 export function MoreScreen() {
+  const iosApp = useIsIosApp();
   const { back, go, haptic, profile, user, logout } = useApp();
   const [shared, setShared] = useState(false);
   // The real balance, from the wallet ledger — never the old client-side field.
@@ -109,7 +111,9 @@ export function MoreScreen() {
                   {balance === null ? "Open wallet" : `₹${balance.toLocaleString("en-IN")}`}
                 </div>
               </div>
-              <span className="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium btn-saffron">Add money</span>
+              {!iosApp && (
+                <span className="shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium btn-saffron">Add money</span>
+              )}
             </button>
 
             {/* actions — tiles, no divider lines between them */}
