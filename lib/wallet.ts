@@ -89,17 +89,30 @@ export async function spendForOrder(
   sb: SupabaseClient, userId: string, orderNo: string, want: number, label: string
 ): Promise<number> {
   if (want <= 0) return 0;
-  const balance = await walletBalance(sb, userId);
-  const applied = Math.min(balance, want);
-  if (applied <= 0) return 0;
-  const fresh = await post(sb, userId, -applied, "spend", `spend:${orderNo}`, label, orderNo);
-  if (!fresh) {
-    // this order already debited once — read back what it took
-    const { data } = await sb.from("wallet_ledger")
-      .select("amount").eq("ref", `spend:${orderNo}`).maybeSingle();
-    return Math.abs(Number(data?.amount ?? 0));
+  let balance = await walletBalance(sb, userId);
+  // Two tries: if a concurrent debit wins the race between our balance read
+  // and our insert, the database guard (migration 022) refuses the overdraft;
+  // we re-read what is actually left and take that instead. A second refusal
+  // means the wallet is drained — apply nothing and let the gateway carry
+  // the full amount, which is always money-safe.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const applied = Math.min(balance, want);
+    if (applied <= 0) return 0;
+    try {
+      const fresh = await post(sb, userId, -applied, "spend", `spend:${orderNo}`, label, orderNo);
+      if (!fresh) {
+        // this order already debited once — read back what it took
+        const { data } = await sb.from("wallet_ledger")
+          .select("amount").eq("ref", `spend:${orderNo}`).maybeSingle();
+        return Math.abs(Number(data?.amount ?? 0));
+      }
+      return applied;
+    } catch (e) {
+      if (!(e instanceof Error) || !e.message.includes("wallet_insufficient")) throw e;
+      balance = await walletBalance(sb, userId);
+    }
   }
-  return applied;
+  return 0;
 }
 
 /** Give an order's wallet portion back (failed/refunded purchase). Idempotent. */
