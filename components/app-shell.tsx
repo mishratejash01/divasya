@@ -11,6 +11,7 @@ import { PushToast } from "./push-toast";
 import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark } from "./ui";
 import { Iconify } from "./iconify";
+import { DamruLoader } from "./damru-loader";
 
 import { HomeScreen } from "./screens/home";
 import { MalaScreen } from "./screens/mala";
@@ -224,6 +225,13 @@ function OfflineBanner() {
 
 function RoutedApp() {
   const { screen } = useApp();
+  // A brief damru loading screen whenever a new screen opens.
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    const t = window.setTimeout(() => setLoading(false), 720);
+    return () => window.clearTimeout(t);
+  }, [screen.name]);
   return (
     <div className="flex h-full w-full">
       <SideNav />
@@ -252,6 +260,7 @@ function RoutedApp() {
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
           <OfflineBanner />
           <DailyNamastePopup />
+          <AnimatePresence>{loading && <DamruLoader />}</AnimatePresence>
         </div>
       </main>
     </div>

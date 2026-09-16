@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { CaretRight, Microphone } from "@phosphor-icons/react";
+import { CaretRight } from "@phosphor-icons/react";
 import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER } from "../nav-map";
@@ -61,39 +61,6 @@ const TABS: { id: string; label: string; to?: ScreenName; params?: Record<string
 // Poster verses. Unlike festival dates these are safe to hold locally: they are
 // ancient, fixed and among the best known lines in the tradition, so there is
 // nothing to go stale or to get wrong by a day.
-const POSTERS: { deva: string; meaning: string; source: string; tint: [string, string] }[] = [
-  {
-    deva: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।",
-    meaning: "You have the right to action alone, never to its fruits.",
-    source: "Bhagavad Gita 2.47",
-    tint: ["#7E1D2E", "#3F0C17"],
-  },
-  {
-    deva: "सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः।",
-    meaning: "May all be happy, may all be free from illness.",
-    source: "Shanti Mantra",
-    tint: ["#0F4F49", "#052A26"],
-  },
-  {
-    deva: "वसुधैव कुटुम्बकम्।",
-    meaning: "The world is one family.",
-    source: "Maha Upanishad 6.72",
-    tint: ["#4A2472", "#22103E"],
-  },
-  {
-    deva: "असतो मा सद्गमय।",
-    meaning: "Lead me from the unreal to the real.",
-    source: "Brihadaranyaka Upanishad 1.3.28",
-    tint: ["#153C6B", "#071D38"],
-  },
-  {
-    deva: "योगः कर्मसु कौशलम्।",
-    meaning: "Yoga is skill in action.",
-    source: "Bhagavad Gita 2.50",
-    tint: ["#8A3B08", "#4A1D03"],
-  },
-];
-
 // Deep jewel grounds for the darshan cards. Saturated rather than merely dark:
 // the temple records carry near-black greys that turn to mud at card size.
 const DARSHAN_TINTS: [string, string][] = [
@@ -116,10 +83,9 @@ const HOME_DARSHAN = [
   { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.png", tint: "#B76C2A" },
 ];
 
-const RUDRAKSHA_PHOTO = "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393177/divasya/home/rudraksha.jpg";
 
 export function HomeScreen() {
-  const { go, haptic, sendPush, streak, japaToday, profile, lang } = useApp();
+  const { go, haptic, sendPush, profile, lang } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const darshanRef = useRef<HTMLDivElement>(null);
@@ -219,7 +185,6 @@ export function HomeScreen() {
   const nextFestival = festivals[0];
 
   // One verse per day, stable for the whole day and different tomorrow.
-  const poster = POSTERS[Math.floor(Date.now() / 86_400_000) % POSTERS.length];
 
   // The birth record, as labelled fields rather than a run of sentences. A
   // date and a place mean nothing on their own — "14 Aug 1995" could be
@@ -568,26 +533,6 @@ export function HomeScreen() {
         </button>
       </div>
 
-      {/* japa streak */}
-      <button
-        onClick={() => go("mala")}
-        className="gutter-m mt-1.5 flex gutter-w items-center gap-4 rounded-2xl surface p-3 text-left"
-      >
-        {/* Bare mark, set large. The tinted disc behind it was a container
-            doing nothing but shrinking the thing it contained. */}
-        {/* Real bead photography gives the practice card a tactile anchor. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={RUDRAKSHA_PHOTO} alt="Rudraksha mala" className="home-japa-photo h-12 w-12 shrink-0" loading="lazy" />
-        <div className="flex-1">
-          <div className="text-[12.5px] font-medium text-ink">{streak}-day japa streak</div>
-          <div className="text-[11px] text-muted">{japaToday} chants today · keep it alive</div>
-        </div>
-        <span className="flex items-center gap-1.5 rounded-[5px] px-4.5 py-2.5 text-[12.5px] btn-saffron">
-          <Microphone size={14} weight="fill" />
-          Chant
-        </span>
-      </button>
-
       {/* One white panel per section, holding its title and its blocks
           together. The panel is the unit — a heading floating above loose
           cards left it ambiguous which tiles belonged to which heading. */}
@@ -786,27 +731,7 @@ export function HomeScreen() {
         </div>
       )}
 
-      {/* One closing poster, full width. A single verse given the whole column
-          lands harder than five competing for a swipe, and the screen ends on
-          something worth reading rather than trailing into a footer. It turns
-          over daily, so the page is not identical tomorrow. */}
-      <div className="gutter pt-1.5 lg:col-span-2">
-        <button
-          onClick={() => go("sandesh")}
-          className="w-full overflow-hidden rounded-2xl p-4 text-left"
-          style={{ background: `linear-gradient(148deg, ${poster.tint[0]}, ${poster.tint[1]})` }}
-        >
-          <span className="block measure font-deva text-[19px] leading-[1.75] text-white">
-            {poster.deva}
-          </span>
-          <span className="mt-3 block measure text-[11.5px] leading-relaxed text-white/85">
-            {poster.meaning}
-          </span>
-          <span className="mt-2 block text-[10px] text-white/60">{poster.source}</span>
-        </button>
-      </div>
-
-      <div className="flex items-center justify-center gap-2 gutter pb-2 pt-5 lg:col-span-2">
+      <div className="flex items-center justify-center gap-2 gutter pb-2 pt-6 lg:col-span-2">
         <Logomark size={13} className="text-[var(--bhagwa)]" />
         <span className="text-[10.5px] text-muted">Divasya · Spiritual Journey</span>
       </div>
