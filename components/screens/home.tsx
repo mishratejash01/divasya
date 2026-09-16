@@ -107,17 +107,19 @@ const DARSHAN_TINTS: [string, string][] = [
 
 // Our own Cloudinary copies of credited Wikimedia artwork (see
 // public/library/CREDITS.md) — no third-party or stock hotlinks.
+// Our own 2D deity artwork (public/spot/deity-*.png) — transparent cutouts sat
+// on a warm per-deity ground, rather than photographed murtis.
 const HOME_DARSHAN = [
-  { name: "Shri Krishna", place: "Vrindavan", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393068/divasya/library/dei-krishna.jpg", tint: "#2C6470" },
-  { name: "Mahadev", place: "Kashi", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393089/divasya/library/dei-shiva.jpg", tint: "#6E4E36" },
-  { name: "Maa Durga", place: "Kolkata", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393089/divasya/library/dei-durga.jpg", tint: "#A63D34" },
-  { name: "Shri Ganesha", place: "Mumbai", image: "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393089/divasya/library/dei-ganesha.jpg", tint: "#B76C2A" },
+  { name: "Shri Krishna", deva: "श्री कृष्ण", image: "/spot/deity-krishna.png", tint: "#2C6470" },
+  { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.png", tint: "#6E4E36" },
+  { name: "Maa Durga", deva: "माँ दुर्गा", image: "/spot/deity-durga.png", tint: "#A63D34" },
+  { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.png", tint: "#B76C2A" },
 ];
 
 const RUDRAKSHA_PHOTO = "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393177/divasya/home/rudraksha.jpg";
 
 export function HomeScreen() {
-  const { go, haptic, sendPush, streak, japaToday, profile } = useApp();
+  const { go, haptic, sendPush, streak, japaToday, profile, lang } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const darshanRef = useRef<HTMLDivElement>(null);
@@ -406,13 +408,22 @@ export function HomeScreen() {
                 className="home-darshan-card"
                 style={{ animationDelay: `${(index % HOME_DARSHAN.length) * 60}ms` }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image} alt="" className="home-darshan-image" loading={index === 0 ? "eager" : "lazy"} />
-                <span className="home-darshan-sheen" />
-                <span className="home-darshan-copy">
-                  <span>{item.name}</span>
-                  <small>{item.place}</small>
+                <span className="home-darshan-visual">
+                  <span
+                    className="home-darshan-tile"
+                    style={{
+                      background: `radial-gradient(78% 100% at 50% 100%, #FFF6DE 0%, #FFE2A2 22%, ${item.tint}5e 50%, ${item.tint}26 72%, ${item.tint}00 88%)`,
+                    }}
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.image}
+                    alt=""
+                    className="home-darshan-image"
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
                 </span>
+                <span className="home-darshan-name">{lang === "hi" ? item.deva : item.name}</span>
               </button>
             ))}
           </div>

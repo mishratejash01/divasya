@@ -120,7 +120,7 @@ function DeskTopBar() {
 }
 
 function DailyNamastePopup() {
-  const { screen, haptic } = useApp();
+  const { screen, haptic, lang } = useApp();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -142,9 +142,8 @@ function DailyNamastePopup() {
       haptic(8);
     }, 1500);
 
-    // Full-screen greeting: it appears at 1.5s and holds until 6.8s (~5.3s on
-    // screen) so it reads as a proper welcome, not a flash. A tap dismisses it
-    // early.
+    // Full-screen greeting: appears at 1.5s and holds until 6.8s. A tap dismisses
+    // it early.
     const hideTimer = window.setTimeout(() => setVisible(false), 6800);
 
     return () => {
@@ -181,11 +180,12 @@ function DailyNamastePopup() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="namaste-full-deva">नमस्ते</div>
-            <div className="namaste-full-title">Namaste</div>
-            <div className="namaste-full-sub">Wishing you a blessed day</div>
+            {lang === "hi" ? (
+              <div className="namaste-full-deva">नमस्ते</div>
+            ) : (
+              <div className="font-serif namaste-full-word">Namaste</div>
+            )}
           </motion.div>
-          <div className="namaste-full-hint">tap to continue</div>
         </motion.div>
       )}
     </AnimatePresence>
