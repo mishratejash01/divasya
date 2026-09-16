@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabaseBrowser } from "./supabase";
+import { isIosApp } from "./platform";
 
 export type ShopCategory = {
   id: string; name: string; slug: string; blurb: string | null; sort: number;
@@ -116,8 +117,10 @@ export function getProducts(): Promise<Product[]> {
       .from("products")
       .select("id,slug,name,subtitle,description,category_id,price,mrp,currency,images,badges,is_digital,requires_shipping,stock,is_bestseller,sort")
       .eq("is_active", true).order("sort");
-    if (data && data.length) return data as Product[];
-    return PREVIEW ? PREVIEW_PRODUCTS : [];
+    // The iOS app sells physical goods only (App Store rule 3.1.1): digital
+    // items would need Apple's own payment rail, so they are not offered there.
+    const rows = (data && data.length ? (data as Product[]) : PREVIEW ? PREVIEW_PRODUCTS : []);
+    return isIosApp() ? rows.filter((p) => !p.is_digital) : rows;
   }, PREVIEW ? PREVIEW_PRODUCTS : []);
 }
 
@@ -186,6 +189,7 @@ export function useCart(): CartApi {
         (data ?? [])
           .map((r) => ({ id: r.id as string, qty: r.qty as number, product: r.product as unknown as Product }))
           .filter((l) => l.product)
+          .filter((l) => !(isIosApp() && l.product.is_digital))
       );
     } catch {
       setLines([]);
