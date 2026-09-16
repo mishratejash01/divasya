@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, Plus, ShieldCheck, Wallet } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
+import { useIsIosApp } from "@/lib/platform";
 import { ScreenHeader, cx } from "../ui";
 import { supabaseBrowser } from "@/lib/supabase";
 
@@ -41,6 +42,7 @@ function loadRazorpay(): Promise<boolean> {
 }
 
 export function WalletScreen() {
+  const iosApp = useIsIosApp();
   const { back, haptic, profile } = useApp();
   const [balance, setBalance] = useState<number | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -139,7 +141,10 @@ export function WalletScreen() {
           </div>
         </div>
 
-        {/* add money — a real Razorpay payment, credited only when captured */}
+        {/* add money — a real Razorpay payment, credited only when captured.
+            Hidden in the iOS app (App Store payment rules); balance and
+            spending remain, so money added elsewhere is never invisible. */}
+        {!iosApp && (
         <div className="mt-3 rounded-2xl surface p-3">
           <div className="eyebrow text-muted">Add money</div>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -167,6 +172,7 @@ export function WalletScreen() {
             <ShieldCheck size={12} className="text-[var(--good)]" /> UPI · Cards · Netbanking · secured by Razorpay
           </div>
         </div>
+        )}
 
         {/* history — the ledger itself, newest first */}
         <h3 className="section-title mb-1 mt-5">History</h3>
