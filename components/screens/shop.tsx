@@ -148,7 +148,7 @@ export function ShopScreen() {
 
 /* --------------------------------------------------------------- product */
 export function ProductScreen() {
-  const { screen, back, go, haptic } = useApp();
+  const { screen, back, go, haptic, user } = useApp();
   const slug = (screen.params?.slug as string) || "";
   const products = useShop<Product[]>(getProducts, []);
   const cfg = useShop<ShopConfig | null>(getShopConfig, null);
@@ -168,8 +168,12 @@ export function ProductScreen() {
     );
   }
 
+  // The cart lives in the database against a user id, so cart.add is a silent
+  // no-op when signed out — the button would flip to "Go to cart" over an empty
+  // cart. Ask for sign-in at the tap instead of failing quietly.
   const addToCart = async () => {
     haptic(10);
+    if (!user) { go("signin"); return; }
     await cart.add(p.id, 1);
     setAdded(true);
   };
@@ -178,6 +182,7 @@ export function ProductScreen() {
   // checkout, skipping the cart review.
   const buyNow = async () => {
     haptic(12);
+    if (!user) { go("signin"); return; }
     await cart.add(p.id, 1);
     go("checkout");
   };
