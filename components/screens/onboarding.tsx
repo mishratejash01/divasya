@@ -29,9 +29,14 @@ const GENDERS: { key: string; slug: string; sym: string }[] = [
 ];
 
 export function OnboardingScreen() {
-  const { completeOnboarding, haptic } = useApp();
+  const { completeOnboarding, haptic, profile } = useApp();
   const deities = useCatalog(getDeities, DEITIES);
-  const [name, setName] = useState("");
+  // Sign in with Apple already supplied the name (captured in lib/db.ts and
+  // written to the profile before we got here). App Store guideline 4 forbids
+  // asking for it again, so when it is known the name step is dropped from the
+  // flow entirely rather than shown pre-filled.
+  const knownName = (profile?.name ?? "").trim();
+  const [name, setName] = useState(knownName);
   const [dob, setDob] = useState("");
   const [tob, setTob] = useState("");
   const [birthplace, setBirthplace] = useState("");
@@ -47,7 +52,7 @@ export function OnboardingScreen() {
 
   const steps: { key: StepKey; required: boolean; ok: boolean }[] = [
     { key: "dob", required: true, ok: !!dob },
-    { key: "name", required: true, ok: name.trim().length > 1 },
+    ...(knownName ? [] : [{ key: "name" as StepKey, required: true, ok: name.trim().length > 1 }]),
     { key: "tob", required: false, ok: true },
     { key: "birthplace", required: false, ok: true },
     { key: "loc", required: false, ok: true },
@@ -69,13 +74,15 @@ export function OnboardingScreen() {
     if (cur.key === "dob" && dob) { haptic([12, 60, 12]); setRevealRashi(true); return; }
     setStep((s) => Math.min(total - 1, s + 1));
   }
+  // index 1 is whatever follows the date of birth — the name step when we need
+  // one, otherwise time of birth. Never a hard-coded "name".
   function finishReveal() { setRevealRashi(false); setStep(1); }
   function skip() { haptic(6); setStep((s) => Math.min(total - 1, s + 1)); }
   function back() { haptic(6); setStep((s) => Math.max(0, s - 1)); }
   function onKey(e: KeyboardEvent) { if (e.key === "Enter") { e.preventDefault(); next(); } }
 
   async function submit() {
-    if (saving || !dob || name.trim().length <= 1) return;
+    if (saving || !dob || name.trim().length <= 1) return;  // knownName satisfies this
     setSaving(true);
     haptic(14);
     await completeOnboarding({
