@@ -257,7 +257,7 @@ function CompassTab({ rashi }: { rashi: string | null | undefined }) {
 /* ---------------- Lens tab (freeze a spot, get the verdict) -------------- */
 
 function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAskGuru?: (seed: string) => void }) {
-  const { haptic } = useApp();
+  const { haptic, user, go } = useApp();
   const c = useCompass(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -307,6 +307,9 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
 
   async function saveSnapshot() {
     if (!frozen) return;
+    // The reading is saved against an account. Without one the insert is
+    // dropped and the button would sit there doing nothing, so ask first.
+    if (!user) { go("signin"); return; }
     try {
       const sb = supabaseBrowser();
       const { data: auth } = await sb.auth.getUser();
@@ -422,7 +425,7 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
 type DbRoom = { id: string; room_type: RoomType; zone: number; fixed: boolean };
 
 function HomeTab({ rashi }: { rashi: string | null | undefined }) {
-  const { haptic } = useApp();
+  const { haptic, user, go } = useApp();
   const [propId, setPropId] = useState<string | null>(null);
   const [rooms, setRooms] = useState<DbRoom[] | null>(null);
   const [adding, setAdding] = useState(false);
@@ -449,6 +452,9 @@ function HomeTab({ rashi }: { rashi: string | null | undefined }) {
   }, []);
 
   async function addRoom() {
+    // No account means no property row to hang rooms on, so propId is never
+    // set and the sheet would just sit there. Ask before it looks broken.
+    if (!user) { go("signin"); return; }
     if (!propId || newZone == null) return;
     try {
       const sb = supabaseBrowser();
