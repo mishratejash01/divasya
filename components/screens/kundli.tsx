@@ -40,17 +40,23 @@ const GRAHA: Record<string, { name: string; sym: string; color: string }> = {
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function KundliScreen() {
-  const { back, profile } = useApp();
+  const { back, profile, user } = useApp();
   const [k, setK] = useState<KundliData | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!profile?.dob) { setErr("Add your birth date in your profile to see your chart."); return; }
+    if (!profile?.dob) {
+      // A guest has no profile to add anything to — say what actually helps.
+      setErr(user
+        ? "Add your birth date in your profile to see your chart."
+        : "Sign in and add your birth date to see your own janma kundli.");
+      return;
+    }
     const q = new URLSearchParams({ dob: profile.dob });
     if (profile.tob) q.set("tob", profile.tob);
     if (profile.birthplace) q.set("place", profile.birthplace);
     fetch(`/api/kundli?${q}`).then((r) => r.json()).then((d) => d.error ? setErr(d.error) : setK(d)).catch(() => setErr("Could not compute the chart."));
-  }, [profile?.dob, profile?.tob, profile?.birthplace]);
+  }, [profile?.dob, profile?.tob, profile?.birthplace, user]);
 
   const d1: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.rasiSign, retro: p.retro, combust: p.combust })) ?? [];
   const d9: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.navamsaSign, retro: p.retro, combust: p.combust })) ?? [];
