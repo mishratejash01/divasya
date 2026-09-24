@@ -1,0 +1,12 @@
+# The Next.js build needs none of this, and uploading it aborted deploys:
+# the working tree is 1.3 GB, of which the native shells alone are ~190 MB.
+android/
+ios/
+
+# Tooling and database migrations run from a developer machine, never on Vercel.
+scripts/
+supabase/
+
+# Build and dependency output; Vercel produces its own.
+.next/
+node_modules/
