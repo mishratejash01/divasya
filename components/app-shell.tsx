@@ -9,7 +9,7 @@ import { SideNav } from "./side-nav";
 import { CategoryScreen } from "./screens/category";
 import { PushToast } from "./push-toast";
 import { OfflineGate } from "./offline-screen";
-import { Logomark, BrandWordmark } from "./ui";
+import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
 import { Iconify } from "./iconify";
 import { DamruLoader } from "./damru-loader";
 
@@ -42,7 +42,7 @@ import { OnboardingScreen } from "./screens/onboarding";
 // take over the viewport and carry their own exit. Previously this was an
 // allow-list, so most screens dropped the bar and stranded the user with only
 // a back button.
-const HIDE_NAV: ScreenName[] = ["mala", "mandir"];
+const HIDE_NAV: ScreenName[] = ["mala", "mandir", "signin"];
 const NAMASTE_IMAGE = "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393254/divasya/app/namaste-greeting.webp";
 
 function localDateKey() {
@@ -54,7 +54,10 @@ function localDateKey() {
 }
 
 function Screen() {
-  const { screen } = useApp();
+  const { screen, user } = useApp();
+  // Guests may roam everywhere except the account itself. Gating in this one
+  // place keeps every screen component unchanged and unable to drift.
+  if (!user && AUTH_REQUIRED.includes(screen.name)) return <SignInWall screen={screen.name} />;
   switch (screen.name) {
     case "home": return <HomeScreen />;
     case "mala": return <MalaScreen />;
@@ -86,6 +89,7 @@ function Screen() {
     case "puja": return <PujaScreen />;
     case "temple": return <TempleScreen />;
     case "sandesh": return <SandeshScreen />;
+    case "signin": return <LoginScreen />;
     default: return <HomeScreen />;
   }
 }
@@ -268,6 +272,51 @@ function RoutedApp() {
 }
 
 /** Center-stage wrapper for pre-app screens (splash / login / onboarding). */
+
+/**
+ * Shown when a guest opens something that needs an account. It names what
+ * signing in unlocks rather than scolding, and it is the ONLY thing standing
+ * between a guest and the rest of the app.
+ */
+const WALL_COPY: Partial<Record<ScreenName, { title: string; body: string }>> = {
+  account:     { title: "Your account",     body: "Sign in to keep your chart, your japa streak and your orders in one place." },
+  profile:     { title: "Your details",     body: "Sign in to save your birth details so your chart and panchang stay personal to you." },
+  orders:      { title: "Your orders",      body: "Sign in to see the pujas you have booked and the items on their way to you." },
+  wallet:      { title: "Divasya Wallet",   body: "Sign in to see your balance and use it towards pujas and store orders." },
+  checkout:    { title: "Checkout",         body: "Sign in so your order can be placed and delivered to you." },
+  consult:     { title: "Consultations",    body: "Sign in to talk to an astrologer and keep your conversation." },
+  consultChat: { title: "Consultations",    body: "Sign in to talk to an astrologer and keep your conversation." },
+  ai:          { title: "AI Jyotishi",      body: "Sign in so the Jyotishi can read your own chart and remember your questions." },
+  journal:     { title: "Your journal",     body: "Sign in to keep your reflections safe and private to you." },
+  reminders:   { title: "Your reminders",   body: "Sign in to save reminders for vrats, muhurats and festivals." },
+};
+
+function SignInWall({ screen }: { screen: ScreenName }) {
+  const { back, go } = useApp();
+  const copy = WALL_COPY[screen] ?? {
+    title: "Sign in",
+    body: "Sign in to use this part of Divasya.",
+  };
+  return (
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
+      <ScreenHeader title={copy.title} onBack={back} />
+      <div className="gutter flex flex-col items-center px-8 pt-16 text-center">
+        <Logomark size={46} className="text-[var(--bhagwa)]" />
+        <p className="mt-5 max-w-[16rem] text-[14px] leading-relaxed text-ink">{copy.body}</p>
+        <button
+          onClick={() => go("signin")}
+          className="mt-6 w-full max-w-[16rem] rounded-2xl py-3.5 text-[13.5px] btn-saffron"
+        >
+          Sign in
+        </button>
+        <button onClick={back} className="mt-3 py-1 text-[11.5px] text-muted">
+          Keep looking around
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Stage({ children, scroll }: { children: React.ReactNode; scroll?: boolean }) {
   return (
     <div className={`mx-auto h-full w-full max-w-[460px] ${scroll ? "overflow-y-auto no-scrollbar" : "overflow-hidden"}`}>
@@ -291,12 +340,26 @@ function Splash() {
   );
 }
 
+/**
+ * Screens that genuinely belong to an account. Everything not listed here —
+ * panchang, darshan, the library, festivals, vastu, the mala, browsing the
+ * store and the puja catalogue — is open to everyone, which is what App Store
+ * guideline 5.1.1(v) requires: an app may not demand registration to reach
+ * content that is not account based.
+ */
+const AUTH_REQUIRED: ScreenName[] = [
+  "account", "profile", "orders", "wallet", "checkout",
+  "consult", "consultChat", "ai", "journal", "reminders",
+];
+
 function Gate() {
   const { loading, user, profileLoaded, needsOnboarding } = useApp();
   if (loading) return <Splash />;
-  if (!user) return <Stage><LoginScreen /></Stage>;
-  if (!profileLoaded) return <Splash />;
-  if (needsOnboarding) return <Stage scroll><OnboardingScreen /></Stage>;
+  // A signed-in user still finishes onboarding first; a guest goes straight in.
+  if (user) {
+    if (!profileLoaded) return <Splash />;
+    if (needsOnboarding) return <Stage scroll><OnboardingScreen /></Stage>;
+  }
   return <RoutedApp />;
 }
 
