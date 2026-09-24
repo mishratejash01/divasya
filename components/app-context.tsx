@@ -43,7 +43,10 @@ export type ScreenName =
   | "puja" | "temple" | "sandesh" | "kundli" | "menu" | "category"
   | "shop" | "product" | "cart" | "checkout"
   | "account" | "profile" | "orders" | "wallet"
-  | "journeys" | "reminders" | "journal" | "gita" | "paths";
+  | "journeys" | "reminders" | "journal" | "gita" | "paths"
+  // Reached only when a guest taps "Sign in" on a walled screen. Popping back
+  // from here returns them to exactly what they were trying to open.
+  | "signin";
 
 export type ScreenState = { name: ScreenName; params?: Record<string, unknown> };
 export type PushPayload = { title: string; body: string; tone?: "auspicious" | "info" };
@@ -404,6 +407,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     popApp();
   }, [popApp]);
+
+  // A guest who signed in from a wall should land back on what they wanted,
+  // not on the login screen they just cleared.
+  useEffect(() => {
+    if (user && screen.name === "signin") back();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, screen.name]);
+
 
   // Hardware/browser back: pop the app exactly once per entry we pushed.
   // At the stack's bottom (home) the event isn't ours — Android exits the
