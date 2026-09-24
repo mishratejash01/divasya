@@ -85,13 +85,19 @@ const HOME_DARSHAN = [
 
 
 export function HomeScreen() {
-  const { go, haptic, sendPush, profile, lang } = useApp();
+  const { go, haptic, sendPush, profile, lang, user } = useApp();
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const darshanRef = useRef<HTMLDivElement>(null);
 
-  const name = profile?.name || "Devotee";
-  const rashi = rashiLabel(profile || { rashi: null, dob: null });
+  // A guest has no chart yet, so the card invites rather than showing the
+  // em-dashes of an empty rashi. Tapping it still opens My Kundli, which
+  // explains what signing in unlocks.
+  const isGuest = !user;
+  const name = profile?.name || (isGuest ? "Namaste" : "Devotee");
+  const rashi = isGuest
+    ? "Sign in to see your chart and daily reading"
+    : rashiLabel(profile || { rashi: null, dob: null });
 
   // Tabs without a destination scroll to their shelf on this page.
   const scrollToSection = (id: string) => {
