@@ -30,15 +30,56 @@ export async function getUser() {
 // sheet (Credential Manager) — no browser tab anywhere — and returns an ID
 // token that Supabase verifies directly. On the web, nothing changes: the
 // same full-page OAuth redirect as always.
+type AppleProfile = {
+  user?: string;
+  email?: string | null;
+  givenName?: string | null;
+  familyName?: string | null;
+};
 type CapacitorGlobal = {
   isNativePlatform?: () => boolean;
   Plugins?: {
     SocialLogin?: {
       initialize: (o: object) => Promise<void>;
-      login: (o: object) => Promise<{ result?: { idToken?: string } }>;
+      login: (o: object) => Promise<{
+        result?: { idToken?: string; profile?: AppleProfile };
+      }>;
     };
   };
 };
+
+/**
+ * Apple hands back the user's name ONLY on the very first authorization, and
+ * null on every sign-in after that — so it has to be captured at that instant
+ * or it is gone for good. It is stashed here synchronously, before the Supabase
+ * exchange, because signInWithIdToken fires SIGNED_IN which races ahead and
+ * creates the profile row. loadUserData drains this stash when it builds that
+ * row, so the name lands exactly once and nothing overwrites it.
+ *
+ * App Store guideline 4 requires that we never ask for a name Apple already
+ * gave us (this is what our first submission was rejected for).
+ */
+const APPLE_IDENTITY_KEY = "divasya:apple-identity";
+
+export function stashAppleIdentity(p: AppleProfile | undefined) {
+  if (!p) return;
+  const name = [p.givenName, p.familyName].filter(Boolean).join(" ").trim();
+  if (!name && !p.email) return;
+  try {
+    localStorage.setItem(APPLE_IDENTITY_KEY, JSON.stringify({ name, email: p.email ?? null }));
+  } catch { /* private mode: onboarding will ask, which is the old behaviour */ }
+}
+
+/** Read and clear the stash. Returns null when Apple gave us nothing. */
+export function takeAppleIdentity(): { name: string; email: string | null } | null {
+  try {
+    const raw = localStorage.getItem(APPLE_IDENTITY_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(APPLE_IDENTITY_KEY);
+    const v = JSON.parse(raw) as { name?: string; email?: string | null };
+    return v?.name ? { name: v.name, email: v.email ?? null } : null;
+  } catch { return null; }
+}
 
 // The web OAuth client id — public by design (it rides in every Google login
 // URL). The env var wins when present; the literal is the safety net so a
@@ -107,6 +148,9 @@ export async function signInApple() {
   const idToken =
     res?.result?.idToken ?? (res as { idToken?: string } | undefined)?.idToken;
   if (!idToken) throw new Error("Apple returned no identity token.");
+  // Keep the name BEFORE exchanging the token: this is the only moment Apple
+  // will ever provide it, and the exchange immediately starts profile creation.
+  stashAppleIdentity(res?.result?.profile);
   const { error } = await supabaseBrowser().auth.signInWithIdToken({ provider: "apple", token: idToken });
   if (error) throw error;
 }
