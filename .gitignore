@@ -42,3 +42,4 @@ next-env.d.ts
 .env.local
 .playwright-mcp/
 .gstack/
+__pycache__/
