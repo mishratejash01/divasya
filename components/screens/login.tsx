@@ -85,24 +85,16 @@ export function LoginScreen() {
           आपकी आध्यात्मिक यात्रा
         </p>
 
-        <button
-          onClick={google}
-          disabled={busy !== false}
-          className={cx(
-            "mt-6 flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-ink",
-            busy !== false && "opacity-60",
-          )}
-          style={{ background: "#FFFFFF" }}
-        >
-          <GoogleMark /> {busy === "google" ? "Connecting…" : "Continue with Google"}
-        </button>
-
+        {/* Apple's Human Interface Guidelines expect Sign in with Apple to be at
+            least as prominent as other providers, so inside the iOS app it leads
+            and Google follows. Identical size and weight — only the order moves.
+            On web and Android there is no Apple button and Google leads. */}
         {isIos && (
           <button
             onClick={apple}
             disabled={busy !== false}
             className={cx(
-              "mt-2 flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-white",
+              "mt-6 flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-white",
               busy !== false && "opacity-60",
             )}
             style={{ background: "#000000", border: "1px solid rgba(255,255,255,0.35)" }}
@@ -110,6 +102,19 @@ export function LoginScreen() {
             <AppleMark /> {busy === "apple" ? "Connecting…" : "Continue with Apple"}
           </button>
         )}
+
+        <button
+          onClick={google}
+          disabled={busy !== false}
+          className={cx(
+            "flex w-full items-center justify-center gap-2.5 rounded-[6px] py-3 text-[13px] font-medium text-ink",
+            isIos ? "mt-2" : "mt-6",
+            busy !== false && "opacity-60",
+          )}
+          style={{ background: "#FFFFFF" }}
+        >
+          <GoogleMark /> {busy === "google" ? "Connecting…" : "Continue with Google"}
+        </button>
 
         {note && <p className="mt-2.5 text-center text-[11px] leading-relaxed text-[#FFB4A2]">{note}</p>}
 
