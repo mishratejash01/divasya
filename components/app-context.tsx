@@ -213,6 +213,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // one — a null here would route a signed-in user back into onboarding.
       if (!p) p = readLocalProfile(u.id);
       if (!p) p = await withTimeout(db.saveProfile(u.id, {}), 6000, null);
+      // Sign in with Apple supplies the name once, at first authorization, and
+      // db.signInApple stashed it. Apply it here so onboarding never asks for a
+      // name Apple already gave us (App Store guideline 4). Only fills a blank
+      // name — a user who later edits their name is never overwritten.
+      if (p && !p.name) {
+        const apple = db.takeAppleIdentity();
+        if (apple?.name) {
+          const saved = await withTimeout(db.saveProfile(u.id, { name: apple.name }), 6000, null);
+          p = saved ?? { ...p, name: apple.name };
+        }
+      }
       let st = await withTimeout(db.getState(u.id), 6000, { ...EMPTY_STATE });
       // This device may hold progress the server never received: japa tapped
       // offline (dirty flag), or the state fetch itself just failed and came
