@@ -56,7 +56,7 @@ async function authToken(): Promise<string | null> {
 
 /* ---------------- Puja + Chadhava (real DevPunya bookings) ---------------- */
 export function PujaScreen() {
-  const { back, haptic, profile, screen, go } = useApp();
+  const { back, haptic, profile, screen, go, user } = useApp();
   const [tab, setTab] = useState<"puja" | "chadhava">(
     screen.params?.tab === "chadhava" ? "chadhava" : "puja"
   );
@@ -136,7 +136,14 @@ export function PujaScreen() {
               return (
                 <button
                   key={p.id}
-                  onClick={() => { setSel({ kind: tab, product: p }); haptic(10); }}
+                  onClick={() => {
+                    haptic(10);
+                    // A booking is a paid order tied to an account: the checkout
+                    // route needs a bearer token, so a guest who filled the whole
+                    // sheet would only discover that at the payment step. Ask here.
+                    if (!user) { go("signin"); return; }
+                    setSel({ kind: tab, product: p });
+                  }}
                   className="flex w-full items-center gap-3 py-2.5 text-left transition-colors lg:flex-col lg:items-start lg:gap-3 lg:rounded-xl lg:border lg:border-[var(--tile-line)] lg:p-4 lg:hover:bg-[var(--surface-2)]"
                 >
                   {p.image ? (
