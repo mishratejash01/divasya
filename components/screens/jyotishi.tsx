@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { CircleDashed, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { DeityGlyph, ScreenHeader, Typing, cx } from "../ui";
+import { DeityGlyph, Typing, cx } from "../ui";
+import { PageHeader } from "../page-header";
 import { DEITIES, mantraById, Deity } from "@/lib/demo";
 import { useCatalog, getDeities } from "@/lib/catalog";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
@@ -95,10 +96,13 @@ export function JyotishiScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <ScreenHeader
+      <PageHeader
         title={mode === "jyotishi" ? "AI Jyotishi" : `Talk to ${deity.name}`}
-        sub={streaming ? "typing…" : undefined}
+        subtitle={streaming ? "typing…" : (mode === "jyotishi" ? "Ask about your kundli" : "Sit with your devta")}
         onBack={back}
+        art={mode === "jyotishi" ? "/home/tools/ai-jyotishi.png" : "/home/tools/talk-jyotishi.png"}
+        gradient="linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)"
+        shadow="rgba(10,31,59,0.30)"
       />
 
       {/* No mode toggle — the chat you opened is the chat you get. For a devta

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "../app-context";
-import { DeityGlyph, ScreenHeader, cx } from "../ui";
+import { DeityGlyph, cx } from "../ui";
+import { PageHeader } from "../page-header";
 import { DEITIES } from "@/lib/demo";
 import { useCatalog, getDeities } from "@/lib/catalog";
 import { bell, conch, ting, preloadTempleSounds } from "@/lib/sound";
@@ -133,7 +134,14 @@ export function MandirScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <ScreenHeader title="My Mandir" sub={`${deity.name} · ${deity.aarti}`} onBack={back} />
+      <PageHeader
+        title="My Mandir"
+        subtitle={`${deity.name} · ${deity.aarti}`}
+        onBack={back}
+        art="/home/tools/my-mandir.png"
+        gradient="linear-gradient(135deg, #5B2160 0%, #2E0F32 100%)"
+        shadow="rgba(46,15,50,0.30)"
+      />
 
       {/* body — a column on mobile; on desktop a row with the deity picker as a
           vertical stack of big blocks on the left and the shrine beside it */}

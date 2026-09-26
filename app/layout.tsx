@@ -1,34 +1,32 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Noto_Sans_Devanagari, Fraunces } from "next/font/google";
+import { Poppins, Mukta, Marcellus } from "next/font/google";
 import "./globals.css";
 import { PWARegister } from "@/components/pwa-register";
 
-// Type system: Inter at two weights only — 400 everywhere, 500 reserved for
-// titles and the few labels that must hold rank. Loading just these two makes
-// the rule structural: there is no 600/700 to fall back on.
-const inter = Inter({
+// Body / UI — Poppins: geometric-humanist, rounded and friendly, matching the
+// reference app's body type.
+const poppins = Poppins({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-// Devanagari runs (shlokas, mantras, the tagline) need their own face — Inter
-// has no Devanagari glyphs. Noto Sans Devanagari is the sans companion, so
-// script and Latin sit on the same axis instead of clashing serif against sans.
-const notoDeva = Noto_Sans_Devanagari({
+// Devanagari runs (shlokas, mantras, deity names) — Mukta reads cleanly and
+// pairs well with the Latin body.
+const mukta = Mukta({
   variable: "--font-deva",
   subsets: ["devanagari"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-// An editorial serif reserved for a few ceremonial accents — the rashi reveal,
-// where a warm, high-craft display face reads far more premium than the UI sans.
-const fraunces = Fraunces({
+// Headings — Marcellus: an elegant roman/inscriptional serif with a temple feel,
+// used for every title and ceremonial accent.
+const marcellus = Marcellus({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["400"],
   style: ["normal"],
   display: "swap",
 });
@@ -59,7 +57,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${notoDeva.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${poppins.variable} ${mukta.variable} ${marcellus.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <div id="app-root">{children}</div>

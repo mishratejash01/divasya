@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { CaretRight, Minus, Plus, ShoppingCartSimple, Trash, ShieldCheck, Truck } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { ScreenHeader, FilterChips, cx } from "../ui";
+import { FilterChips, cx } from "../ui";
+import { PageHeader } from "../page-header";
 import {
   IconMala, IconStar, IconWheel, IconLotus, IconFlower, IconJournal, IconComponent,
 } from "../icons";
@@ -12,6 +13,9 @@ import {
   money, discountPct, shippingFor,
   Product, ShopCategory, ShopConfig,
 } from "@/lib/shop";
+
+const STORE_GRAD = "linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)";
+const STORE_SHADOW = "rgba(78,31,3,0.30)";
 
 /* Each category carries a mark. Products have no photograph yet, so the mark is
    what the tile shows: a tinted block with the category's own icon, rather than
@@ -74,16 +78,20 @@ export function ShopScreen() {
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <ScreenHeader
+      <PageHeader
         title="Store"
+        subtitle="Rudraksha, malas & puja samagri"
         onBack={back}
+        art="/home/tools/store.png"
+        gradient="linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)"
+        shadow="rgba(78,31,3,0.30)"
         right={
           <button
             onClick={() => { haptic(6); go("cart"); }}
             aria-label={cart.count > 0 ? `Cart, ${cart.count} item${cart.count === 1 ? "" : "s"}` : "Cart"}
             className="relative shrink-0"
           >
-            <ShoppingCartSimple size={22} weight="regular" className="text-ink" />
+            <ShoppingCartSimple size={22} weight="regular" className="text-[#FBE8C6]" />
             {/* Count rides the icon as a badge. The old text button spelt out
                 "Cart 3", which is a label doing an icon's job in a bar that is
                 otherwise all marks. */}
@@ -160,7 +168,7 @@ export function ProductScreen() {
   if (!p) {
     return (
       <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-        <ScreenHeader title="Product" onBack={back} />
+        <PageHeader title="Product" onBack={back} gradient={STORE_GRAD} shadow={STORE_SHADOW} />
         <div className="gutter pt-6 text-center text-[11.5px] text-muted">
           {products.length ? "This item is no longer listed." : "Loading…"}
         </div>
@@ -189,7 +197,7 @@ export function ProductScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <ScreenHeader title={p.name} onBack={back} />
+      <PageHeader title={p.name} onBack={back} gradient={STORE_GRAD} shadow={STORE_SHADOW} />
 
       {/* Everything scrolls; the phone buy bar does not. */}
       <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: 14 }}>
@@ -310,7 +318,7 @@ export function CartScreen() {
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <ScreenHeader title="Your cart" onBack={back} />
+      <PageHeader title="Your cart" onBack={back} gradient={STORE_GRAD} shadow={STORE_SHADOW} />
 
       {cart.lines.length === 0 ? (
         <div className="gutter pt-6">

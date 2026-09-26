@@ -6,6 +6,7 @@ import { CaretLeft, Check, Clock, Gift, PaperPlaneTilt, ShieldCheck, Star, Walle
 import { IconChat } from "../icons";
 import { useApp } from "../app-context";
 import { Avatar, cx, FilterChips, Typing } from "../ui";
+import { PageHeader } from "../page-header";
 import { ASTROLOGERS } from "@/lib/demo";
 import { useCatalog, getAstrologers } from "@/lib/catalog";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
@@ -37,27 +38,19 @@ export function ConsultScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Yellow header — just the title and wallet. The skill filter used to
-          ride the bar; it reads better on the white ground below the offer, so
-          it now lives there. */}
-      <div
-        className="shrink-0"
-        style={{
-          background: "var(--bar-yellow)",
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
-        }}
-      >
-        <div className="flex items-center gap-3 gutter pb-2.5">
-          <button onClick={back} aria-label="Back" className="shrink-0">
-            <CaretLeft size={20} weight="regular" className="text-ink" />
-          </button>
-          <span className="font-display text-[17px] text-ink">Consult Astrologers</span>
-          <span className="ml-auto flex shrink-0 items-center gap-1.5">
-            <Wallet size={17} weight="bold" className="text-ink" />
-            <span className="text-[13px] tnum font-medium text-ink">₹{wallet}</span>
+      <PageHeader
+        title="Consult Astrologers"
+        subtitle="Verified jyotishis, on call"
+        onBack={back}
+        gradient="linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)"
+        shadow="rgba(10,31,59,0.30)"
+        right={
+          <span className="flex items-center gap-1.5">
+            <Wallet size={17} weight="bold" />
+            <span className="text-[13px] tnum font-medium">₹{wallet}</span>
           </span>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex-1 overflow-y-auto screen-bottom no-scrollbar">
         {/* Promotional band — deep ground, not another pale card, so the offer

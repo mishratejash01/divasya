@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bank, Check, MagnifyingGlass, MapPin, Play, Plus, ShieldCheck, VideoCamera, X } from "@phosphor-icons/react";
+import { Bank, Check, FunnelSimple, MagnifyingGlass, MapPin, Play, Plus, ShieldCheck, VideoCamera, X } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { ScreenHeader, FilterChips, cx } from "../ui";
+import { ScreenHeader, cx } from "../ui";
+import { PageHeader } from "../page-header";
 import { logEvent } from "@/lib/chat";
 import { supabaseBrowser } from "@/lib/supabase";
 import { money } from "@/lib/shop";
@@ -613,6 +615,9 @@ export function TempleScreen() {
   const [q, setQ] = useState("");
   const [chip, setChip] = useState("all");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const load = useCallback(async (fresh = false) => {
     try {
@@ -773,23 +778,40 @@ export function TempleScreen() {
 
   return (
     <div className="flex h-full flex-col">
-      <ScreenHeader title="Live Temple Darshan" onBack={back} />
+      <PageHeader
+        title="Live Temple Darshan"
+        subtitle="Aarti & darshan, streamed live"
+        onBack={back}
+        art="/home/tools/darshan.png"
+        gradient="linear-gradient(135deg, #185A3C 0%, #0A2A1C 100%)"
+        shadow="rgba(10,42,28,0.30)"
+      />
 
-      {/* search — name, deity or city */}
-      <div className="gutter-m flex items-center gap-2 rounded-2xl px-3 py-2 surface">
-        <MagnifyingGlass size={14} className="shrink-0 text-muted" />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search temple, deity or city…"
-          className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink outline-none placeholder:text-muted"
-        />
-        {q && (
-          <button onClick={() => setQ("")} aria-label="Clear search" className="shrink-0 text-muted"><X size={13} /></button>
-        )}
+      {/* search + filter icon — filter opens a bottom-sheet panel */}
+      <div className="gutter-m mt-3 flex items-center gap-2">
+        <div className="flex flex-1 items-center gap-2 rounded-2xl px-3 py-2.5 surface">
+          <MagnifyingGlass size={15} className="shrink-0 text-muted" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search temple, deity or city…"
+            className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink outline-none placeholder:text-muted"
+          />
+          {q && (
+            <button onClick={() => setQ("")} aria-label="Clear search" className="shrink-0 text-muted"><X size={13} /></button>
+          )}
+        </div>
+        <button
+          onClick={() => { haptic(6); setFilterOpen(true); }}
+          aria-label="Filter"
+          className="relative grid h-[44px] w-[40px] shrink-0 place-items-center"
+        >
+          <FunnelSimple size={22} className="text-ink" />
+          {chip !== "all" && (
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full" style={{ background: "var(--bhagwa)" }} />
+          )}
+        </button>
       </div>
-
-      <FilterChips chips={DARSHAN_CHIPS} active={chip} onSelect={setChip} />
 
       <div className="flex-1 overflow-y-auto no-scrollbar screen-bottom">
         {dir === null && !loadErr && (
@@ -829,8 +851,8 @@ export function TempleScreen() {
                       <span className="absolute bottom-1.5 right-1.5 rounded-[3px] bg-black/55 px-1.5 py-0.5 text-[8.5px] text-white">on YouTube</span>
                     )}
                   </div>
-                  <div className="mt-1 truncate text-[12px] font-medium text-ink">{t.name}</div>
-                  <div className="truncate text-[10px] text-muted">{[t.deity ?? undefined, t.location ?? undefined].filter(Boolean).join(" · ")}</div>
+                  <div className="mt-1 text-[12px] font-medium leading-snug text-ink">{t.name}</div>
+                  {t.location && <div className="truncate text-[10px] text-muted">{t.location}</div>}
                 </button>
               ))}
             </div>
@@ -839,37 +861,33 @@ export function TempleScreen() {
 
         {/* the rest of the mandir directory, with honest timings */}
         {restList.length > 0 && (
-          <div className="gutter pt-3">
-            <h3 className="section-title mb-1">Darshan schedule</h3>
+          <div className="px-4 pt-3">
+            <h3 className="section-title mb-1.5">Darshan schedule</h3>
             <div>
               {restList.map((t, i) => (
                 <button
                   key={t.id}
                   onClick={() => { haptic(6); setOpenId(t.id); }}
                   className="flex w-full items-center gap-3 py-2.5 text-left"
-                  style={i ? { borderTop: "1px solid var(--line)" } : undefined}
                 >
                   {TEMPLE_ART[t.id] ? (
-                    <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-xl"
-                      style={{ background: `linear-gradient(150deg, ${t.tint}26, ${t.tint}0d)`, border: "1px solid var(--line)" }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={TEMPLE_ART[t.id]} alt="" loading="lazy" className="h-[86%] w-[86%] object-contain" />
-                    </div>
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={TEMPLE_ART[t.id]} alt="" loading="lazy" className="h-[54px] w-[54px] shrink-0 object-contain" />
                   ) : TEMPLE_PHOTOS[t.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={TEMPLE_PHOTOS[t.id]} alt="" loading="lazy"
-                      className="h-11 w-11 shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
+                      className="h-[54px] w-[54px] shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
                   ) : (
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
+                    <div className="grid h-[54px] w-[54px] shrink-0 place-items-center rounded-xl"
                       style={{ background: `linear-gradient(150deg, ${t.tint}44, ${t.tint}14)`, color: "var(--bhagwa-deep)" }}>
-                      <Bank size={18} />
+                      <Bank size={22} />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12.5px] font-medium text-ink">{t.name}</div>
-                    <div className="truncate text-[10.5px] text-muted">{[t.deity ?? undefined, t.location ?? undefined].filter(Boolean).join(" · ")}</div>
+                    <div className="text-[14.5px] font-medium leading-snug text-ink">{t.name}</div>
+                    {t.location && <div className="mt-0.5 truncate text-[11px] text-muted">{t.location}</div>}
+                    {t.timing && <div className="mt-1 text-[11px] text-gold">{t.timing}</div>}
                   </div>
-                  {t.timing && <div className="shrink-0 text-right text-[10px] text-gold">{t.timing}</div>}
                 </button>
               ))}
             </div>
@@ -883,6 +901,46 @@ export function TempleScreen() {
           </p>
         )}
       </div>
+
+      {/* Filter — a bottom sheet raised by the funnel beside search. */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {filterOpen && (
+            <motion.div className="fixed inset-0 z-[95]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+              <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.45)" }} onClick={() => setFilterOpen(false)} />
+              <motion.div
+                className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white px-5 pb-9 pt-3"
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              >
+                <div className="mx-auto mb-4 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />
+                <div className="mb-3.5 flex items-center justify-between">
+                  <h3 className="font-display text-[16px] text-ink">Filter darshan</h3>
+                  <button onClick={() => setFilterOpen(false)} aria-label="Close"><X size={18} className="text-muted" /></button>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {DARSHAN_CHIPS.map((c) => {
+                    const on = chip === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => { haptic(6); setChip(c.id); setFilterOpen(false); }}
+                        className="rounded-full px-4 py-2.5 text-[13px] font-medium"
+                        style={on
+                          ? { background: "var(--bhagwa-dark)", color: "#fff" }
+                          : { background: "var(--surface-2)", color: "var(--ink)", border: "1px solid var(--line)" }}
+                      >
+                        {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

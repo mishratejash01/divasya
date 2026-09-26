@@ -8,7 +8,8 @@ import {
 } from "@phosphor-icons/react";
 import confetti from "canvas-confetti";
 import { useApp } from "../app-context";
-import { ScreenHeader, cx } from "../ui";
+import { cx } from "../ui";
+import { PageHeader } from "../page-header";
 import { MANTRAS } from "@/lib/demo";
 import { useCatalog, getMantras } from "@/lib/catalog";
 import { bell, startAmbient, stopAmbient, setAmbientMuted, ting } from "@/lib/sound";
@@ -164,7 +165,14 @@ export function MalaScreen() {
   if (!chosen) {
     return (
       <div className="mala-screen flex h-full flex-col">
-        <ScreenHeader title="Choose Mala" onBack={back} />
+        <PageHeader
+          title="Choose Mala"
+          subtitle="Pick a mala for your jaap"
+          onBack={back}
+          art="/home/tools/mala-jaap.png"
+          gradient="linear-gradient(135deg, #7A1D2E 0%, #430D19 100%)"
+          shadow="rgba(67,13,25,0.30)"
+        />
         <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]">
           <div className="mx-auto flex max-w-[460px] flex-col gap-2.5">
             {MALA_TYPES.map((t) => (

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CaretLeft } from "@phosphor-icons/react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "../app-context";
-import { ScreenHeader, cx } from "../ui";
+import { cx } from "../ui";
+import { PageHeader } from "../page-header";
+import { Reveal } from "../reveal";
 import { KundliChart, Placement } from "../kundli-chart";
 import { Planet } from "../planets";
 
@@ -43,6 +44,23 @@ export function KundliScreen() {
   const { back, profile, user } = useApp();
   const [k, setK] = useState<KundliData | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Reveal table sections as they scroll into view.
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (!root || !k) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      root.querySelectorAll(".reveal").forEach((el) => el.classList.add("reveal-in"));
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("reveal-in"); io.unobserve(e.target); } }),
+      { threshold: 0.12 }
+    );
+    root.querySelectorAll(".reveal:not(.reveal-in)").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [k]);
 
   useEffect(() => {
     if (!profile?.dob) {
@@ -62,34 +80,42 @@ export function KundliScreen() {
   const d9: Placement[] = k?.chart.placements.map((p) => ({ abbr: p.abbr, sign: p.navamsaSign, retro: p.retro, combust: p.combust })) ?? [];
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <ScreenHeader
+    <div ref={scrollRef} className="h-full overflow-y-auto no-scrollbar screen-bottom">
+      <PageHeader
         title="Janma Kundli"
+        subtitle="Your Vedic birth chart"
         onBack={back}
+        art="/home/tools/my-kundli.png"
+        gradient="linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)"
+        shadow="rgba(10,31,59,0.30)"
       />
 
-      {err && <div className="gutter-m mt-2 rounded-2xl border border-[var(--tile-line)] p-3 text-center text-[11.5px] text-muted">{err}</div>}
+      {err && <div className="gutter-m mt-3 rounded-2xl border border-[var(--tile-line)] p-3 text-center text-[11.5px] text-muted">{err}</div>}
       {!k && !err && <div className="mt-24 text-center text-muted">Casting your chart…</div>}
 
       {k && (
         <>
-          {/* summary strip — three outlined cells, no card, no peach fill */}
-          <div className="gutter pt-3">
-            <div className="grid grid-cols-3 gap-2">
+          {/* summary strip — three deep-accent cards */}
+          <Reveal className="gutter pt-4">
+            <div className="grid grid-cols-3 gap-2.5">
               {[["Lagna", k.lagna.sign], ["Rashi", k.moon.sign], ["Nakshatra", k.moon.nakshatra]].map(([a, b]) => (
-                <div key={a} className="min-w-0 rounded-[8px] border border-[var(--tile-line)] px-2.5 py-2">
-                  <div className="eyebrow text-muted">{a}</div>
-                  <div className="mt-0.5 truncate text-[12px] text-ink">{b}</div>
+                <div
+                  key={a}
+                  className="min-w-0 rounded-2xl px-3 py-3 text-center"
+                  style={{ background: "linear-gradient(160deg, #F4F7FC 0%, #EAF0F9 100%)", border: "1px solid rgba(21,60,107,0.14)" }}
+                >
+                  <div className="eyebrow" style={{ color: "#3A5488" }}>{a}</div>
+                  <div className="mt-1 truncate text-[13px] font-medium text-ink">{b}</div>
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
           {(k.approximate) && (
             <div className="gutter-m mt-2 text-center text-[10px] text-muted">Birth time unknown : houses & lagna are approximate (noon assumed).</div>
           )}
 
           {/* the two charts */}
-          <div className="gutter pt-4">
+          <div className="reveal gutter pt-4">
             <h3 className="section-title mb-2">Birth chart</h3>
             <div className="flex flex-col items-center gap-4 lg:flex-row lg:justify-center">
               <KundliChart lagnaIndex={k.chart.lagnaIndex} placements={d1} title="Rasi · D1" size={262} />
@@ -98,14 +124,14 @@ export function KundliScreen() {
           </div>
 
           {/* current dasha */}
-          <div className="gutter pt-4">
+          <div className="reveal gutter pt-4">
             <h3 className="section-title">Current Mahadasha</h3>
             <div className="mt-1 text-[13px] text-ink">{k.currentDasha}</div>
           </div>
 
           {/* planet table — bordered card, tinted head, uniform rows, real
               dividers. Every table on the screen is built the same way. */}
-          <div className="gutter pt-5">
+          <div className="reveal gutter pt-5">
             <h3 className="section-title mb-2.5 lg:text-[16px]">Grahas</h3>
             <div className="overflow-hidden rounded-xl border border-[var(--line-strong)]">
               <div className="overflow-x-auto">
@@ -172,7 +198,7 @@ export function KundliScreen() {
           )}
 
           {/* chara karakas + arudha — two spread columns in the same table card */}
-          <div className="gutter pt-5">
+          <div className="reveal gutter pt-5">
             <h3 className="section-title mb-2.5 lg:text-[16px]">Jaimini Karakas</h3>
             <div className="overflow-hidden rounded-xl border border-[var(--line-strong)]">
               <table className="w-full border-collapse text-left text-[13px]">
@@ -196,7 +222,7 @@ export function KundliScreen() {
           </div>
 
           {/* dasha timeline — table, current period tinted and marked */}
-          <div className="gutter pt-5">
+          <div className="reveal gutter pt-5">
             <h3 className="section-title mb-2.5 lg:text-[16px]">Vimshottari Mahadasha</h3>
             <div className="overflow-hidden rounded-xl border border-[var(--line-strong)]">
               <table className="w-full border-collapse text-left text-[13px]">

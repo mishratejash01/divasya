@@ -6,6 +6,7 @@ import { toPng } from "html-to-image";
 import { Bank, Check, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword, WhatsappLogo } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DeityGlyph, Logomark, Pill, ScreenHeader, cx } from "../ui";
+import { PageHeader } from "../page-header";
 import { deityById } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 import {
@@ -14,10 +15,12 @@ import {
 } from "@/lib/catalog";
 import { useFullPanchang, usePanchang, type ChoghadiyaSlot } from "@/lib/use-panchang";
 
-function Header({ title, sub }: { title: string; sub?: string }) {
+function Header({ title, sub, gradient, shadow, art }: {
+  title: string; sub?: string; gradient?: string; shadow?: string; art?: string;
+}) {
   const { back } = useApp();
   return (
-    <ScreenHeader title={title} sub={sub} onBack={back} />
+    <PageHeader title={title} subtitle={sub} onBack={back} gradient={gradient} shadow={shadow} art={art} />
   );
 }
 
@@ -161,7 +164,13 @@ export function PanchangScreen() {
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom" style={{ background: "var(--surface)" }}>
-      <Header title="Panchang" />
+      <Header
+        title="Panchang"
+        sub="Tithi, choghadiya & muhurat"
+        art="/home/tools/panchang.png"
+        gradient="linear-gradient(135deg, #0F4F49 0%, #08302C 100%)"
+        shadow="rgba(8,48,44,0.30)"
+      />
       {/* A printed-panchang page — cream paper in a gold frame, Devanagari
           headings, ◆ dividers. Left-aligned, not floated in the middle. */}
       <div className="gutter pt-3 lg:mx-auto lg:max-w-3xl">
@@ -333,7 +342,13 @@ export function FestivalsScreen() {
   const vidhi = hero ? (lang === "hi" && hero.vidhi_hi?.length ? hero.vidhi_hi : hero.vidhi) : [];
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
-      <Header title={lang === "hi" ? "पर्व एवं पूजा" : "Festivals & Pooja"} />
+      <Header
+        title={lang === "hi" ? "पर्व एवं पूजा" : "Festivals & Pooja"}
+        sub={lang === "hi" ? "व्रत, पर्व एवं पूजा विधि" : "Vrat, parv & pooja vidhi"}
+        art="/home/tools/festivals.png"
+        gradient="linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)"
+        shadow="rgba(78,31,3,0.30)"
+      />
       <div className="flex items-center justify-end gutter-m"><LangToggle /></div>
       {/* Festival dates are served from the database — lunar, so they cannot be
           guessed. Say so rather than showing a blank screen. */}

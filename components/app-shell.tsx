@@ -11,7 +11,7 @@ import { PushToast } from "./push-toast";
 import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
 import { Iconify } from "./iconify";
-import { DamruLoader } from "./damru-loader";
+import { MoonLoader } from "./moon-loader";
 
 import { HomeScreen } from "./screens/home";
 import { MalaScreen } from "./screens/mala";
@@ -229,11 +229,12 @@ function OfflineBanner() {
 
 function RoutedApp() {
   const { screen } = useApp();
-  // A brief damru loading screen whenever a new screen opens.
+  // The moon-pulse loading screen whenever a new screen opens — held long enough
+  // for at least one full breathe-in/out so the motion reads.
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
-    const t = window.setTimeout(() => setLoading(false), 720);
+    const t = window.setTimeout(() => setLoading(false), 1700);
     return () => window.clearTimeout(t);
   }, [screen.name]);
   return (
@@ -264,7 +265,7 @@ function RoutedApp() {
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
           <OfflineBanner />
           <DailyNamastePopup />
-          <AnimatePresence>{loading && <DamruLoader />}</AnimatePresence>
+          <AnimatePresence>{loading && <MoonLoader />}</AnimatePresence>
         </div>
       </main>
     </div>
