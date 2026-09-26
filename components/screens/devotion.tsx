@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bank, Check, FunnelSimple, MagnifyingGlass, MapPin, Play, Plus, ShieldCheck, VideoCamera, X } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
-import { ScreenHeader, cx } from "../ui";
+import { ScreenHeader, FilterChips, cx } from "../ui";
 import { PageHeader } from "../page-header";
 import { logEvent } from "@/lib/chat";
 import { supabaseBrowser } from "@/lib/supabase";
