@@ -6,7 +6,7 @@ import { CaretRight } from "@phosphor-icons/react";
 import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER } from "../nav-map";
-import { DeityPortrait, DevotionalIllustration, BrandWordmark, cx, type DevotionalIllustrationName } from "../ui";
+import { DeityPortrait, DevotionalIllustration, cx, type DevotionalIllustrationName } from "../ui";
 import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
 import {
@@ -17,18 +17,19 @@ import { rashiLabel } from "@/lib/astro";
 import { HomeStories, type Story } from "../home-stories";
 import { HomeBands, type Band } from "../home-bands";
 import { Typewriter } from "../typewriter";
+import { LibraryImage } from "../library-image";
 
 let firedOnce = false;
 
 // The presiding devata for each weekday (Sun…Sat), drawn from our deity art.
 const DEVATA_BY_DAY: { name: string; deva: string; image: string; line: string }[] = [
-  { name: "Surya Dev", deva: "सूर्य देव", image: "/spot/deity-krishna.png", line: "Sunday is the day to honour the Sun." },
+  { name: "Surya Dev", deva: "सूर्य देव", image: "/spot/deity-surya.png", line: "Sunday is the day to honour the Sun." },
   { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.png", line: "Monday belongs to Lord Shiva." },
-  { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.png", line: "Tuesday for strength and courage." },
+  { name: "Hanuman Ji", deva: "हनुमान जी", image: "/spot/deity-hanuman.png", line: "Tuesday for strength and courage." },
   { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.png", line: "Wednesday is Ganesha's day." },
-  { name: "Shri Krishna", deva: "श्री कृष्ण", image: "/spot/deity-krishna.png", line: "Thursday is the best day for Vishnu puja." },
-  { name: "Maa Durga", deva: "माँ दुर्गा", image: "/spot/deity-durga.png", line: "Friday is devoted to the Devi." },
-  { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.png", line: "Saturday for Shani and Shiva." },
+  { name: "Shri Vishnu", deva: "श्री विष्णु", image: "/spot/deity-vishnu.png", line: "Thursday is the best day for Vishnu puja." },
+  { name: "Maa Lakshmi", deva: "माँ लक्ष्मी", image: "/spot/deity-lakshmi.png", line: "Friday is devoted to the Devi." },
+  { name: "Shani Dev", deva: "शनि देव", image: "/spot/deity-shani.png", line: "Saturday is for Shani Dev." },
 ];
 
 // Deep, patterned grounds for the story cards.
@@ -511,13 +512,21 @@ export function HomeScreen() {
             <Iconify icon="solar:hamburger-menu-linear" width={25} height={25} className="text-[#FBE8C6]" />
           </button>
           <button onClick={() => go("home")} aria-label="Divasya — Home" className="shrink-0">
-            {/* Recolour the gold wordmark to warm ivory so it reads on the deep ground. */}
+            {/* The approved Divasya logo, drawn as a clean ivory knockout (via its
+                own artwork as a mask) so the sun-over-the-i, crescent and ™ stay
+                crisp on the deep header. */}
             <span
-              className="inline-flex"
-              style={{ filter: "brightness(0) invert(1) sepia(0.34) saturate(1.5) hue-rotate(-8deg) brightness(1.02)" }}
-            >
-              <BrandWordmark height={24} tone="ink" priority />
-            </span>
+              role="img"
+              aria-label="Divasya"
+              className="block"
+              style={{
+                height: 32,
+                aspectRatio: "985 / 355",
+                background: "#FDEFD6",
+                WebkitMask: "url(/brand/divasya-wordmark-ink.png) center / contain no-repeat",
+                mask: "url(/brand/divasya-wordmark-ink.png) center / contain no-repeat",
+              }}
+            />
           </button>
           <div className="ml-auto flex shrink-0 items-center gap-3.5">
             <button
@@ -539,16 +548,14 @@ export function HomeScreen() {
           </div>
         </div>
 
-        <div className="flex items-start gap-4 gutter overflow-x-auto no-scrollbar pb-3">
+        <div className="flex items-end gap-5 gutter overflow-x-auto no-scrollbar pb-2">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => { haptic(6); t.to ? go(t.to, t.params) : scrollToSection(t.id); }}
-              className="flex shrink-0 flex-col items-center gap-1 whitespace-nowrap pb-1 transition-opacity active:opacity-60"
+              className="shrink-0 whitespace-nowrap pb-1 pt-1 transition-opacity active:opacity-60"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={t.art} alt="" className="h-9 w-9 object-contain" />
-              <span className="text-[11.5px] font-medium text-[#FDEEDA]">{t.label}</span>
+              <span className="text-[13px] font-medium text-[#FDEEDA]">{t.label}</span>
             </button>
           ))}
         </div>
@@ -886,7 +893,7 @@ export function HomeScreen() {
                       image rather than another line of text under it. */}
                   <div className="relative">
                     {l.image ? (
-                      <img src={l.image} alt="" loading="lazy" className="h-[58px] w-full rounded-lg object-cover" style={{ background: `${l.tint}3a` }} />
+                      <LibraryImage src={l.image} tint={l.tint} className="h-[104px] w-full rounded-lg" />
                     ) : (
                       <div className="h-[58px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
                     )}

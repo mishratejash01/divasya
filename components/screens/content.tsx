@@ -7,6 +7,7 @@ import { Bank, Check, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon
 import { useApp } from "../app-context";
 import { DeityGlyph, Logomark, Pill, ScreenHeader, cx } from "../ui";
 import { PageHeader } from "../page-header";
+import { LibraryImage } from "../library-image";
 import { deityById } from "@/lib/demo";
 import { rashiLabel } from "@/lib/astro";
 import {
@@ -564,7 +565,7 @@ export function LibraryScreen() {
           <div className="relative">
             {article.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={article.image} alt="" className="h-44 w-full rounded-lg object-cover" style={{ border: "1px solid var(--line)" }} />
+              <LibraryImage src={article.image} tint={article.tint} className="h-52 w-full rounded-lg" />
             ) : (
               <div className="h-44 w-full rounded-lg" style={{ background: `linear-gradient(160deg, ${article.tint}44, ${article.tint}14)` }} />
             )}
@@ -657,7 +658,7 @@ export function LibraryScreen() {
               <div className="relative">
                 {l.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.image} alt="" className="h-[92px] w-full rounded-lg object-cover" />
+                  <LibraryImage src={l.image} tint={l.tint} className="h-[120px] w-full rounded-lg" />
                 ) : (
                   <div className="h-[92px] w-full rounded-lg" style={{ background: `${l.tint}3a` }} />
                 )}
