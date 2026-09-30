@@ -59,7 +59,10 @@ const AARTI_Y = Array.from({ length: AARTI_N + 1 }, (_, k) =>
 );
 
 export function MandirScreen() {
-  const { back, deityId, setDeity, addPunya, haptic } = useApp();
+  const { back, deityId: profileDeityId, setDeity, addPunya, haptic } = useApp();
+  // own selection so switching works even when no profile is loaded; synced to the profile when there is one
+  const [pickedId, setPickedId] = useState<string | null>(null);
+  const deityId = pickedId ?? profileDeityId;
   const catalogGods = useCatalog(getDeities, DEITIES) as unknown as God[];
   const gods = [...catalogGods, ...EXTRA_GODS.filter((g) => !catalogGods.some((c) => c.id === g.id))];
   const deity = gods.find((g) => g.id === deityId) ?? gods[0];
@@ -210,7 +213,7 @@ export function MandirScreen() {
             return (
               <button
                 key={d.id}
-                onClick={() => { setDeity(d.id); setBlessing(false); setAarti(false); haptic(8); }}
+                onClick={() => { setPickedId(d.id); setDeity(d.id); setBlessing(false); setAarti(false); haptic(8); }}
                 className={cx(
                   "flex shrink-0 items-center gap-1.5 rounded-lg py-1 pl-1 pr-3 text-[11px]",
                   "lg:w-full lg:shrink lg:gap-3 lg:rounded-2xl lg:py-2.5 lg:pl-2.5 lg:pr-3 lg:text-[14px]",
