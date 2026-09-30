@@ -21,7 +21,28 @@ const FLOWERS_BY_DEITY: Record<string, string[]> = {
   hanuman: ["marigold", "rose"],
   durga: ["hibiscus", "rose", "marigold"],
   ganesha: ["hibiscus", "marigold"],
+  lakshmi: ["lotus", "marigold", "rose"],
+  vishnu: ["tulsi", "lotus", "marigold"],
+  ram: ["marigold", "rose", "tulsi"],
+  saraswati: ["jasmine", "lotus"],
+  surya: ["marigold", "hibiscus"],
+  shani: ["kaner", "marigold"],
+  kartikeya: ["marigold", "jasmine", "rose"],
+  radhakrishna: ["lotus", "rose", "tulsi"],
 };
+// Deities beyond the catalog's first five — each has its own illustration
+// (/spot/deity-<id>.png) and aarti (/aarti/<id>.mp3).
+const EXTRA_GODS: God[] = [
+  { id: "lakshmi", name: "Maa Lakshmi", deva: "माँ लक्ष्मी", color: "#C0392B", tagline: "Giver of prosperity", aarti: "Om Jai Lakshmi Mata" },
+  { id: "vishnu", name: "Shri Vishnu", deva: "श्री विष्णु", color: "#2E5B9A", tagline: "Preserver of the universe", aarti: "Om Jai Jagdish Hare" },
+  { id: "ram", name: "Shri Ram", deva: "श्री राम", color: "#3F7F86", tagline: "Maryada Purushottam", aarti: "Aarti Shri Ramchandra Kripalu" },
+  { id: "saraswati", name: "Maa Saraswati", deva: "माँ सरस्वती", color: "#7A8CA8", tagline: "Goddess of wisdom", aarti: "Jai Saraswati Mata" },
+  { id: "surya", name: "Surya Dev", deva: "सूर्य देव", color: "#D9822B", tagline: "The radiant Sun", aarti: "Om Jai Surya Bhagwan" },
+  { id: "shani", name: "Shani Dev", deva: "शनि देव", color: "#2B3F73", tagline: "Lord of karma and justice", aarti: "Jai Jai Shani Dev" },
+  { id: "kartikeya", name: "Kartikeya", deva: "कार्तिकेय", color: "#C9772B", tagline: "The divine commander", aarti: "Shri Kartikey Aarati" },
+  { id: "radhakrishna", name: "Radha-Krishna", deva: "राधा-कृष्ण", color: "#D46A9A", tagline: "Divine love", aarti: "Aarti Yugal Kishore Ki" },
+];
+
 const DEFAULT_FLOWERS = ["marigold", "rose", "jasmine"];
 
 type Petal = { id: number; x: number; slug: string; rot: number; dur: number };
@@ -39,7 +60,8 @@ const AARTI_Y = Array.from({ length: AARTI_N + 1 }, (_, k) =>
 
 export function MandirScreen() {
   const { back, deityId, setDeity, addPunya, haptic } = useApp();
-  const gods = useCatalog(getDeities, DEITIES) as unknown as God[];
+  const catalogGods = useCatalog(getDeities, DEITIES) as unknown as God[];
+  const gods = [...catalogGods, ...EXTRA_GODS.filter((g) => !catalogGods.some((c) => c.id === g.id))];
   const deity = gods.find((g) => g.id === deityId) ?? gods[0];
 
   useEffect(() => { preloadTempleSounds(); }, []);
@@ -108,9 +130,10 @@ export function MandirScreen() {
   function toggleAarti() {
     if (aarti) { setAarti(false); stopSong(); return; }
     setAarti(true);
+    setLit(true); // the aarti begins with the diyas lit
     startSong();
     bell(540, 1.8, 0.18);
-    checkDarshan(lit, true);
+    checkDarshan(true, true);
   }
 
   // stop the song when the deity changes or the screen closes
@@ -220,7 +243,7 @@ export function MandirScreen() {
               <img src="/mandir/shrine-bg.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
 
               {/* deity seated in the arch niche, resting on the platform */}
-              <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: "15.5%", width: "60%", height: "66%" }}>
+              <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: "15.5%", width: "40%", height: "50%" }}>
                 <div
                   className="pointer-events-none absolute left-1/2 top-1/2 h-[135%] w-[135%] -translate-x-1/2 -translate-y-1/2"
                   style={{ background: "radial-gradient(circle, rgba(255,224,158,0.42) 0%, rgba(255,208,124,0) 62%)" }}
