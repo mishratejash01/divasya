@@ -15,6 +15,25 @@ export type NavEntry = {
   params?: Record<string, unknown>;
 };
 
+/**
+ * Screens iOS must not offer.
+ *
+ * Live Darshan presents third-party YouTube temple broadcasts as a feature of
+ * this app. App Store guideline 5.2.3 requires documented rights to do that,
+ * and we hold none yet, so the feature is absent on iPhone and iPad for every
+ * user, not merely hidden from a reviewer. Android and the web keep it.
+ *
+ * Playback itself was always the official YouTube embed, restricted to videos
+ * their owners had marked embeddable, so this is about paperwork rather than a
+ * change in how a stream is fetched.
+ */
+export const IOS_HIDDEN: ReadonlySet<ScreenName> = new Set<ScreenName>(["temple"]);
+
+/** A group's entries, minus anything iOS may not offer. */
+export function navEntries(group: NavGroup, ios: boolean): NavEntry[] {
+  return ios ? group.entries.filter((e) => !IOS_HIDDEN.has(e.to)) : group.entries;
+}
+
 export type NavGroup = {
   id: string;
   title: string;
