@@ -87,7 +87,7 @@ export function OfflineScreen({ checking, onRetry }: { checking: boolean; onRetr
         <h1 className="mt-4 font-display text-[24px] font-semibold leading-tight text-ink">No Internet Connection</h1>
         <p className="mt-1.5 font-deva text-[15px] text-[var(--bhagwa-deep)]">इंटरनेट कनेक्शन नहीं है</p>
         <p className="mx-auto mt-3 max-w-[300px] text-[13px] leading-relaxed text-[var(--icon-ink)]" style={{ opacity: 0.9 }}>
-          You&apos;re offline. Panchang, Kundli, Live Darshan and the AI Jyotishi need a connection — please reconnect to continue your sadhana.
+          You&apos;re offline. Panchang, Kundli and the AI Jyotishi need a connection, so please reconnect to continue your sadhana.
         </p>
 
         <button
