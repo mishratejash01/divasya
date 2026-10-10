@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { CaretRight } from "@phosphor-icons/react";
 import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
 import { useApp, type ScreenName } from "../app-context";
-import { NAV, NAV_ORDER } from "../nav-map";
+import { NAV, NAV_ORDER, IOS_HIDDEN } from "../nav-map";
 import { DeityPortrait, DevotionalIllustration, cx, type DevotionalIllustrationName } from "../ui";
 import { Iconify } from "../iconify";
 import { usePanchang } from "@/lib/use-panchang";
@@ -14,6 +14,7 @@ import {
   Festival, Article, Shloka,
 } from "@/lib/catalog";
 import { rashiLabel } from "@/lib/astro";
+import { isIosApp } from "@/lib/platform";
 import { HomeStories, type Story } from "../home-stories";
 import { HomeBands, type Band } from "../home-bands";
 import { Typewriter } from "../typewriter";
@@ -118,6 +119,7 @@ const HOME_DARSHAN = [
 
 export function HomeScreen() {
   const { go, haptic, sendPush, profile, lang, user } = useApp();
+  const ios = isIosApp();   // see the note in app-shell Screen()
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const darshanRef = useRef<HTMLDivElement>(null);
@@ -188,6 +190,15 @@ export function HomeScreen() {
     { id: string; name: string; deity: string | null; location: string | null; videoId: string }[]
   >([]);
   useEffect(() => {
+    // Live Darshan does not exist on iOS (guideline 5.2.3, see IOS_HIDDEN in
+    // nav-map). Not fetching leaves `temples` empty, which removes every rail
+    // that is keyed on it without a second condition to keep in sync.
+    //
+    // isIosApp() rather than the `ios` hook: the hook reports false on the
+    // first paint to stay hydration-safe, and by the time it corrects itself
+    // the request has already gone out and populated the rail. Effects run
+    // after mount, where the synchronous check is accurate.
+    if (isIosApp()) { setTemples([]); return; }
     let on = true;
     (async () => {
       try {
@@ -204,7 +215,7 @@ export function HomeScreen() {
       } catch { /* the rail simply doesn't render */ }
     })();
     return () => { on = false; };
-  }, []);
+  }, [ios]);
   const [shloka, setShloka] = useState<Shloka | null>(null);
   const [horoscope, setHoroscope] = useState<string | null>(null);
   // Track settled-ness separately: an empty reading is a real answer, and
@@ -466,7 +477,7 @@ export function HomeScreen() {
     },
     {
       title: "Devotion & Puja",
-      subtitle: "Mandir, mala jaap, darshan and online puja.",
+      subtitle: "Mandir, mala jaap and online puja.",
       art: "/spot/deity-durga.png",
       grad: "linear-gradient(135deg, #5B2160 0%, #2E0F32 100%)",
       onOpen: () => go("category", { id: "devotion" }),
@@ -474,7 +485,8 @@ export function HomeScreen() {
         { label: "My Mandir", img: "/home/tools/my-mandir.png", onClick: () => go("mandir") },
         { label: "Mala Jaap", img: "/home/tools/mala-jaap.png", onClick: () => go("mala") },
         { label: "Online Puja", img: "/home/tools/online-puja.png", onClick: () => go("puja") },
-        { label: "Darshan", img: "/home/tools/darshan.png", onClick: () => go("temple") },
+        // Darshan is absent on iOS (guideline 5.2.3, see IOS_HIDDEN in nav-map).
+        ...(ios ? [] : [{ label: "Darshan", img: "/home/tools/darshan.png", onClick: () => go("temple") }]),
       ],
     },
     {
@@ -579,7 +591,7 @@ export function HomeScreen() {
             { img: "/home/promo/app.png", to: () => go("menu") },
             { img: "/home/promo/jyotishi.png", to: () => go("consult") },
             { img: "/home/promo/kundli.png", to: () => go("kundli") },
-            { img: "/home/promo/darshan.png", to: () => go("temple") },
+            ...(ios ? [] : [{ img: "/home/promo/darshan.png", to: () => go("temple") }]),
             { img: "/home/promo/panchang.png", to: () => go("panchang") },
             { img: "/home/promo/mala.png", to: () => go("mala") },
             { img: "/home/promo/store.png", to: () => go("shop") },
@@ -599,6 +611,7 @@ export function HomeScreen() {
       {/* Image-first devotional discovery: a small darshan window before the
           utility cards, so the home feed feels like a living temple rather
           than a directory of tools. */}
+      {!ios && (
       <div className="reveal gutter pt-2 lg:col-span-2">
         <section className="home-darshan-shelf">
           <div className="home-darshan-heading">
@@ -638,6 +651,7 @@ export function HomeScreen() {
           </div>
         </section>
       </div>
+      )}
 
       {/* Aaj ka Sandesh — the anchor. With the day stated once above, this card
           carries only the verse, its reading and the share, so the shloka gets
@@ -763,7 +777,10 @@ export function HomeScreen() {
               </button>
             </div>
             <div className="home-shelf-grid">
-              {sec.blocks.map((b) => (
+              {/* Live Darshan happens to be fourth in its group, so slice(0, 3)
+                  already drops it, but that is positional luck. Filtering on
+                  IOS_HIDDEN means reordering the nav map cannot put it back. */}
+              {sec.blocks.filter((b) => !(ios && IOS_HIDDEN.has(b.to))).map((b) => (
                 <button
                   key={b.label}
                   onClick={() => go(b.to, b.params)}
