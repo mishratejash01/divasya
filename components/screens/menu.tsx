@@ -4,7 +4,8 @@ import { CaretRight } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DevotionalIllustration, Logomark, ScreenHeader, cx } from "../ui";
 import { Iconify } from "../iconify";
-import { NAV, NAV_ORDER } from "../nav-map";
+import { NAV, NAV_ORDER, navEntries } from "../nav-map";
+import { isIosApp } from "@/lib/platform";
 
 /**
  * The map of the app.
@@ -16,6 +17,7 @@ import { NAV, NAV_ORDER } from "../nav-map";
  */
 export function MenuScreen() {
   const { back, go, haptic, lang, setLang } = useApp();
+  const ios = isIosApp();
 
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
@@ -30,7 +32,7 @@ export function MenuScreen() {
           <div key={id} className="gutter pt-4">
             <h3 className="section-title mb-1">{group.title}</h3>
             <div>
-              {group.entries.map((e, i) => (
+              {navEntries(group, ios).map((e, i) => (
                 <button
                   key={`${e.label}-${i}`}
                   onClick={() => { haptic(6); go(e.to, e.params); }}
