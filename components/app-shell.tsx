@@ -7,6 +7,8 @@ import { AppProvider, useApp, ScreenName } from "./app-context";
 import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
 import { CategoryScreen } from "./screens/category";
+import { IOS_HIDDEN } from "./nav-map";
+import { isIosApp } from "@/lib/platform";
 import { PushToast } from "./push-toast";
 import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
@@ -55,9 +57,21 @@ function localDateKey() {
 
 function Screen() {
   const { screen, user } = useApp();
+  // isIosApp() is read straight through rather than via useIsIosApp(), whose
+  // first paint reports false to stay hydration-safe. That one render was
+  // enough to mount TempleScreen and let it call /api/darshan before the hook
+  // corrected itself. It is safe here because Gate() renders <Splash/> until
+  // auth resolves, so this component only ever renders on the client, long
+  // after hydration.
+  const ios = isIosApp();
   // Guests may roam everywhere except the account itself. Gating in this one
   // place keeps every screen component unchanged and unable to drift.
   if (!user && AUTH_REQUIRED.includes(screen.name)) return <SignInWall screen={screen.name} />;
+  // The backstop for IOS_HIDDEN. Every link into Live Darshan is already gone
+  // on iOS, but a session restored from before the change, or a route added
+  // later without remembering this rule, would still land here. Refusing to
+  // mount the screen means no entry point can reintroduce the feature.
+  if (ios && IOS_HIDDEN.has(screen.name)) return <HomeScreen />;
   switch (screen.name) {
     case "home": return <HomeScreen />;
     case "mala": return <MalaScreen />;
