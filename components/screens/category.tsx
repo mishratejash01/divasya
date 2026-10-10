@@ -4,7 +4,8 @@ import { useApp } from "../app-context";
 import { DevotionalIllustration } from "../ui";
 import { PageHeader } from "../page-header";
 import { Iconify } from "../iconify";
-import { NAV } from "../nav-map";
+import { NAV, navEntries } from "../nav-map";
+import { isIosApp } from "@/lib/platform";
 
 /**
  * The categories behind the main tabs, and the single source of truth for what
@@ -25,6 +26,7 @@ const FALLBACK: Theme = { grad: "linear-gradient(155deg,#C0440E,#6E1D2E)", shado
 
 export function CategoryScreen() {
   const { screen, back, go, haptic } = useApp();
+  const ios = isIosApp();
   const id = (screen.params?.id as string) || "astro";
   const cat = CATEGORIES[id] ?? CATEGORIES.astro;
   const theme = THEME[id] ?? FALLBACK;
@@ -39,7 +41,7 @@ export function CategoryScreen() {
 
       {grid ? (
         <div className="grid grid-cols-2 gap-2.5 gutter pt-4">
-          {cat.entries.map((t) => (
+          {navEntries(cat, ios).map((t) => (
             <button
               key={t.label}
               onClick={() => { haptic(6); go(t.to, t.params); }}
@@ -57,7 +59,7 @@ export function CategoryScreen() {
         </div>
       ) : (
         <div className="flex flex-col gutter pt-2">
-          {cat.entries.map((t) => (
+          {navEntries(cat, ios).map((t) => (
             <button
               key={t.label}
               onClick={() => { haptic(6); go(t.to, t.params); }}
