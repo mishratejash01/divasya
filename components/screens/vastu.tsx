@@ -13,7 +13,7 @@
 // loop writes one CSS transform, and React text updates at most 4Hz.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Check, Compass, PaperPlaneRight, Plus, X } from "@phosphor-icons/react";
+import { Check, PaperPlaneRight, X } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { ScreenHeader, FilterChips, cx } from "../ui";
 import { supabaseBrowser } from "@/lib/supabase";
@@ -233,8 +233,8 @@ function CompassTab({ rashi }: { rashi: string | null | undefined }) {
       </div>
 
       {!c.live && (
-        <button onClick={c.enable} className="mt-4 flex items-center gap-2 rounded-2xl px-4 py-3 text-[11.5px] btn-saffron">
-          <Compass size={14} /> Enable live compass
+        <button onClick={c.enable} className="mt-4 rounded-2xl px-5 py-3 text-[12.5px] font-medium btn-saffron" style={{ fontFamily: "var(--font-lexend)" }}>
+          Enable live compass
         </button>
       )}
       {c.needsCal && (
@@ -334,8 +334,8 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
         )}
         {!camOn && (
           <div className="absolute inset-0 grid place-items-center">
-            <button onClick={startCam} className="flex items-center gap-2 rounded-2xl px-4 py-3 text-[11.5px] btn-saffron">
-              <Camera size={14} /> Open the Lens
+            <button onClick={startCam} className="rounded-2xl px-5 py-3 text-[12.5px] font-medium btn-saffron" style={{ fontFamily: "var(--font-lexend)" }}>
+              Open the Lens
             </button>
           </div>
         )}
@@ -346,7 +346,7 @@ function LensTab({ rashi, onAskGuru }: { rashi: string | null | undefined; onAsk
             </div>
             <div className="absolute inset-x-0 bottom-3 flex justify-center">
               {frozen ? (
-                <button onClick={() => { setFrozen(null); setWhat(null); }} className="rounded-full bg-black/55 px-4 py-2 text-[11.5px] text-white">
+                <button onClick={() => { setFrozen(null); setWhat(null); }} className="rounded-full bg-black/55 px-4 py-2 text-[12px] font-medium text-white" style={{ fontFamily: "var(--font-lexend)" }}>
                   Resume live view
                 </button>
               ) : (
@@ -564,8 +564,8 @@ function HomeTab({ rashi }: { rashi: string | null | undefined }) {
       })}
 
       {rooms && !adding && (
-        <button onClick={() => setAdding(true)} className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl py-3 text-[11.5px] btn-saffron">
-          <Plus size={13} /> Add a room
+        <button onClick={() => setAdding(true)} className="mt-3 w-full rounded-2xl py-3 text-[12.5px] font-medium btn-saffron" style={{ fontFamily: "var(--font-lexend)" }}>
+          Add a room
         </button>
       )}
       {adding && (

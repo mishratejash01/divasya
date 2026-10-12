@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Let phones on the same Wi-Fi load the dev server (dev only; no effect in production).
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*"],
   // Pin the workspace root — stray parent lockfiles confuse Next's inference.
   turbopack: { root: __dirname },
   // sweph is a native addon (.node) — never bundle it; let it load at runtime on

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, Mukta, Marcellus } from "next/font/google";
+import { Poppins, Mukta, Marcellus, Lexend } from "next/font/google";
 import "./globals.css";
 import { PWARegister } from "@/components/pwa-register";
 
@@ -31,6 +31,14 @@ const marcellus = Marcellus({
   display: "swap",
 });
 
+// Lexend — the closing mantra line on home.
+const lexend = Lexend({
+  variable: "--font-lexend",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Divasya — Your Spiritual Companion",
   description:
@@ -49,6 +57,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // Android: the keyboard shrinks the layout, so the chat input rides on it
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
@@ -57,7 +67,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${poppins.variable} ${mukta.variable} ${marcellus.variable} h-full antialiased`}
+      className={`${poppins.variable} ${mukta.variable} ${marcellus.variable} ${lexend.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <div id="app-root">{children}</div>

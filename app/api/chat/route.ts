@@ -1,4 +1,4 @@
-import { jyotishiSystem, deitySystem, consultSystem } from "@/lib/prompts";
+import { jyotishiSystem, deitySystem, consultSystem, languageRule } from "@/lib/prompts";
 import { deityById, astrologerById } from "@/lib/demo";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Profile } from "@/lib/types";
@@ -76,11 +76,15 @@ function cannedStream(text: string) {
   });
 }
 
-function cannedFor(mode: string, name: string): string {
-  const fn = (name || "devotee").split(" ")[0];
+function cannedFor(mode: string, name: string, lang: "en" | "hi"): string {
+  const fn = (name || (lang === "hi" ? "भक्त" : "devotee")).split(" ")[0];
   if (mode === "deity")
-    return `${fn}, abhi divya sambandh mein kshan bhar ka viraam hai. Ek gehri saans lijiye aur kuch pal mein phir se poochhiye — main yahin hoon.`;
-  return `${fn} ji, is samay jyotish seva par asadharan bhaar hai. Kripya 20-30 second baad apna prashn dobara bhejiye — main aapki kundli ke saath taiyar hoon.`;
+    return lang === "hi"
+      ? `${fn}, अभी दिव्य संवाद में क्षण भर का विराम है। एक गहरी साँस लीजिए और कुछ पल में फिर से पूछिए, मैं यहीं हूँ।`
+      : `${fn}, there is a brief pause in our connection. Take a deep breath and ask again in a moment. I am right here.`;
+  return lang === "hi"
+    ? `${fn} जी, इस समय ज्योतिष सेवा पर असाधारण भार है। कृपया 20-30 सेकंड बाद अपना प्रश्न दोबारा भेजिए, मैं आपकी कुंडली के साथ तैयार हूँ।`
+    : `${fn} ji, the Jyotish service is unusually busy right now. Please send your question again in 20 to 30 seconds. I have your kundli ready.`;
 }
 
 /** Open a streaming completion, walking the model chain with retries. */
@@ -104,7 +108,7 @@ async function openUpstream(payload: object, key: string): Promise<Response | nu
 }
 
 export async function POST(req: Request) {
-  let body: { mode?: string; deityId?: string; astrologerId?: string; messages?: Msg[]; profile?: Partial<Profile> } = {};
+  let body: { mode?: string; deityId?: string; astrologerId?: string; messages?: Msg[]; profile?: Partial<Profile>; lang?: string } = {};
   try { body = await req.json(); } catch { /* empty body */ }
   const mode = body.mode || "jyotishi";
   const messages = (body.messages || []).filter((m) => m.content?.trim()).slice(-16);
@@ -117,10 +121,14 @@ export async function POST(req: Request) {
   if (mode === "deity") system = deitySystem(await loadDeity(body.deityId || profile.deity_id), profile, chart, today);
   else if (mode === "consult") system = consultSystem(await loadAstrologer(body.astrologerId || "a1"), profile, chart, today);
   else system = jyotishiSystem(profile, chart, today);
+  const lang: "en" | "hi" = body.lang === "hi" ? "hi" : "en";
+  system += `
+
+${languageRule(lang)}`;
 
   const key = process.env.GEMINI_API_KEY;
   const fallbackHeaders = { "Content-Type": "text/plain; charset=utf-8", "X-Divasya-Mode": "fallback" };
-  if (!key) return new Response(cannedStream(cannedFor(mode, profile.name || "")), { headers: fallbackHeaders });
+  if (!key) return new Response(cannedStream(cannedFor(mode, profile.name || "", lang)), { headers: fallbackHeaders });
 
   const payload = {
     systemInstruction: { parts: [{ text: system }] },
@@ -132,7 +140,7 @@ export async function POST(req: Request) {
 
   const upstream = await openUpstream(payload, key);
   if (!upstream || !upstream.body) {
-    return new Response(cannedStream(cannedFor(mode, profile.name || "")), { headers: fallbackHeaders });
+    return new Response(cannedStream(cannedFor(mode, profile.name || "", lang)), { headers: fallbackHeaders });
   }
 
   const stream = new ReadableStream({
@@ -170,7 +178,7 @@ export async function POST(req: Request) {
           }
         }
       } catch {
-        if (!emitted) controller.enqueue(enc.encode(cannedFor(mode, profile.name || "")));
+        if (!emitted) controller.enqueue(enc.encode(cannedFor(mode, profile.name || "", lang)));
       }
       try { reader.cancel(); } catch { /* already closed */ }
       controller.close();

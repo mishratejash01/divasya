@@ -236,12 +236,15 @@ export function MandirScreen() {
 
           {/* the shrine — the ornate golden mandir sits directly on the page,
               no card or backdrop, so the temple artwork is the whole view */}
-          <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* runs up under the header's rounded corners, so no page shows there */}
+          <div className="absolute inset-x-0 bottom-0 z-0 overflow-hidden" style={{ top: -28 }}>
 
             {/* the marble shrine is the whole scene; the deity is seated inside
                 its carved arch niche, on the platform, framed by the pillars,
                 lamps and carvings of the temple itself. */}
-            <div className="absolute left-1/2 top-0 overflow-hidden" style={{ aspectRatio: "1024 / 1536", height: "113%", minWidth: "100%", transform: "translate(-50%, -13%)" }}>
+            {/* anchored to the bottom edge, so the floor always reaches the
+                bottom of the screen whatever the phone's height */}
+            <div className="absolute bottom-0 left-1/2 overflow-hidden" style={{ aspectRatio: "1024 / 1536", height: "115%", minWidth: "100%", transform: "translateX(-50%)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/mandir/shrine-bg.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
 

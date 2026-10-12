@@ -1,9 +1,10 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { IconContext } from "@phosphor-icons/react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-import { AppProvider, useApp, ScreenName } from "./app-context";
+import { motion, AnimatePresence, useReducedMotion, MotionConfig } from "framer-motion";
+import { useEffect, useLayoutEffect, useState, useRef } from "react";
+import { AppProvider, useApp, ScreenName, ScreenOverride, navIntent } from "./app-context";
 import { BottomNav } from "./bottom-nav";
 import { SideNav } from "./side-nav";
 import { CategoryScreen } from "./screens/category";
@@ -13,7 +14,9 @@ import { PushToast } from "./push-toast";
 import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
 import { Iconify } from "./iconify";
-import { MoonLoader } from "./moon-loader";
+import { InstantEntry } from "./reveal-text";
+import { MoonLoader, COSMIC_INTRO_MS, COSMIC_ASSETS } from "./moon-loader";
+import { ConstellationLoader, PAGE_SWAP_MS, PAGE_HOLD_MS, nextFigure } from "./constellation-loader";
 
 import { HomeScreen } from "./screens/home";
 import { MalaScreen } from "./screens/mala";
@@ -34,6 +37,7 @@ import { JyotishiScreen } from "./screens/jyotishi";
 import { ConsultScreen, ConsultChatScreen } from "./screens/consult";
 import { MoreScreen } from "./screens/more";
 import { PanchangScreen, FestivalsScreen, LibraryScreen, SandeshScreen } from "./screens/content";
+import { HiddenSacredScreen } from "./screens/hidden-sacred";
 import { VastuScreen } from "./screens/vastu";
 import { NaamkaranScreen } from "./screens/naamkaran";
 import { PujaScreen, TempleScreen } from "./screens/devotion";
@@ -44,7 +48,9 @@ import { OnboardingScreen } from "./screens/onboarding";
 // take over the viewport and carry their own exit. Previously this was an
 // allow-list, so most screens dropped the bar and stranded the user with only
 // a back button.
-const HIDE_NAV: ScreenName[] = ["mala", "mandir", "signin"];
+// chats are full-screen: the composer sits on the bottom edge, so the keyboard
+// meets it directly instead of leaving the tab bar's gap behind
+const HIDE_NAV: ScreenName[] = ["mala", "mandir", "signin", "consultChat"];
 const NAMASTE_IMAGE = "https://res.cloudinary.com/oqfanico/image/upload/f_auto,q_auto/v1787393254/divasya/app/namaste-greeting.webp";
 
 function localDateKey() {
@@ -98,6 +104,7 @@ function Screen() {
     case "panchang": return <PanchangScreen />;
     case "festivals": return <FestivalsScreen />;
     case "library": return <LibraryScreen />;
+    case "sacred": return <HiddenSacredScreen />;
     case "vastu": return <VastuScreen />;
     case "naamkaran": return <NaamkaranScreen />;
     case "puja": return <PujaScreen />;
@@ -159,11 +166,11 @@ function DailyNamastePopup() {
       try { localStorage.setItem("divasya:namaste-seen", today); } catch {}
       setVisible(true);
       haptic(8);
-    }, 1500);
+    }, COSMIC_INTRO_MS + 900);
 
-    // Full-screen greeting: appears at 1.5s and holds until 6.8s. A tap dismisses
-    // it early.
-    const hideTimer = window.setTimeout(() => setVisible(false), 6800);
+    // Full-screen greeting: appears just after the opening curtain lifts and
+    // holds for about five seconds. A tap dismisses it early.
+    const hideTimer = window.setTimeout(() => setVisible(false), COSMIC_INTRO_MS + 6200);
 
     return () => {
       window.clearTimeout(showTimer);
@@ -241,16 +248,100 @@ function OfflineBanner() {
   );
 }
 
+const wait = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+
+/** Resolves when every picture currently on screen inside `root` has loaded
+ *  (or failed), or after `capMs` — whichever comes first. */
+function imagesReady(root: HTMLElement | null, capMs: number): Promise<void> {
+  if (!root) return Promise.resolve();
+  const vh = window.innerHeight;
+  const pending = Array.from(root.querySelectorAll("img")).filter((img) => {
+    if (img.complete) return false;
+    const r = img.getBoundingClientRect();
+    return r.bottom > 0 && r.top < vh && r.width > 0;
+  });
+  if (pending.length === 0) return Promise.resolve();
+  const all = Promise.all(
+    pending.map((img) => new Promise<void>((res) => {
+      img.addEventListener("load", () => res(), { once: true });
+      img.addEventListener("error", () => res(), { once: true });
+    }))
+  ).then(() => undefined);
+  return Promise.race([all, wait(capMs)]);
+}
+
 function RoutedApp() {
   const { screen } = useApp();
-  // The moon-pulse loading screen whenever a new screen opens — held long enough
-  // for at least one full breathe-in/out so the motion reads.
+  // The cosmic curtain. On every screen change the curtain sweeps up over the
+  // OLD screen (it stays rendered until covered, so nothing flashes), the new
+  // screen is swapped in underneath, and as the curtain lifts the new screen
+  // rises into place with its sections staggering in.
+  const reduce = useReducedMotion();
+  const key = screen.name + JSON.stringify(screen.params || {});
+  const [shown, setShown] = useState(screen);
+  const [shownKey, setShownKey] = useState(key);
   const [loading, setLoading] = useState(false);
+  // the first curtain is the app opening — it starts closed and holds longer
+  // The opening plays once per session — not again if the app remounts or the
+  // page reloads on a back navigation.
+  const [intro, setIntro] = useState(() => {
+    try { return sessionStorage.getItem("divasya:intro-played") !== "1"; } catch { return true; }
+  });
+  const [mounted, setMounted] = useState(false);
+  // which constellation the next screen change shows — never the same twice running
+  const [figure, setFigure] = useState(0);
+  const [animateIn, setAnimateIn] = useState(true);
+  const stageRef = useRef<HTMLDivElement>(null);
+  // only the returning screen's first moment is settled; motion resumes after
+  const [settling, setSettling] = useState(false);
   useEffect(() => {
+    if (!settling) return;
+    const id = window.setTimeout(() => setSettling(false), 400);
+    return () => window.clearTimeout(id);
+  }, [settling]);
+  useEffect(() => {
+    setMounted(true);
+    COSMIC_ASSETS.forEach((src) => { const img = new Image(); img.src = src; });
+  }, []);
+  useLayoutEffect(() => {
+    if (reduce) { setShown(screen); setShownKey(key); setIntro(false); return; }
+    const viaTab = navIntent.viaTab;
+    const isBack = navIntent.back;
+    navIntent.viaTab = false;
+    navIntent.back = false;
+    // Going back returns to a screen that was just on display — show it as it
+    // was, instantly, rather than replaying an entrance (that read as a glitch).
+    setAnimateIn(!isBack);
+    setSettling(isBack);
+    // Screens opened from inside a page (not the tab bar) simply rise in.
+    if (!intro && !viaTab) { setShown(screen); setShownKey(key); return; }
     setLoading(true);
-    const t = window.setTimeout(() => setLoading(false), 1700);
-    return () => window.clearTimeout(t);
-  }, [screen.name]);
+    // The opening plays the full cosmic curtain over the first screen.
+    let cancelled = false;
+    if (intro) {
+      setShown(screen); setShownKey(key);
+      // lift only once the opening has fully played AND the first screen's
+      // visible pictures are in (capped, so a slow network can't trap us)
+      Promise.all([wait(COSMIC_INTRO_MS), wait(400).then(() => imagesReady(stageRef.current, 4000))]).then(() => {
+        if (cancelled) return;
+        setLoading(false); setIntro(false);
+        try { sessionStorage.setItem("divasya:intro-played", "1"); } catch {}
+      });
+      return () => { cancelled = true; };
+    }
+    // A tab switch: the constellation sky fades over the old screen,
+    // the new one is swapped in behind it, and the sky lifts once the
+    // constellation has formed.
+    setFigure((f) => nextFigure(f));
+    const swap = window.setTimeout(() => { setShown(screen); setShownKey(key); }, PAGE_SWAP_MS);
+    // lift once the constellation has fully formed AND the new screen's
+    // visible pictures have loaded (capped)
+    Promise.all([wait(PAGE_HOLD_MS), wait(PAGE_SWAP_MS + 120).then(() => imagesReady(stageRef.current, 2500))]).then(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; window.clearTimeout(swap); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen.name, key, reduce]);
   return (
     <div className="flex h-full w-full">
       <SideNav />
@@ -259,27 +350,28 @@ function RoutedApp() {
             own ScreenHeader, so stacking this above them made two headers and
             pushed each screen's title down a row. */}
         {screen.name === "home" && <DeskTopBar />}
-        {/* Fills the space beside the rail. Home spreads into a feed-plus-widget
-            dashboard that uses the width without stretching any one card; the
-            other screens carry their own gutter. The warm ground only shows on
-            desktop, where the white cards lift off it. */}
         <div className="desk-ground relative w-full flex-1 overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={screen.name + JSON.stringify(screen.params || {})}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0"
-            >
-              <Screen />
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            ref={stageRef}
+            key={shownKey}
+            initial={reduce || !animateIn ? false : { y: 24 }}
+            animate={reduce || !loading ? { y: 0 } : { y: 24 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className={reduce ? "absolute inset-0" : animateIn ? "screen-stage absolute inset-0" : "screen-instant absolute inset-0"}
+          >
+            <InstantEntry.Provider value={settling}>
+              <MotionConfig reducedMotion={settling ? "always" : "never"}>
+                <ScreenOverride screen={shown}>
+                  <Screen />
+                </ScreenOverride>
+              </MotionConfig>
+            </InstantEntry.Provider>
+          </motion.div>
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
           <OfflineBanner />
-          <DailyNamastePopup />
-          <AnimatePresence>{loading && <MoonLoader />}</AnimatePresence>
+          {/* The daily Namaste greeting is switched off — render <DailyNamastePopup /> here to bring it back. */}
+          {/* over everything — tab bar included — so it lives on the body */}
+          {mounted && createPortal(<AnimatePresence>{loading && (intro ? <MoonLoader key="intro" intro /> : <ConstellationLoader key="page" figure={figure} />)}</AnimatePresence>, document.body)}
         </div>
       </main>
     </div>
@@ -340,17 +432,14 @@ function Stage({ children, scroll }: { children: React.ReactNode; scroll?: boole
   );
 }
 
+// While the session loads, show the same night sky the opening curtain starts
+// on — no white page, no logo — so the app opens straight into the cosmic
+// intro without a flash in between.
 function Splash() {
   return (
-    <div className="grid h-full place-items-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: [0.55, 1, 0.55], scale: 1 }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-        className="text-[var(--bhagwa)]"
-      >
-        <Logomark size={65} />
-      </motion.div>
+    <div className="h-full w-full" style={{ background: "#070A1C" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/cosmic/sky-min.webp" alt="" className="h-full w-full object-cover object-bottom" />
     </div>
   );
 }
@@ -382,21 +471,49 @@ function Inner() {
   return (
     <>
       <Gate />
-      <PushToast />
+      {/* In-app notification toasts are hidden for now — turn back on by
+          rendering <PushToast /> here. */}
       {/* Global offline takeover — sits above everything, dismisses on reconnect. */}
       <OfflineGate />
     </>
   );
 }
 
+/**
+ * Pins the app to the part of the screen you can actually see. When a phone
+ * keyboard opens, the visible area shrinks but the page keeps its full height,
+ * so the browser lets the whole page slide — white space and old messages
+ * showing under the chat input. Here the app's frame follows the visual
+ * viewport exactly (height and offset), and the page itself never scrolls.
+ */
+function useVisualViewportFrame() {
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const root = document.documentElement;
+    const sync = () => {
+      root.style.setProperty("--app-h", `${vv.height}px`);
+      root.style.setProperty("--app-top", `${vv.offsetTop}px`);
+    };
+    sync();
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
+    return () => {
+      vv.removeEventListener("resize", sync);
+      vv.removeEventListener("scroll", sync);
+    };
+  }, []);
+}
+
 export function AppShell() {
+  useVisualViewportFrame();
   return (
     // One weight for every Phosphor glyph in the app. The hand-drawn set in
     // components/icons.tsx is stroked at 1.4, and Phosphor's "light" is the
     // closest match — set once here so the two families read as one system.
     <IconContext.Provider value={{ weight: "light" }}>
       <AppProvider>
-        <div className="relative h-[100dvh] w-full overflow-hidden">
+        <div className="app-frame w-full overflow-hidden">
           <Inner />
         </div>
       </AppProvider>

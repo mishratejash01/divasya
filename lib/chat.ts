@@ -15,6 +15,7 @@ export async function streamChat(
     astrologerId?: string;
     messages: ChatMsg[];
     profile?: Partial<Profile> | null;
+    lang?: "en" | "hi";
   },
   onDelta: (chunk: string, full: string) => void
 ): Promise<ChatResult> {

@@ -10,3 +10,9 @@ supabase/
 # Build and dependency output; Vercel produces its own.
 .next/
 node_modules/
+
+# Local design screenshots, preview harness and helper scripts — never shipped.
+/*.png
+/_shot.py
+/_*.py
+app/preview/

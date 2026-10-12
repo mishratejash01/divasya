@@ -202,20 +202,20 @@ export function MalaScreen() {
     <div className="mala-screen relative flex h-full flex-col overflow-hidden">
       {/* the yellow header — speaker (music) on the left, reset on the right,
           the mantra names the screen in the middle (tap to change it) */}
-      <div className="shrink-0" style={{ background: "var(--bar-yellow)", paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)" }}>
-        <div className="flex items-center gap-2 gutter pb-[11px]">
+      <div className="shrink-0" style={{ background: "linear-gradient(135deg, #7A1D2E 0%, #430D19 100%)", borderBottomLeftRadius: 16, borderBottomRightRadius: 16, paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}>
+        <div className="flex items-center gap-2 gutter pb-[16px]">
           <button onClick={() => { setChosen(null); setAuto(false); }} aria-label="Back" className="shrink-0">
-            <CaretLeft size={20} className="text-ink" />
+            <CaretLeft size={20} className="text-[#FDEFD6]" />
           </button>
           <button onClick={toggleAmbient} aria-label={musicMuted ? "Unmute music" : "Mute music"} className="shrink-0">
-            {musicMuted ? <SpeakerSlash size={19} className="text-ink" /> : <SpeakerHigh size={19} className="text-ink" />}
+            {musicMuted ? <SpeakerSlash size={19} className="text-[#FDEFD6]" /> : <SpeakerHigh size={19} className="text-[#FDEFD6]" />}
           </button>
           <button onClick={() => setPickMantra(true)} className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
-            <span className={cx("truncate text-ink", lang === "hi" ? "font-deva text-[18px]" : "font-display text-[17px]")}>{mantraText(mantra)}</span>
-            <CaretDown size={13} className="shrink-0 text-ink/60" />
+            <span className={cx("truncate text-[#FDEFD6]", lang === "hi" ? "font-deva text-[18px]" : "font-display text-[17px]")}>{mantraText(mantra)}</span>
+            <CaretDown size={13} className="shrink-0 text-[#F3D6B0]" />
           </button>
           <button onClick={reset} aria-label="Reset" className="shrink-0">
-            <ArrowCounterClockwise size={18} className="text-ink" />
+            <ArrowCounterClockwise size={18} className="text-[#FDEFD6]" />
           </button>
         </div>
       </div>

@@ -1,8 +1,10 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { IconSunrise, IconSunset } from "../icons";
 import { toPng } from "html-to-image";
+import { motion, useReducedMotion } from "framer-motion";
+import { InstantEntry } from "../reveal-text";
 import { Bank, Check, Coins, DownloadSimple, Fire, FlowerLotus, Heart, type Icon, Moon, Shield, Sparkle, Sun, Sword, WhatsappLogo } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DeityGlyph, Logomark, Pill, ScreenHeader, cx } from "../ui";
@@ -121,150 +123,278 @@ function PSection({ sa, en }: { sa: string; en: string }) {
   );
 }
 
+// The day's panchang as a Shahi Farmaan — a royal decree: aged parchment
+// between two carved gold rods, unrolling as the page opens, an ornamental
+// heading over every section, an artifact beside every entry and a red wax
+// seal pressed at the foot.
+const F_INK = "#4A1D0E", F_MUT = "#80522A", F_GOLD = "#A8781F", F_RULE = "rgba(168,120,31,.38)";
+const PAPER =
+  "radial-gradient(120% 60% at 50% 0%, rgba(255,247,222,.65) 0%, rgba(255,247,222,0) 60%)," +
+  "radial-gradient(90% 50% at 15% 85%, rgba(150,95,30,.10) 0%, rgba(150,95,30,0) 70%)," +
+  "radial-gradient(70% 40% at 90% 30%, rgba(150,95,30,.09) 0%, rgba(150,95,30,0) 70%)," +
+  "linear-gradient(180deg, #F3E3BC 0%, #EED9A9 50%, #E9D09A 100%)";
+
+const CHOG_ART: Record<string, string> = {
+  Amrit: "chog-amrit", Shubh: "chog-shubh", Labh: "chog-labh", Char: "chog-char",
+  Udveg: "chog-udveg", Rog: "chog-rog", Kaal: "chog-kaal",
+};
+
+/** A section heading under the Mughal lotus divider. */
+function FHeading({ sa, en }: { sa: string; en: string }) {
+  return (
+    <div className="pb-2 pt-4 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/panchang/farmaan-divider.webp" alt="" className="mx-auto block w-[92%]" />
+      <div className="mt-1.5 font-deva text-[16px] leading-none" style={{ color: F_INK }}>{sa}</div>
+      <div className="mt-1 text-[8px] uppercase tracking-[0.24em]" style={{ color: F_MUT }}>{en}</div>
+    </div>
+  );
+}
+
+function Art({ src, size = 34 }: { src: string; size?: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt="" width={size} height={size} className="shrink-0 object-contain" style={{ width: size, height: size }} />;
+}
+
+type FarmaanPhase = "closed" | "breaking" | "open";
+
+/**
+ * The opening of the farmaan: it arrives rolled shut, tied with a red silk
+ * ribbon under a wax seal; the seal cracks apart in a spray of gold, the
+ * ribbon slips away, the parchment unrolls and the decree is read out
+ * section by section. Returning to the page (back) shows it already open.
+ */
+function useFarmaanPhase(ready: boolean): FarmaanPhase {
+  const instant = useContext(InstantEntry);
+  const reduce = useReducedMotion();
+  const [phase, setPhase] = useState<FarmaanPhase>(instant || reduce ? "open" : "closed");
+  useEffect(() => {
+    if (!ready || phase === "open") return;
+    const a = window.setTimeout(() => setPhase("breaking"), 750);
+    const b = window.setTimeout(() => setPhase("open"), 1250);
+    return () => { window.clearTimeout(a); window.clearTimeout(b); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+  return phase;
+}
+
+const SPARKS = Array.from({ length: 14 }, (_, i) => {
+  const ang = (i / 14) * Math.PI * 2 + (i % 2 ? 0.2 : -0.1);
+  const dist = 46 + (i % 3) * 18;
+  return { x: Math.cos(ang) * dist, y: Math.sin(ang) * dist * 0.8, s: 3 + (i % 3) };
+});
+
+/** The ribbon and wax seal that tie the closed farmaan. */
+function FarmaanSeal({ phase }: { phase: FarmaanPhase }) {
+  const broken = phase !== "closed";
+  const half = (side: -1 | 1) => (
+    <motion.div
+      className="absolute inset-0 rounded-full"
+      style={{
+        clipPath: side < 0 ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)",
+        background: "radial-gradient(circle at 35% 30%, #D2453A 0%, #9E1F1A 55%, #5E0E0B 100%)",
+        boxShadow: "inset 0 -3px 6px rgba(0,0,0,.35), inset 0 3px 6px rgba(255,160,140,.35)",
+      }}
+      animate={broken ? { x: side * 34, y: 70, rotate: side * 38, opacity: 0 } : { x: 0, y: 0, rotate: 0, opacity: 1 }}
+      transition={{ duration: 0.7, ease: [0.4, 0, 0.6, 1] }}
+    >
+      <span className="absolute inset-0 grid place-items-center font-deva text-[26px] leading-none" style={{ color: "#F7C9B8", textShadow: "0 1px 0 rgba(0,0,0,.35)" }}>ॐ</span>
+    </motion.div>
+  );
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] flex translate-y-1/2 items-center justify-center">
+      {/* red silk ribbon across the rolled scroll — slips away to both sides */}
+      {[-1, 1].map((side) => (
+        <motion.span
+          key={side}
+          className="absolute top-1/2 h-[12px] w-[38%] -translate-y-1/2"
+          style={{
+            [side < 0 ? "right" : "left"]: "50%",
+            background: "linear-gradient(180deg, #E0483D 0%, #A61E1A 55%, #6E0F0C 100%)",
+            boxShadow: "0 2px 4px rgba(0,0,0,.3)",
+          } as React.CSSProperties}
+          animate={broken ? { x: side * 220, opacity: 0 } : { x: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease: [0.5, 0, 0.75, 0] }}
+        />
+      ))}
+      <motion.div
+        className="relative h-[64px] w-[64px]"
+        initial={{ scale: 0.4, opacity: 0 }}
+        animate={phase === "closed" ? { scale: [0.4, 1.12, 1], opacity: 1 } : { scale: 1.08, opacity: 1 }}
+        transition={{ duration: 0.5, delay: phase === "closed" ? 0.35 : 0 }}
+      >
+        {half(-1)}
+        {half(1)}
+        {/* gold sparks as it cracks */}
+        {SPARKS.map((sp, i) => (
+          <motion.span
+            key={i}
+            className="absolute left-1/2 top-1/2 rounded-full"
+            style={{ width: sp.s, height: sp.s, marginLeft: -sp.s / 2, marginTop: -sp.s / 2, background: "#FFD98A", boxShadow: "0 0 6px #FFC14D" }}
+            initial={{ opacity: 0 }}
+            animate={broken ? { x: sp.x, y: sp.y, opacity: [0, 1, 0], scale: [0.6, 1.2, 0.4] } : { opacity: 0 }}
+            transition={{ duration: 0.75, ease: "easeOut" }}
+          />
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
 export function PanchangScreen() {
   const { data: p } = useFullPanchang();
+  const phase = useFarmaanPhase(!!p);
   if (!p) return <div className="h-full pt-24 text-center text-muted">Computing panchang…</div>;
   const daySlots = p.choghadiya.filter((c) => !c.night);
   const nightSlots = p.choghadiya.filter((c) => c.night);
   const kaal = (code: string) => p.kaals.find((k) => k.code === code);
-  const AVOID: [string, string, string][] = [
-    ["rahu_kaal", "Rahu Kaal", "Start nothing new"],
-    ["yamaganda", "Yamaganda", "Best kept quiet"],
-    ["gulika", "Gulika Kaal", "Avoid travel and signing"],
-  ];
   const paksha = p.tithi.paksha === "shukla" ? "Shukla" : "Krishna";
-  const limbs: { sa: string; label: string; value: string; until: string | null }[] = [
-    { sa: "तिथि", label: "Tithi", value: `${paksha} ${p.tithi.name}`, until: p.tithi.endsAt },
-    { sa: "वार", label: "Vaar", value: p.vaara.name_sa, until: null },
-    { sa: "नक्षत्र", label: "Nakshatra", value: p.nakshatra.name, until: p.nakshatra.endsAt },
-    { sa: "योग", label: "Yoga", value: p.yoga.name, until: p.yoga.endsAt },
-    { sa: "करण", label: "Karana", value: p.karana.name, until: p.karana.endsAt },
-    { sa: "मास", label: "Masa", value: `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`, until: null },
+  const limbs: { sa: string; label: string; value: string; until: string | null; art: string }[] = [
+    { sa: "तिथि", label: "Tithi", value: `${paksha} ${p.tithi.name}`, until: p.tithi.endsAt, art: "/home/ticker/tithi.png" },
+    { sa: "वार", label: "Vaar", value: p.vaara.name_sa, until: null, art: "/panchang/vaar.webp" },
+    { sa: "नक्षत्र", label: "Nakshatra", value: p.nakshatra.name, until: p.nakshatra.endsAt, art: "/home/ticker/nakshatra.png" },
+    { sa: "योग", label: "Yoga", value: p.yoga.name, until: p.yoga.endsAt, art: "/panchang/yoga.webp" },
+    { sa: "करण", label: "Karana", value: p.karana.name, until: p.karana.endsAt, art: "/panchang/karana.webp" },
+    { sa: "मास", label: "Masa", value: `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`, until: null, art: "/panchang/masa.webp" },
   ];
-  const sunmoon: { sa: string; en: string; value: string; kind: "rise" | "set" | "moon" }[] = [
-    { sa: "सूर्योदय", en: "Sunrise", value: p.sun.rise, kind: "rise" },
-    { sa: "सूर्यास्त", en: "Sunset", value: p.sun.set, kind: "set" },
-    { sa: "चन्द्रोदय", en: "Moonrise", value: p.moon.rise, kind: "moon" },
-    { sa: "चन्द्रास्त", en: "Moonset", value: p.moon.set, kind: "moon" },
+  const sunmoon = [
+    { sa: "सूर्योदय", en: "Sunrise", value: p.sun.rise, art: "/home/ticker/sunrise.png" },
+    { sa: "सूर्यास्त", en: "Sunset", value: p.sun.set, art: "/home/ticker/sunset.png" },
+    { sa: "चन्द्रोदय", en: "Moonrise", value: p.moon.rise, art: "/panchang/moonrise.webp" },
+    { sa: "चन्द्रास्त", en: "Moonset", value: p.moon.set, art: "/panchang/moonset.webp" },
+  ];
+  const AVOID = [
+    { code: "rahu_kaal", sa: "राहुकाल", en: "Rahu Kaal", why: "Start nothing new", art: "/home/ticker/rahu-kaal.png" },
+    { code: "yamaganda", sa: "यमगण्ड", en: "Yamaganda", why: "Best kept quiet", art: "/panchang/yamaganda.webp" },
+    { code: "gulika", sa: "गुलिक", en: "Gulika Kaal", why: "Avoid travel and signing", art: "/panchang/gulika.webp" },
   ];
   const ganesha = deityById("ganesha");
-  // A panchang names each choghadiya and marks it shubh (green) or ashubh (red);
-  // it does not spell out "Loss · postpone anything". Name, marker, timing.
   const chogRows = (slots: ChoghadiyaSlot[]) =>
     slots.map((c, i) => (
-      <div key={i} className="flex items-baseline justify-between gap-3 px-4 py-2 first:border-t-0"
-        style={{ borderTop: `1px solid ${P_LINE}`, background: c.active ? "rgba(185,138,46,.2)" : undefined }}>
-        <div className="flex items-baseline gap-1.5">
-          <span className="font-deva text-[14.5px] leading-none" style={{ color: c.good ? "#2E7A34" : "#B23A2E" }}>{CHOG_SA[c.name] ?? c.name}</span>
-          <span className="text-[9px]" style={{ color: P_MUT }}>{c.good ? "शुभ" : "अशुभ"}</span>
+      <div key={i} className="flex items-center gap-3 px-1 py-1.5"
+        style={{ borderTop: i ? `1px dashed ${F_RULE}` : undefined, background: c.active ? "rgba(168,120,31,.16)" : undefined }}>
+        <Art src={`/panchang/${CHOG_ART[c.name] ?? "chog-shubh"}.webp`} size={30} />
+        <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="font-deva text-[15px] leading-none" style={{ color: c.good ? "#2E6B2F" : "#9E2F22" }}>{CHOG_SA[c.name] ?? c.name}</span>
+          <span className="text-[9.5px]" style={{ color: F_MUT }}>{c.name}</span>
           {c.active && <span className="rounded-[3px] px-1.5 py-px text-[8.5px] btn-saffron">अभी</span>}
         </div>
-        <span className="shrink-0 text-[10.5px] tnum" style={{ color: P_INK }}>{c.from} – {c.to}</span>
+        <span className="shrink-0 text-[11px] tnum" style={{ color: F_INK }}>{c.from} – {c.to}</span>
       </div>
     ));
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar screen-bottom" style={{ background: "var(--surface)" }}>
+    <div className="h-full overflow-y-auto no-scrollbar screen-bottom"
+      style={{ background: "radial-gradient(120% 70% at 50% 0%, #5A1626 0%, #2B0910 70%)" }}>
       <Header
         title="Panchang"
         sub="Tithi, choghadiya & muhurat"
         art="/home/tools/panchang.png"
-        gradient="linear-gradient(135deg, #0F4F49 0%, #08302C 100%)"
-        shadow="rgba(8,48,44,0.30)"
+        gradient="linear-gradient(135deg, #7E1D2E 0%, #430D19 100%)"
+        shadow="rgba(0,0,0,0.35)"
       />
-      {/* A printed-panchang page — cream paper in a gold frame, Devanagari
-          headings, ◆ dividers. Left-aligned, not floated in the middle. */}
-      <div className="gutter pt-3 lg:mx-auto lg:max-w-3xl">
-        <div className="relative overflow-hidden rounded-2xl"
-          style={{ background: P_CREAM, border: `1.5px solid ${P_GOLD}`, boxShadow: "inset 0 0 0 3px rgba(185,138,46,.16)" }}>
 
-          {/* an inner rule, corner stars and a faint Om watermark — the frame a
-              printed panchang carries. */}
-          <div className="pointer-events-none absolute inset-[7px] rounded-[13px]" style={{ border: "1px solid rgba(185,138,46,.5)" }} />
-          {(["left-[10px] top-[9px]", "right-[10px] top-[9px]", "left-[10px] bottom-[9px]", "right-[10px] bottom-[9px]"] as const).map((pos) => (
-            <span key={pos} className={`pointer-events-none absolute ${pos} text-[11px] leading-none`} style={{ color: P_GOLD }}>✦</span>
-          ))}
-          <div className="pointer-events-none absolute inset-x-0 top-7 flex justify-center" style={{ opacity: 0.05 }}>
-            <span className="font-deva leading-none" style={{ color: P_GOLD, fontSize: 150 }}>ॐ</span>
+      <motion.div
+        className="pb-6 pt-4 lg:mx-auto lg:max-w-xl"
+        initial={phase === "open" ? false : { y: -60, opacity: 0, scale: 0.92 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {/* the illuminated head of the farmaan; the invocation sits in its arch */}
+        <div className="relative z-[3]">
+          {phase !== "open" && <FarmaanSeal phase={phase} />}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/panchang/farmaan-top.webp" alt="" className="relative z-[1] block w-full" />
+          <div className="absolute inset-x-[24%] bottom-[4%] top-[42%] z-[2] flex flex-col items-center justify-end text-center">
+            {ganesha && <DeityGlyph deity={ganesha} size={38} />}
+            <div className="mt-1.5 font-deva text-[10.5px]" style={{ color: F_MUT }}>॥ श्री गणेशाय नमः ॥</div>
           </div>
+        </div>
 
-          {/* masthead — a Ganesha invocation, then the title and the day */}
-          <div className="relative px-5 pb-3 pt-5 text-center">
-            {ganesha && <div className="flex justify-center"><DeityGlyph deity={ganesha} size={46} /></div>}
-            <div className="mt-2 font-deva text-[11px]" style={{ color: P_MUT }}>॥ श्री गणेशाय नमः ॥</div>
-            <div className="mt-1.5 flex items-center justify-center gap-3">
-              <span className="font-deva text-[15px] leading-none" style={{ color: P_GOLD }}>ॐ</span>
-              <span className="font-deva text-[23px] leading-none tracking-wide" style={{ color: P_GOLD }}>पंचांग</span>
-              <span className="font-deva text-[15px] leading-none" style={{ color: P_GOLD }}>ॐ</span>
+        {/* the parchment unrolls between the rollers */}
+        <motion.div
+          className="relative -mt-px overflow-hidden"
+          initial={phase === "open" ? false : { height: 0 }}
+          animate={{ height: phase === "open" ? "auto" : 0 }}
+          transition={{ duration: 1.4, ease: [0.65, 0, 0.35, 1] }}
+          style={{ backgroundImage: "url(/panchang/farmaan-paper.webp)", backgroundRepeat: "repeat-y", backgroundSize: "100% auto" }}
+        >
+          <div className={phase === "open" ? "farmaan-read" : "opacity-0"} style={{ paddingLeft: "19%", paddingRight: "19%" }}>
+            <div className="text-center">
+              <div className="font-deva text-[27px] leading-none" style={{ color: F_INK }}>पञ्चाङ्ग</div>
+              <div className="mt-1 text-[8px] uppercase tracking-[0.3em]" style={{ color: F_GOLD }}>Farmaan of the Day</div>
+              <div className="mt-2.5 font-display text-[16px] leading-tight" style={{ color: F_INK }}>{p.home.dateLabel}</div>
+              <div className="text-[12px]" style={{ color: F_INK }}>{p.vaara.name_en}</div>
+              <div className="mt-1 text-[9.5px] leading-snug" style={{ color: F_MUT }}>{p.masa.amanta} {paksha} पक्ष · विक्रम संवत् {p.samvat.vikram} · शक {p.samvat.shaka}</div>
+              {p.home.vrat && <div className="mt-2 flex justify-center"><Pill tone="gold">{p.home.vrat}</Pill></div>}
             </div>
-            <div className="mt-1.5 font-display text-[18px] leading-tight lg:text-[21px]" style={{ color: P_INK }}>{p.home.dateLabel} · {p.vaara.name_en}</div>
-            <div className="mt-1 text-[10.5px]" style={{ color: P_MUT }}>{p.masa.amanta} {paksha} पक्ष · विक्रम संवत् {p.samvat.vikram} · शक {p.samvat.shaka}</div>
-            {p.home.vrat && <div className="mt-2 flex justify-center"><Pill tone="gold">{p.home.vrat}</Pill></div>}
-          </div>
 
-          <GoldRule />
-          <PSection sa="पञ्चाङ्ग" en="The Five Limbs" />
-          <div className="mx-4 grid grid-cols-1 gap-px overflow-hidden rounded-md sm:grid-cols-2 lg:grid-cols-3" style={{ background: P_LINE }}>
-            {limbs.map((l) => (
-              <div key={l.label} className="px-4 py-2.5" style={{ background: P_CREAM }}>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-deva text-[14px] leading-none" style={{ color: P_INK }}>{l.sa}</span>
-                  <span className="text-[8.5px] uppercase tracking-wide" style={{ color: P_MUT }}>{l.label}</span>
-                </div>
-                <div className="mt-1 text-[13px] font-medium leading-tight" style={{ color: P_INK }}>{l.value}</div>
-                {l.until && <div className="mt-0.5 text-[9.5px] tnum" style={{ color: P_GOLD }}>till {l.until}</div>}
-              </div>
-            ))}
-          </div>
-
-          <GoldRule />
-          <PSection sa="सूर्य व चन्द्र" en="Sun & Moon" />
-          <div className="mx-4 grid grid-cols-2 gap-px overflow-hidden rounded-md lg:grid-cols-4" style={{ background: P_LINE }}>
-            {sunmoon.map((s) => (
-              <div key={s.en} className="flex items-center gap-2 px-4 py-2.5" style={{ background: P_CREAM, color: P_GOLD }}>
-                {s.kind === "rise" ? <IconSunrise size={16} strokeWidth={1.7} className="shrink-0" />
-                  : s.kind === "set" ? <IconSunset size={16} strokeWidth={1.7} className="shrink-0" />
-                  : <Moon size={16} weight="light" className="shrink-0" />}
-                <div className="min-w-0">
-                  <div className="font-deva text-[11px] leading-none" style={{ color: P_MUT }}>{s.sa}</div>
-                  <div className="mt-1 text-[12.5px] leading-none tnum" style={{ color: P_INK }}>{s.value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <GoldRule />
-          <PSection sa="चौघड़िया" en="Choghadiya" />
-          <div className="mx-4 grid grid-cols-1 gap-px overflow-hidden rounded-md lg:grid-cols-2" style={{ background: P_LINE }}>
-            {([["दिन", "Day", daySlots], ["रात्रि", "Night", nightSlots]] as const).map(([sa, en, slots]) => (
-              <div key={en} style={{ background: P_CREAM }}>
-                <div className="px-4 pt-2.5 font-deva text-[12.5px]" style={{ color: P_GOLD }}>{sa} <span className="text-[9px]" style={{ color: P_MUT }}>{en}</span></div>
-                <div className="pt-1">{chogRows(slots)}</div>
-              </div>
-            ))}
-          </div>
-
-          <GoldRule />
-          <PSection sa="अशुभ काल" en="Hours to avoid" />
-          <div className="mx-4 mb-3 grid grid-cols-1 gap-px overflow-hidden rounded-md sm:grid-cols-3" style={{ background: P_LINE }}>
-            {AVOID.map(([code, label, why]) => {
-              const k = kaal(code);
-              const sa = code === "rahu_kaal" ? "राहुकाल" : code === "yamaganda" ? "यमगण्ड" : "गुलिक";
-              return (
-                <div key={code} className="px-4 py-2.5" style={{ background: P_CREAM }}>
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="font-deva text-[13px]" style={{ color: P_INK }}>{sa}</span>
-                    <span className="shrink-0 text-right text-[10px] tnum" style={{ color: "var(--avoid)" }}>{k ? `${k.from}–${k.to}` : "—"}</span>
+          <FHeading sa="पञ्चाङ्ग" en="The Five Limbs" />
+          <div className="flex flex-col">
+            {limbs.map((l, i) => (
+              <div key={l.label} className="flex items-center gap-3 px-1 py-2" style={{ borderTop: i ? `1px dashed ${F_RULE}` : undefined }}>
+                <Art src={l.art} size={38} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-deva text-[13px] leading-none" style={{ color: F_MUT }}>{l.sa}</span>
+                    <span className="text-[8.5px] uppercase tracking-wide" style={{ color: F_MUT }}>{l.label}</span>
                   </div>
-                  <div className="mt-0.5 text-[9.5px]" style={{ color: P_MUT }}>{label} · {why}</div>
+                  <div className="mt-1 text-[14px] font-medium leading-tight" style={{ color: F_INK }}>{l.value}</div>
+                </div>
+                {l.until && <div className="shrink-0 text-right text-[10px] tnum" style={{ color: F_GOLD }}>till<br />{l.until}</div>}
+              </div>
+            ))}
+          </div>
+
+          <FHeading sa="सूर्य व चन्द्र" en="Sun & Moon" />
+          <div className="grid grid-cols-2 gap-y-3 px-1 pb-1">
+            {sunmoon.map((s) => (
+              <div key={s.en} className="flex items-center gap-2.5">
+                <Art src={s.art} size={36} />
+                <div className="min-w-0">
+                  <div className="font-deva text-[11.5px] leading-none" style={{ color: F_MUT }}>{s.sa}</div>
+                  <div className="mt-1 text-[13px] leading-none tnum" style={{ color: F_INK }}>{s.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <FHeading sa="चौघड़िया" en="Choghadiya" />
+          {([["दिन", "Day", daySlots], ["रात्रि", "Night", nightSlots]] as const).map(([sa, en, slots]) => (
+            <div key={en} className="pb-1">
+              <div className="px-1 pb-1 pt-1.5 font-deva text-[13px]" style={{ color: F_GOLD }}>{sa} <span className="text-[9px]" style={{ color: F_MUT }}>{en}</span></div>
+              {chogRows(slots)}
+            </div>
+          ))}
+
+          <FHeading sa="अशुभ काल" en="Hours to Avoid" />
+          <div className="flex flex-col pb-2">
+            {AVOID.map((a, i) => {
+              const k = kaal(a.code);
+              return (
+                <div key={a.code} className="flex items-center gap-3 px-1 py-2" style={{ borderTop: i ? `1px dashed ${F_RULE}` : undefined }}>
+                  <Art src={a.art} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-deva text-[14px] leading-none" style={{ color: F_INK }}>{a.sa}</span>
+                      <span className="text-[9px]" style={{ color: F_MUT }}>{a.en}</span>
+                    </div>
+                    <div className="mt-1 text-[11.5px] font-medium tnum" style={{ color: "#9E2F22" }}>{k ? `${k.from} – ${k.to}` : "—"}</div>
+                    <div className="mt-0.5 text-[9.5px] leading-snug" style={{ color: F_MUT }}>{a.why}</div>
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="h-3" />
-        </div>
-      </div>
+            <div className="h-3" />
+          </div>
+        </motion.div>
+
+        {/* the foot: tailpiece, roller and the lotus seal on its tassels */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/panchang/farmaan-bottom.webp" alt="" className="-mt-px block w-full" />
+      </motion.div>
     </div>
   );
 }
@@ -606,9 +736,8 @@ export function LibraryScreen() {
   return (
     <div className="h-full overflow-y-auto no-scrollbar screen-bottom">
       <Header title={heading} />
-      <div className="flex items-center justify-end gutter-m"><LangToggle /></div>
       {/* shelves */}
-      <div className="flex gap-1.5 overflow-x-auto no-scrollbar gutter pb-1">
+      <div className="flex gap-1.5 overflow-x-auto no-scrollbar gutter pb-1 pt-4">
         {LIBRARY_SHELVES.map((s) => (
           <button
             key={s.id}

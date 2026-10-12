@@ -2,6 +2,7 @@
 
 import { CaretRight } from "@phosphor-icons/react";
 import { Iconify } from "./iconify";
+import { RevealText } from "./reveal-text";
 
 
 export type BandTool = { label: string; icon?: string; img?: string; onClick: () => void };
@@ -26,11 +27,11 @@ export function HomeBands({ bands }: { bands: Band[] }) {
         <section key={b.title} className="cat-band">
           <button className="cat-band-top" style={{ background: b.grad }} onClick={b.onOpen}>
             <span className="min-w-0">
-              <span className="cat-band-title font-display">{b.title}</span>
+              <RevealText as="span" text={b.title} className="cat-band-title font-display" />
               <span className="cat-band-sub">{b.subtitle}</span>
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={b.art} alt="" className="cat-band-art" />
+            <img src={b.art} alt="" className="cat-band-art" style={{ animationDelay: `${(b.title.length % 5) * 0.5}s` }} />
           </button>
           <div className="cat-band-tools">
             {/* shikhara toran divider — a repeated temple-spire motif in white */}

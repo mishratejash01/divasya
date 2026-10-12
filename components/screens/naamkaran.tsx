@@ -106,21 +106,21 @@ export function NaamkaranScreen() {
     <div className="flex h-full flex-col">
       {/* Header and nakshatra strip are one yellow block. The strip is how you
           move around this screen, so it belongs to the bar. */}
-      <div className="shrink-0" style={{ background: "var(--bar-yellow)" }}>
+      <div className="shrink-0" style={{ background: "linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)", borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
         <div
           className="flex items-center gap-2.5 gutter"
-          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)", paddingBottom: 10 }}
+          style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)", paddingBottom: 12 }}
         >
           <button onClick={back} aria-label="Back" className="shrink-0">
-            <CaretLeft size={20} weight="regular" className="text-ink" />
+            <CaretLeft size={20} weight="regular" className="text-[#FDEFD6]" />
           </button>
-          <div className={cx("min-w-0 flex-1 truncate font-display text-[17px] leading-tight text-ink", hi && "font-deva")}>
+          <div className={cx("min-w-0 flex-1 truncate font-display text-[17px] leading-tight text-[#FDEFD6]", hi && "font-deva")}>
             {t("Naamkaran", "नामकरण")}
           </div>
           {/* One script at a time. Roman and Devanagari side by side doubled
               every line and read as clutter; this picks which one you read. */}
           <div className="flex shrink-0 items-center overflow-hidden rounded-[5px]"
-            style={{ border: "1px solid rgba(0,0,0,0.28)" }}>
+            style={{ border: "1px solid rgba(253,239,214,0.45)" }}>
             {([["en", "A"], ["hi", "अ"]] as const).map(([s, l]) => (
               <button
                 key={s}
@@ -128,8 +128,8 @@ export function NaamkaranScreen() {
                 aria-label={s === "en" ? "Roman" : "Devanagari"}
                 className={cx("px-2 py-0.5 text-[13px] leading-[1.35]", s === "hi" && "font-deva")}
                 style={script === s
-                  ? { background: "var(--ink)", color: "var(--bar-yellow)" }
-                  : { color: "var(--ink)" }}
+                  ? { background: "#FDEFD6", color: "#0A1F3B" }
+                  : { color: "#FDEFD6" }}
               >
                 {l}
               </button>
@@ -146,11 +146,11 @@ export function NaamkaranScreen() {
                 ref={on ? tab : undefined}
                 onClick={() => pick(n.name)}
                 className={cx(
-                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12px] text-ink",
+                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12px] text-[#FDEFD6]",
                   hi && "font-deva",
                   on ? "font-medium" : "opacity-60",
                 )}
-                style={{ borderBottom: on ? "2px solid var(--ink)" : "2px solid transparent" }}
+                style={{ borderBottom: on ? "2px solid #FDEFD6" : "2px solid transparent" }}
               >
                 {hi ? n.deva : n.name}
               </button>

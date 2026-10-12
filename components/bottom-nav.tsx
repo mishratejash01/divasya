@@ -1,7 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Iconify } from "./iconify";
-import { useApp, ScreenName } from "./app-context";
+import { useApp, ScreenName, navIntent } from "./app-context";
 import { cx } from "./ui";
 
 // On the white bar the mark is an outline by default and fills in when its tab
@@ -19,7 +20,7 @@ export function BottomNav() {
     // Pinned to the viewport, not the scroll container — the bar stays put the
     // way a native tab bar does, and never rides up with content.
     <div
-      className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around px-2 pt-2 lg:hidden"
+      className="bottom-nav-bar fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around px-2 pt-2 lg:hidden"
       style={{
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
         background: "rgba(255,255,255,0.90)",
@@ -33,16 +34,24 @@ export function BottomNav() {
         return (
           <button
             key={t.id}
-            onClick={() => { haptic(8); go(t.id); }}
-            className="flex flex-1 flex-col items-center gap-1 py-1"
+            onClick={() => { haptic(8); if (!active) navIntent.viaTab = true; go(t.id); }}
+            className="relative flex flex-1 flex-col items-center gap-1 py-1"
           >
-            <Iconify
-              icon={active ? t.fill : t.line}
-              width={22}
-              height={22}
-              className={cx("transition-colors", active ? "text-[var(--bhagwa)]" : "text-muted")}
-            />
-            <span className={cx("text-[9.5px] transition-colors", active ? "text-ink" : "text-muted")}>
+            <motion.span
+              key={active ? "on" : "off"}
+              className="relative mt-[4px]"
+              initial={active ? { scale: 0.5, rotate: -18, y: 6 } : false}
+              animate={{ scale: 1, rotate: 0, y: 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 14 }}
+            >
+              <Iconify
+                icon={active ? t.fill : t.line}
+                width={22}
+                height={22}
+                className={cx("transition-colors", active ? "text-[var(--bhagwa)]" : "text-muted")}
+              />
+            </motion.span>
+            <span className={cx("relative text-[9.5px] transition-colors", active ? "font-semibold text-ink" : "text-muted")}>
               {t.label}
             </span>
           </button>

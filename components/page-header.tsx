@@ -2,6 +2,7 @@
 
 import { CaretLeft } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
+import { RevealText } from "./reveal-text";
 
 /**
  * Shared deep-jewel page header for the revamped screens — a coloured band with
@@ -44,7 +45,7 @@ export function PageHeader({
           </button>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-[21px] leading-tight text-[#FDEFD6]">{title}</h1>
+          <RevealText as="h1" text={title} delay={0.55} className="font-display text-[21px] leading-tight text-[#FDEFD6]" />
           {subtitle && <p className="mt-0.5 text-[12px] text-[#F3D6B0]">{subtitle}</p>}
         </div>
         {right && <div className="shrink-0 text-[#FBE8C6]">{right}</div>}

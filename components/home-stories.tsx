@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { RevealText, InstantEntry } from "./reveal-text";
 
 export type Story = {
   id: string;
@@ -26,7 +27,9 @@ export type Story = {
  */
 export function HomeStories({ stories }: { stories: Story[] }) {
   const [open, setOpen] = useState<number | null>(null);
+  const [origin, setOrigin] = useState({ x: 200, y: 200 });
   const [mounted, setMounted] = useState(false);
+  const instant = useContext(InstantEntry);
   useEffect(() => setMounted(true), []);
   if (stories.length === 0) return null;
 
@@ -44,13 +47,21 @@ export function HomeStories({ stories }: { stories: Story[] }) {
 
       <div className="stories-strip no-scrollbar">
         {stories.map((s, i) => (
-          <button key={s.id} className="story-bubble" onClick={() => setOpen(i)}>
+          <motion.button
+            key={s.id}
+            className="story-bubble"
+            onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setOrigin({ x: r.left + r.width / 2, y: r.top + r.width / 2 }); setOpen(i); }}
+            initial={instant ? false : { opacity: 0, scale: 0.4, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.7 + i * 0.09 }}
+            whileTap={{ scale: 0.9 }}
+          >
             <span className="story-bubble-ring" style={{ background: s.ring }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={s.bubble} alt="" className="story-bubble-img" />
             </span>
             <span className="story-bubble-label">{s.label}</span>
-          </button>
+          </motion.button>
         ))}
       </div>
 
@@ -62,6 +73,7 @@ export function HomeStories({ stories }: { stories: Story[] }) {
                 stories={stories}
                 index={open}
                 setIndex={setOpen}
+                origin={origin}
                 onClose={() => setOpen(null)}
               />
             )}
@@ -73,8 +85,9 @@ export function HomeStories({ stories }: { stories: Story[] }) {
 }
 
 function StoryViewer({
-  stories, index, setIndex, onClose,
+  stories, index, setIndex, onClose, origin,
 }: {
+  origin: { x: number; y: number };
   stories: Story[];
   index: number;
   setIndex: (n: number | null) => void;
@@ -109,10 +122,10 @@ function StoryViewer({
   return (
     <motion.div
       className="story-viewer"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      initial={{ clipPath: `circle(34px at ${origin.x}px ${origin.y}px)` }}
+      animate={{ clipPath: `circle(150% at ${origin.x}px ${origin.y}px)` }}
+      exit={{ clipPath: `circle(0px at ${origin.x}px ${origin.y}px)` }}
+      transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
       style={{ background: s.ground }}
     >
       {/* progress bars */}
@@ -136,23 +149,49 @@ function StoryViewer({
       <motion.div
         key={s.id}
         className="story-card"
-        initial={{ scale: 0.96, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ x: 60, opacity: 0, rotateY: -14 }}
+        animate={{ x: 0, opacity: 1, rotateY: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        style={{ transformPerspective: 1100 }}
       >
         <div className="story-image-wrap" style={{ background: s.ground }}>
+          {/* slow Ken Burns push on the art */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={s.image} alt="" className={s.fit === "contain" ? "story-image contain" : "story-image"} />
-          <span className="story-kicker">{s.kicker}</span>
+          <motion.img
+            src={s.image}
+            alt=""
+            className={s.fit === "contain" ? "story-image contain" : "story-image"}
+            initial={{ scale: 1.25, y: 40, opacity: 0 }}
+            animate={{ scale: 1.02, y: 0, opacity: 1 }}
+            transition={{ scale: { duration: 6, ease: "linear" }, y: { duration: 0.9, ease: [0.16, 1, 0.3, 1] }, opacity: { duration: 0.4 } }}
+          />
+          <motion.span
+            className="story-kicker"
+            initial={{ y: 20, opacity: 0, x: "-50%" }}
+            animate={{ y: 0, opacity: 1, x: "-50%" }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+          >
+            {s.kicker}
+          </motion.span>
         </div>
-        <h2 className="story-title font-display">{s.title}</h2>
-        <p className="story-subtitle">{s.subtitle}</p>
-        <button
+        <RevealText as="h2" text={s.title} delay={0.3} className="story-title font-display" />
+        <motion.p
+          className="story-subtitle"
+          initial={{ y: 14, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {s.subtitle}
+        </motion.p>
+        <motion.button
           className="story-cta"
           onClick={() => { s.onCta?.(); onClose(); }}
+          initial={{ y: 30, opacity: 0, scale: 0.9 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 220, damping: 18, delay: 0.62 }}
         >
           {s.cta}
-        </button>
+        </motion.button>
       </motion.div>
     </motion.div>
   );

@@ -8,6 +8,10 @@ import { useApp, type ScreenName } from "../app-context";
 import { NAV, NAV_ORDER, IOS_HIDDEN } from "../nav-map";
 import { DeityPortrait, DevotionalIllustration, cx, type DevotionalIllustrationName } from "../ui";
 import { Iconify } from "../iconify";
+import { HomeHorizon } from "../home-horizon";
+import { HomeMood } from "../home-mood";
+import { StateCard } from "./hidden-sacred";
+import { SACRED_STATES } from "@/lib/hidden-sacred";
 import { usePanchang } from "@/lib/use-panchang";
 import {
   useCatalog, getUpcomingFestivals, getLibrary, getShlokaOfDay, getDailyHoroscope,
@@ -530,7 +534,7 @@ export function HomeScreen() {
             <span
               role="img"
               aria-label="Divasya"
-              className="block"
+              className="wordmark-shimmer block"
               style={{
                 height: 32,
                 aspectRatio: "985 / 355",
@@ -582,7 +586,39 @@ export function HomeScreen() {
       {/* Updates — the day's stories as round bubbles that open full-screen. */}
       <div className="reveal lg:col-span-2">
         <HomeStories stories={stories} />
+        {/* the day, as an endless ticker */}
+        <div className="ticker mt-3" aria-hidden>
+          <div className="ticker-track">
+            {[0, 1].map((rep) => (
+              <span key={rep} className="inline-flex">
+                {[
+                  ["tithi", "Tithi", pg?.tithiDisplay],
+                  ["nakshatra", "Nakshatra", pg?.nakshatra],
+                  ["choghadiya", "Choghadiya", chog ? `${chog.name} till ${chog.to}` : null],
+                  ["sunrise", "Sunrise", pg?.sunrise],
+                  ["sunset", "Sunset", pg?.sunset],
+                  ["rahu-kaal", "Rahu Kaal", pg?.rahuKaal],
+                  ["vrat", "Vrat", pg?.vrat],
+                ]
+                  .filter(([, , v]) => v)
+                  .map(([slug, k, v]) => (
+                    <span key={`${rep}-${slug}`} className="ticker-item">
+                      {/* small artifact per item — hides itself until the art exists */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/home/ticker/${slug}.png`} alt="" className="ticker-art" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                      <span className="ticker-label">{k}</span>
+                      <span className="ticker-value">{v}</span>
+                      <span className="ticker-dot" />
+                    </span>
+                  ))}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* How is your mind today? — the day shaped around the person's mood */}
+      <HomeMood />
 
       {/* Promo carousel — deep-jewel banners for the key journeys. */}
       <div className="reveal pt-2 lg:col-span-2">
@@ -885,6 +921,25 @@ export function HomeScreen() {
           column, so this copy is hidden there. */}
       <div className="reveal gutter pt-6 lg:hidden">{horoCard}</div>
 
+      {/* The Hidden Sacred — lesser-known temples, state by state */}
+      <div className="reveal pt-7 lg:col-span-2">
+        <section>
+          <div className="mb-2.5 flex items-end justify-between gutter">
+            <div className="min-w-0">
+              <h3 className="section-title">{lang === "hi" ? "छिपे हुए तीर्थ" : "The Hidden Sacred"}</h3>
+            </div>
+            <button onClick={() => go("sacred")} className="flex shrink-0 items-center gap-1 text-[11px] text-ink">
+              {lang === "hi" ? "सभी देखें" : "See all"} <CaretRight size={12} className="shrink-0" />
+            </button>
+          </div>
+          <div className="flex gap-2.5 overflow-x-auto px-[var(--gutter)] pb-1 no-scrollbar">
+            {SACRED_STATES.map((st, i) => (
+              <StateCard key={st.id} s={st} i={i} wide onOpen={() => go("sacred", { state: st.id })} />
+            ))}
+          </div>
+        </section>
+      </div>
+
       {/* library — in the same panel form as every other section */}
       {library.length > 0 && (
         <div data-section="library" className="reveal gutter pt-7 lg:col-span-2">
@@ -935,29 +990,10 @@ export function HomeScreen() {
         </div>
       )}
 
-      {/* Trust row — artifact-led reassurance, warm not corporate. */}
-      <div className="reveal gutter pt-8 lg:col-span-2">
-        <div className="grid grid-cols-4 gap-2 pt-2">
-          {[
-            { img: "/home/trust/loved.png", t: "Loved by", s: "lakhs of devotees" },
-            { img: "/home/trust/authentic.png", t: "Authentic", s: "temple-verified" },
-            { img: "/home/trust/tradition.png", t: "Rooted in", s: "shastra & tradition" },
-            { img: "/home/trust/delivery.png", t: "Fast delivery", s: "to your door" },
-          ].map((x) => (
-            <div key={x.t} className="flex flex-col items-center gap-1.5 text-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={x.img} alt="" className="h-12 w-12 object-contain" />
-              <div className="text-[10px] leading-tight text-ink">
-                <span className="font-medium">{x.t}</span>
-                <br />
-                <span className="text-muted">{x.s}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* the closing landscape — from darkness, lead me to light */}
+      <div className="pt-6 lg:col-span-2">
+        <HomeHorizon />
       </div>
-
-      <div className="pb-4 lg:col-span-2" />
 
       </div>{/* /main feed */}
 

@@ -37,11 +37,29 @@ function readLocalProfile(uid: string): Profile | null {
   } catch { return null; }
 }
 
+/**
+ * How the next screen change was asked for, read once by the shell:
+ * - viaTab: the bottom tab bar — plays the constellation loader
+ * - back:   any back (arrow, hardware, browser) — returns instantly, no slide
+ */
+export const navIntent = { viaTab: false, back: false };
+
+/**
+ * Add one browser-history entry for an in-app screen. It carries the current
+ * entry's Next.js router state: Next reloads the whole page when the back
+ * button lands on an entry without its marker, which is exactly what the
+ * phone's back button kept doing (every back = a full reload + splash).
+ */
+function pushAppEntry() {
+  const cur = (window.history.state ?? {}) as Record<string, unknown>;
+  window.history.pushState({ ...cur, divasya: true }, "");
+}
+
 export type ScreenName =
   | "home" | "mala" | "mandir" | "ai" | "consult" | "consultChat"
   | "panchang" | "festivals" | "library" | "vastu" | "naamkaran"
   | "puja" | "temple" | "sandesh" | "kundli" | "menu" | "category"
-  | "shop" | "product" | "cart" | "checkout"
+  | "shop" | "product" | "cart" | "checkout" | "sacred"
   | "account" | "profile" | "orders" | "wallet"
   | "journeys" | "reminders" | "journal" | "gita" | "paths"
   // Reached only when a guest taps "Sign in" on a walled screen. Popping back
@@ -91,6 +109,16 @@ type Ctx = {
 };
 
 const AppCtx = createContext<Ctx | null>(null);
+
+/**
+ * Renders children as if the app were on `screen`. Lets the transition keep the
+ * outgoing screen on display until the curtain has covered it.
+ */
+export function ScreenOverride({ screen, children }: { screen: Ctx["screen"]; children: ReactNode }) {
+  const ctx = useContext(AppCtx);
+  if (!ctx) return <>{children}</>;
+  return <AppCtx.Provider value={{ ...ctx, screen }}>{children}</AppCtx.Provider>;
+}
 export const useApp = () => {
   const c = useContext(AppCtx);
   if (!c) throw new Error("useApp outside provider");
@@ -185,7 +213,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const backs = saved.history?.length
             ? saved.history.length
             : saved.screen.name !== "home" ? 1 : 0;
-          for (let i = 0; i < backs; i++) window.history.pushState({ divasya: true }, "");
+          for (let i = 0; i < backs; i++) pushAppEntry();
           pushedRef.current = backs;
         }
       }
@@ -314,7 +342,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION") return;            // handled by getSession above
-      if (event === "SIGNED_IN") { setLoading(true); enter(session?.user ?? null); }
+      if (event === "SIGNED_IN") {
+        // Phones re-confirm the session when the app regains focus and it
+        // arrives as SIGNED_IN for the same user — that must not flash the
+        // splash and restart the app.
+        if (userRef.current?.id === session?.user?.id && profileLoadedRef.current) return;
+        setLoading(true); enter(session?.user ?? null);
+      }
       else if (event === "SIGNED_OUT") { enter(null); }
       // TOKEN_REFRESHED / USER_UPDATED: ignore — don't re-check or reload.
     });
@@ -383,7 +417,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setHistory((h) => [...h, screen]);
     setScreen({ name, params });
     if (typeof window !== "undefined") {
-      window.history.pushState({ divasya: true }, "");
+      pushAppEntry();
       pushedRef.current += 1;
     }
     logEvent("navigate", { to: name });
@@ -391,6 +425,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   /** The app-level pop — shared by popstate and the no-history fallback. */
   const popApp = useCallback(() => {
+    navIntent.back = true;
     setHistory((h) => {
       if (h.length === 0) { setScreen({ name: "home" }); return h; }
       setScreen(h[h.length - 1]);

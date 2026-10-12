@@ -100,6 +100,13 @@
    so desktop reclaims that space instead of scrolling past 90px of nothing. */
 .screen-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); }
 @media (min-width: 1024px) { .screen-bottom { padding-bottom: 28px; } }
+/* home ends on its landscape, which runs under the tab bar itself */
+.home-screen.screen-bottom { padding-bottom: 0; }
+
+/* A chat composer on the bottom edge (no tab bar on chat screens): only the
+   device's home-indicator inset below it, so the keyboard meets it flush. */
+.chat-composer { padding-bottom: max(10px, env(safe-area-inset-bottom, 0px)); }
+body.is-typing .bottom-nav-bar { display: none; }
 
 /* For a composer or action row that must sit directly above the fixed tab bar
    rather than scroll under it. */
@@ -138,6 +145,15 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 html { height: 100%; }
+/* The page never scrolls — every screen scrolls inside its own container — so
+   a phone keyboard can't slide the app around. */
+html, body { overflow: hidden; overscroll-behavior: none; }
+/* The app's frame tracks the visible area (see useVisualViewportFrame). */
+.app-frame {
+  position: fixed; left: 0; right: 0; top: 0;
+  height: var(--app-h, 100dvh);
+  transform: translateY(var(--app-top, 0px));
+}
 
 body {
   /* Plain white. The warm dawn glow belongs only to the login screen, which
@@ -1106,6 +1122,160 @@ strong { font-weight: 500; }
   will-change: opacity, transform, filter;
 }
 .reveal.reveal-in { opacity: 1; transform: none; filter: blur(0); }
+/* a screen returned to by going back shows as it was — no entrances */
+.screen-instant .reveal { opacity: 1; transform: none; filter: none; transition: none; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; filter: none; transition: none; }
 }
+
+/* ============================================================
+   Motion system — tactile press, floating art, ring-spinning stories.
+   ============================================================ */
+button { transition: scale 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+button:active:not(:disabled) { scale: 0.955; }
+
+.cat-band-art { animation: bandFloat 5.5s ease-in-out infinite; }
+@keyframes bandFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(3deg); }
+}
+
+/* story rings slowly turn, like a lit halo */
+.story-bubble-ring { animation: ringTurn 9s linear infinite; }
+.story-bubble-img { animation: ringTurnBack 9s linear infinite; }
+@keyframes ringTurn { to { transform: rotate(360deg); } }
+@keyframes ringTurnBack { to { transform: rotate(-360deg); } }
+
+/* tool tiles spring up on hover/press */
+.cat-tool { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.cat-tool:active { transform: translateY(-3px) scale(1.06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-band-art, .story-bubble-ring, .story-bubble-img { animation: none; }
+}
+
+/* ============================================================
+   Choreography v2
+   ============================================================ */
+
+/* Sections of the incoming screen stagger up as the curtain lifts. `backwards`
+   holds them hidden during the delay, then hands control back to normal CSS
+   (so scroll-reveal blocks are left alone). */
+.screen-stage > * > :not(.reveal) {
+  animation: stageIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.screen-stage > * > :nth-child(2):not(.reveal) { animation-delay: 0.04s; }
+.screen-stage > * > :nth-child(3):not(.reveal) { animation-delay: 0.08s; }
+.screen-stage > * > :nth-child(4):not(.reveal) { animation-delay: 0.12s; }
+.screen-stage > * > :nth-child(5):not(.reveal) { animation-delay: 0.16s; }
+.screen-stage > * > :nth-child(6):not(.reveal) { animation-delay: 0.2s; }
+.screen-stage > * > :nth-child(n+7):not(.reveal) { animation-delay: 0.24s; }
+@keyframes stageIn {
+  from { transform: translateY(36px); }
+}
+
+/* Scroll-driven 3D: cards tip up out of the page as they scroll into view. */
+@supports (animation-timeline: view()) {
+  .cat-band, .tilt-in {
+    animation: tiltIn linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 28%;
+    transform-origin: 50% 100%;
+  }
+  .home-darshan-card {
+    animation: cardSwing linear both;
+    animation-timeline: view(inline);
+    animation-range: entry 0% cover 40%;
+  }
+}
+@keyframes tiltIn {
+  from { opacity: 0.15; transform: perspective(900px) rotateX(34deg) translateY(70px) scale(0.9); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes cardSwing {
+  from { opacity: 0.2; transform: perspective(700px) rotateY(-38deg) translateX(40px) scale(0.86); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Panchang ticker — an endless marquee band */
+.ticker {
+  position: relative; overflow: hidden; white-space: nowrap;
+  border-top: 1px solid rgba(122, 29, 46, 0.18); border-bottom: 1px solid rgba(122, 29, 46, 0.18);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+          mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.ticker-track { display: inline-flex; animation: tickerMove 32s linear infinite; }
+.ticker-item {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 0 8px 16px;
+  font-size: 12px; letter-spacing: 0.01em; color: #111111; font-weight: 400;
+}
+.ticker-art { width: 26px; height: 26px; object-fit: contain; margin-right: 2px; }
+.ticker-label { color: #111111; font-weight: 400; }
+.ticker-value { color: #111111; font-weight: 500; }
+.ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: #D9A441; margin-left: 10px; opacity: 0.8; }
+@keyframes tickerMove { to { transform: translateX(-50%); } }
+
+/* gold light sweeping across the wordmark */
+.wordmark-shimmer {
+  background: linear-gradient(105deg, #FDEFD6 38%, #FFD27A 47%, #FFF6DE 50%, #FFD27A 53%, #FDEFD6 62%) !important;
+  background-size: 280% 100% !important;
+  animation: wmSweep 4.2s ease-in-out infinite;
+}
+@keyframes wmSweep { 0% { background-position: 100% 0; } 55%, 100% { background-position: -40% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-stage > * > *, .cat-band, .tilt-in, .home-darshan-card, .ticker-track, .wordmark-shimmer { animation: none !important; }
+}
+
+/* Home horizon — the closing landscape. Continuous loops only; the entrance
+   is driven by framer-motion when the scene scrolls into view. */
+.hz-base-fade { -webkit-mask: linear-gradient(180deg, #000 58%, transparent 88%); mask: linear-gradient(180deg, #000 58%, transparent 88%); }
+/* only Kailash keeps snow: the snowy tops of the ranges and the ghat's own
+   far mountains fade away, the temple on the right stays whole */
+.hz-hills-mask { -webkit-mask: linear-gradient(180deg, transparent 48%, #000 66%); mask: linear-gradient(180deg, transparent 48%, #000 66%); }
+.hz-ghat-mask {
+  -webkit-mask: linear-gradient(180deg, transparent 44%, #000 60%), linear-gradient(90deg, transparent 74%, #000 82%);
+          mask: linear-gradient(180deg, transparent 44%, #000 60%), linear-gradient(90deg, transparent 74%, #000 82%);
+}
+.hz-fade { -webkit-mask: linear-gradient(180deg, transparent 0%, #000 22%); mask: linear-gradient(180deg, transparent 0%, #000 22%); }
+.hz-birds { animation: hzBirds 22s linear infinite; }
+@keyframes hzBirds {
+  from { transform: translate(-40px, 0); }
+  50% { transform: translate(200px, -14px); }
+  to { transform: translate(440px, 4px); }
+}
+.hz-drift { animation: hzDrift 12s ease-in-out infinite alternate; }
+@keyframes hzDrift { from { transform: translateX(-2.5%); } to { transform: translateX(2.5%); } }
+.hz-sun { animation: hzSun 5s ease-in-out infinite; }
+@keyframes hzSun { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.hz-diya { animation: hzDiya 1.4s ease-in-out infinite; }
+@keyframes hzDiya { 0%, 100% { opacity: 0.7; transform: scale(1); } 45% { opacity: 1; transform: scale(1.18); } 70% { opacity: 0.85; transform: scale(0.95); } }
+@media (prefers-reduced-motion: reduce) {
+  .hz-birds, .hz-drift, .hz-sun, .hz-diya { animation: none !important; }
+}
+
+
+/* Hidden Sacred — state map artifacts float gently */
+.sacred-float { animation: sacredFloat 5s ease-in-out infinite; }
+@keyframes sacredFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .sacred-float { animation: none; } }
+
+/* Panchang farmaan — once unrolled, the decree is read out section by section */
+.farmaan-read > * { animation: farmaanRead 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.farmaan-read > :nth-child(1) { animation-delay: 0.34s; }
+.farmaan-read > :nth-child(2) { animation-delay: 0.43s; }
+.farmaan-read > :nth-child(3) { animation-delay: 0.52s; }
+.farmaan-read > :nth-child(4) { animation-delay: 0.61s; }
+.farmaan-read > :nth-child(5) { animation-delay: 0.70s; }
+.farmaan-read > :nth-child(6) { animation-delay: 0.79s; }
+.farmaan-read > :nth-child(7) { animation-delay: 0.88s; }
+.farmaan-read > :nth-child(8) { animation-delay: 0.97s; }
+.farmaan-read > :nth-child(9) { animation-delay: 1.06s; }
+.farmaan-read > :nth-child(10) { animation-delay: 1.15s; }
+.farmaan-read > :nth-child(11) { animation-delay: 1.24s; }
+.farmaan-read > :nth-child(12) { animation-delay: 1.33s; }
+.farmaan-read > :nth-child(13) { animation-delay: 1.42s; }
+.farmaan-read > :nth-child(14) { animation-delay: 1.51s; }
+.farmaan-read > :nth-child(15) { animation-delay: 1.60s; }
+@keyframes farmaanRead { from { opacity: 0; transform: translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .farmaan-read > * { animation: none; } }

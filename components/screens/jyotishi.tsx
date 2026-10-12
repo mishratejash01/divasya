@@ -5,6 +5,7 @@ import { CircleDashed, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
 import { DeityGlyph, Typing, cx } from "../ui";
 import { PageHeader } from "../page-header";
+import { ChatLine, UserAvatar, useTyping } from "../chat-line";
 import { DEITIES, mantraById, Deity } from "@/lib/demo";
 import { useCatalog, getDeities } from "@/lib/catalog";
 import { streamChat, ChatMsg, logEvent } from "@/lib/chat";
@@ -12,24 +13,52 @@ import * as db from "@/lib/db";
 
 type Mode = "jyotishi" | "deity";
 
-function greeting(mode: Mode, deityId: string, name: string): string {
+type Lang = "en" | "hi";
+
+function greeting(mode: Mode, deityId: string, name: string, lang: Lang): string {
   if (mode === "deity") {
-    const lines: Record<string, string> = {
-      krishna: `Vatsa ${name}, main yahin hoon, tumhare har sukh-dukh ka saathi. Mann mein jo bhi hai, nishank hokar kaho.`,
-      shiva: `${name}, shaant ho jao. Main Mahadev, tumhare bhitar ki shaanti hoon. Kya jaanna chahte ho?`,
-      hanuman: `Jai Shri Ram! ${name}, main Hanuman, tumhare saath hoon. Bhay tyago. Bolo, kya chinta hai?`,
-      durga: `Mere bachche ${name}, Maa yahin hai. Koi bhi sankat ho, nidar hokar kaho.`,
-      ganesha: `Ganpati Bappa Morya! ${name}, har vighna door karunga. Kis kaam mein aashirwad chahiye?`,
-      lakshmi: `${name}, main Maa Lakshmi. Tumhare ghar mein sukh-samriddhi ka vaas ho. Kaho, kya chahte ho?`,
+    const lines: Record<string, Record<Lang, string>> = {
+      krishna: {
+        en: `${name}, I am right here, your companion in every joy and sorrow. Say whatever is in your heart, without hesitation.`,
+        hi: `वत्स ${name}, मैं यहीं हूँ, तुम्हारे हर सुख-दुख का साथी। मन में जो भी है, निःसंकोच कहो।`,
+      },
+      shiva: {
+        en: `${name}, be still. I am Mahadev, the peace within you. What would you like to know?`,
+        hi: `${name}, शांत हो जाओ। मैं महादेव, तुम्हारे भीतर की शांति हूँ। क्या जानना चाहते हो?`,
+      },
+      hanuman: {
+        en: `Jai Shri Ram! ${name}, I am Hanuman and I am with you. Let go of fear. Tell me, what troubles you?`,
+        hi: `जय श्री राम! ${name}, मैं हनुमान, तुम्हारे साथ हूँ। भय त्यागो। बोलो, क्या चिंता है?`,
+      },
+      durga: {
+        en: `My child ${name}, Maa is here. Whatever the trouble, speak without fear.`,
+        hi: `मेरे बच्चे ${name}, माँ यहीं है। कोई भी संकट हो, निडर होकर कहो।`,
+      },
+      ganesha: {
+        en: `Ganpati Bappa Morya! ${name}, I will clear every obstacle. For which work do you seek blessings?`,
+        hi: `गणपति बप्पा मोरया! ${name}, हर विघ्न दूर करूँगा। किस काम में आशीर्वाद चाहिए?`,
+      },
+      lakshmi: {
+        en: `${name}, I am Maa Lakshmi. May joy and abundance dwell in your home. Tell me, what do you wish for?`,
+        hi: `${name}, मैं माँ लक्ष्मी। तुम्हारे घर में सुख-समृद्धि का वास हो। कहो, क्या चाहते हो?`,
+      },
     };
-    return lines[deityId] || lines.krishna;
+    return (lines[deityId] || lines.krishna)[lang];
   }
-  return `Namaste ${name} ji. Maine aapki janm-kundli khol li hai. Poochhiye, aapke mann mein kya hai?`;
+  return lang === "hi"
+    ? `नमस्ते ${name} जी। मैंने आपकी जन्म-कुंडली खोल ली है। पूछिए, आपके मन में क्या है?`
+    : `Namaste ${name}. I have your birth chart open. Ask me, what is on your mind?`;
 }
 
-const SUGGEST: Record<Mode, string[]> = {
-  jyotishi: ["Meri shaadi kab hogi?", "Career kaisa rahega?", "Aaj mere liye shubh kya hai?", "Koi upay bataiye"],
-  deity: ["Aaj margdarshan dijiye", "Mann ashaant hai", "Kaunsa mantra japu?", "Aapka aashirwad chahiye"],
+const SUGGEST: Record<Mode, Record<Lang, string[]>> = {
+  jyotishi: {
+    en: ["When will I get married?", "How will my career go?", "What is auspicious for me today?", "Suggest a remedy"],
+    hi: ["मेरी शादी कब होगी?", "करियर कैसा रहेगा?", "आज मेरे लिए शुभ क्या है?", "कोई उपाय बताइए"],
+  },
+  deity: {
+    en: ["Guide me today", "My mind is restless", "Which mantra should I chant?", "I seek your blessing"],
+    hi: ["आज मार्गदर्शन दीजिए", "मन अशांत है", "कौन सा मंत्र जपूँ?", "आपका आशीर्वाद चाहिए"],
+  },
 };
 
 function Rich({ text }: { text: string }) {
@@ -46,7 +75,7 @@ function Rich({ text }: { text: string }) {
 }
 
 export function JyotishiScreen() {
-  const { back, deityId, setDeity, go, screen, profile, user } = useApp();
+  const { back, deityId, setDeity, go, screen, profile, user, lang } = useApp();
   // The mode is fixed by how you arrived — the AI Jyotishi entry or the Talk to
   // Devta entry — so the two are separate chats, not one screen with a toggle.
   const mode = ((screen.params?.mode as Mode) || "jyotishi") as Mode;
@@ -54,11 +83,13 @@ export function JyotishiScreen() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
+  const kb = useTyping();
 
   const deities = useCatalog(getDeities, DEITIES);
   const deity = deities.find((d) => d.id === deityId) ?? deities[0];
-  const first = profile?.name?.split(" ")[0] || "Devotee";
-  const greet = greeting(mode, deityId, first);
+  const first = profile?.name?.split(" ")[0] || (lang === "hi" ? "भक्त" : "Devotee");
+  const greet = greeting(mode, deityId, first, lang);
+  const deityName = lang === "hi" ? deity.deva : deity.name;
   const thread = mode === "deity" ? `deity:${deityId}` : "jyotishi";
 
   // load persisted history for this thread
@@ -83,7 +114,7 @@ export function JyotishiScreen() {
     let result = { text: "", fallback: false };
     try {
       result = await streamChat(
-        { mode, deityId: mode === "deity" ? deityId : undefined, messages: convo, profile },
+        { mode, deityId: mode === "deity" ? deityId : undefined, messages: convo, profile, lang },
         (_c, f) => setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: f }; return c; })
       );
     } finally {
@@ -95,10 +126,10 @@ export function JyotishiScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-hidden">
       <PageHeader
-        title={mode === "jyotishi" ? "AI Jyotishi" : `Talk to ${deity.name}`}
-        subtitle={streaming ? "typing…" : (mode === "jyotishi" ? "Ask about your kundli" : "Sit with your devta")}
+        title={mode === "jyotishi" ? (lang === "hi" ? "AI ज्योतिषी" : "AI Jyotishi") : (lang === "hi" ? `${deityName} से बात करें` : `Talk to ${deity.name}`)}
+        subtitle={streaming ? (lang === "hi" ? "लिख रहे हैं…" : "typing…") : mode === "jyotishi" ? (lang === "hi" ? "अपनी कुंडली के बारे में पूछें" : "Ask about your kundli") : (lang === "hi" ? "अपने देवता के साथ बैठें" : "Sit with your devta")}
         onBack={back}
         art={mode === "jyotishi" ? "/home/tools/ai-jyotishi.png" : "/home/tools/talk-jyotishi.png"}
         gradient="linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)"
@@ -115,7 +146,7 @@ export function JyotishiScreen() {
                 <button key={d.id} onClick={() => setDeity(d.id)}
                   className={cx("flex shrink-0 items-center gap-1.5 rounded-[5px] py-1 pl-1 pr-2.5 text-[11px]", d.id === deityId ? "text-ink" : "surface text-muted")}
                   style={d.id === deityId ? { background: "var(--surface-2)", border: "1px solid var(--bhagwa)" } : undefined}>
-                  <DeityGlyph deity={d} size={20} /> {d.name.split(" ")[0]}
+                  <DeityGlyph deity={d} size={20} /> {lang === "hi" ? d.deva : d.name.split(" ")[0]}
                 </button>
               ))}
             </div>
@@ -124,27 +155,27 @@ export function JyotishiScreen() {
       )}
 
       {/* Desktop keeps the thread in a centred, readable column. */}
-      <div ref={scroller} className="flex-1 overflow-y-auto py-3 no-scrollbar">
-        <div className="mx-auto flex w-full flex-col gap-2 gutter lg:max-w-3xl">
-          <Bubble role="assistant" mode={mode} deity={deity}><Rich text={greet} /></Bubble>
+      <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 no-scrollbar">
+        <div className="mx-auto flex w-full flex-col gap-5 gutter lg:max-w-3xl">
+          <Bubble role="assistant" mode={mode} deity={deity} lang={lang}><Rich text={greet} /></Bubble>
           {messages.map((m, i) =>
             m.role === "user"
-              ? <Bubble key={i} role="user"><Rich text={m.content} /></Bubble>
-              : <Bubble key={i} role="assistant" mode={mode} deity={deity}>{m.content ? <Rich text={m.content} /> : <Typing />}</Bubble>
+              ? <Bubble key={i} role="user" you={first} lang={lang}><Rich text={m.content} /></Bubble>
+              : <Bubble key={i} role="assistant" mode={mode} deity={deity} lang={lang}>{m.content ? <Rich text={m.content} /> : <Typing />}</Bubble>
           )}
           {mode === "deity" && (
             <button onClick={() => go("mala", { mantraId: deity.suggestedMantraId })}
               className="mx-auto mt-1 flex items-center gap-2 rounded-[5px] surface px-3 py-1.5 text-[11px] text-[var(--bhagwa-deep)]">
-              <CircleDashed size={13} /> Chant {mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala
+              <CircleDashed size={13} /> {lang === "hi" ? `माला में ${mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} जपें` : `Chant ${mantraById(deity.suggestedMantraId).name.replace(/ ?Mantra$/, "")} in Mala`}
             </button>
           )}
         </div>
       </div>
 
       {messages.length === 0 && (
-        <div className="mx-auto w-full lg:max-w-3xl">
+        <div className="mx-auto w-full shrink-0 lg:max-w-3xl">
           <div className="-mx-1 flex gap-2 overflow-x-auto gutter pb-2 no-scrollbar">
-            {SUGGEST[mode].map((s) => (
+            {SUGGEST[mode][lang].map((s) => (
               <button key={s} onClick={() => send(s)} className="shrink-0 rounded-[5px] surface px-2.5 py-1.5 text-[11px] text-ink-dim">{s}</button>
             ))}
           </div>
@@ -152,15 +183,15 @@ export function JyotishiScreen() {
       )}
 
       <div
-        className="sticky bottom-0 z-20 gutter pt-2 above-tabbar"
+        className={cx("relative z-20 shrink-0 gutter pt-2", kb.typing ? "chat-composer" : "above-tabbar")}
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
         <div className="mx-auto flex w-full items-center gap-2 lg:max-w-3xl">
-          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
-            placeholder={mode === "jyotishi" ? "Apna prashn poochhiye…" : `${deity.name.split(" ")[0]} se baat karein…`}
+          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)} onFocus={kb.onFocus} onBlur={kb.onBlur}
+            placeholder={mode === "jyotishi" ? (lang === "hi" ? "अपना प्रश्न पूछिए…" : "Ask your question…") : (lang === "hi" ? `${deityName} से बात करें…` : `Talk to ${deity.name.split(" ")[0]}…`)}
             className="flex-1 rounded-[8px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted lg:py-3 lg:text-[13.5px]"
             style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
-          <button onClick={() => send(input)} disabled={streaming} aria-label="Send"
+          <button onClick={() => send(input)} disabled={streaming} aria-label="Send" onPointerDown={(e) => e.preventDefault()}
             className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[8px] btn-saffron disabled:opacity-50 lg:h-11 lg:w-11"><PaperPlaneTilt size={15} weight="fill" /></button>
         </div>
       </div>
@@ -204,33 +235,17 @@ function GuruAvatar({ size = 28 }: { size?: number }) {
   );
 }
 
-function Bubble({ role, children, mode, deity }: {
-  role: "user" | "assistant"; children: React.ReactNode; mode?: Mode; deity?: Deity;
+function Bubble({ role, children, mode, deity, you, lang = "en" }: {
+  role: "user" | "assistant"; children: React.ReactNode; mode?: Mode; deity?: Deity; you?: string; lang?: Lang;
 }) {
   if (role === "user")
-    return (
-      <div className="flex justify-end">
-        <div
-          className="max-w-[80%] rounded-xl rounded-br-[3px] px-3 py-2 text-[12px] leading-relaxed text-white"
-          style={{ background: "var(--bhagwa-dark)" }}
-        >
-          {children}
-        </div>
-      </div>
-    );
+    return <ChatLine mine avatar={<UserAvatar size={28} />} name={you || (lang === "hi" ? "आप" : "You")}>{children}</ChatLine>;
   return (
-    <div className="flex items-end gap-1.5">
-      {mode === "deity" && deity ? (
-        <DeityGlyph deity={deity} size={26} />
-      ) : (
-        <GuruAvatar size={28} />
-      )}
-      <div
-        className="max-w-[80%] rounded-xl rounded-bl-[3px] px-3 py-2 text-[12px] leading-relaxed text-ink"
-        style={{ background: "var(--bubble-in)" }}
-      >
-        {children}
-      </div>
-    </div>
+    <ChatLine
+      avatar={mode === "deity" && deity ? <DeityGlyph deity={deity} size={28} /> : <GuruAvatar size={28} />}
+      name={mode === "deity" && deity ? (lang === "hi" ? deity.deva : deity.name) : (lang === "hi" ? "AI ज्योतिषी" : "AI Jyotishi")}
+    >
+      {children}
+    </ChatLine>
   );
 }

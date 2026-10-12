@@ -6,6 +6,7 @@ import { CaretLeft, Check, Clock, Gift, PaperPlaneTilt, ShieldCheck, Star, Walle
 import { IconChat } from "../icons";
 import { useApp } from "../app-context";
 import { Avatar, cx, FilterChips, Typing } from "../ui";
+import { ChatLine, UserAvatar } from "../chat-line";
 import { PageHeader } from "../page-header";
 import { ASTROLOGERS } from "@/lib/demo";
 import { useCatalog, getAstrologers } from "@/lib/catalog";
@@ -160,7 +161,7 @@ function fmt(s: number) {
 }
 
 export function ConsultChatScreen() {
-  const { back, screen, wallet, addWallet, haptic, profile, user } = useApp();
+  const { back, screen, wallet, addWallet, haptic, profile, user, lang } = useApp();
   const astrologers = useCatalog(getAstrologers, ASTROLOGERS);
   const astroId = (screen.params?.astrologerId as string) || "a1";
   const astro = astrologers.find((a) => a.id === astroId) ?? astrologers[0];
@@ -176,7 +177,10 @@ export function ConsultChatScreen() {
   const [streaming, setStreaming] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
 
-  const greet = `Namaste ${first}. Main ${astro.name.replace(/^(Acharya|Pandit|Jyotishi|Dr\.?|Guru Maa) /, "")}. Maine aapki kundli khol li hai. Aap nishank hokar apna prashn poochhiye.`;
+  const short = astro.name.replace(/^(Acharya|Pandit|Jyotishi|Dr\.?|Guru Maa) /, "");
+  const greet = lang === "hi"
+    ? `नमस्ते ${first}। मैं ${short}। मैंने आपकी कुंडली खोल ली है। आप निःसंकोच अपना प्रश्न पूछिए।`
+    : `Namaste ${first}. I am ${short}. I have your kundli open. Please ask your question freely.`;
 
   // free countdown
   useEffect(() => {
@@ -225,7 +229,7 @@ export function ConsultChatScreen() {
     setStreaming(true);
     let result = { text: "", fallback: false };
     try {
-      result = await streamChat({ mode: "consult", astrologerId: astro.id, messages: convo, profile }, (_c, f) =>
+      result = await streamChat({ mode: "consult", astrologerId: astro.id, messages: convo, profile, lang }, (_c, f) =>
         setMessages((m) => { const c = [...m]; c[c.length - 1] = { role: "assistant", content: f }; return c; })
       );
     } finally {
@@ -235,26 +239,26 @@ export function ConsultChatScreen() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="relative flex h-full flex-col overflow-hidden">
       {/* Yellow header, bare caret — a circle around a back arrow is a frame
           doing no work. The subtitle carries the live state: while a reply is
           streaming it reads typing, the way a chat should. */}
       <div
-        className="flex items-center gap-2.5 gutter"
+        className="flex shrink-0 items-center gap-2.5 gutter"
         style={{
-          background: "var(--bar-yellow)",
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 10px)",
-          paddingBottom: 10,
+          background: "linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)", borderBottomLeftRadius: 16, borderBottomRightRadius: 16,
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
+          paddingBottom: 14,
         }}
       >
         <button onClick={back} aria-label="Back" className="shrink-0">
-          <CaretLeft size={20} weight="regular" className="text-ink" />
+          <CaretLeft size={20} weight="regular" className="text-[#FDEFD6]" />
         </button>
         <Avatar name={astro.name} size={34} tint={astro.grad[0]} photo={astro.photo} status="online" />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[13px] font-medium text-ink">{astro.name}</div>
-          <div className="text-[10px] text-ink/65">
-            {streaming ? "typing…" : "Online now"}
+          <div className="truncate text-[13px] font-medium text-[#FDEFD6]">{astro.name}</div>
+          <div className="text-[10px] text-[#F3D6B0]">
+            {streaming ? (lang === "hi" ? "लिख रहे हैं…" : "typing…") : (lang === "hi" ? "अभी ऑनलाइन" : "Online now")}
           </div>
         </div>
         {/* Timer as a labelled readout, not a chip: the number is what matters,
@@ -264,22 +268,22 @@ export function ConsultChatScreen() {
           onClick={() => phase === "free" && setFreeLeft(8)}
           className="shrink-0 text-right leading-none"
         >
-          <span className="block text-[15px] tnum font-medium leading-none text-ink">
+          <span className="block text-[15px] tnum font-medium leading-none text-[#FDEFD6]">
             {phase === "free" && fmt(freeLeft)}
             {phase === "paid" && `₹${Math.max(balanceLeft, 0)}`}
             {phase === "ended" && "0:00"}
           </span>
-          <span className="mt-1 block text-[9px] leading-none text-ink/65">
-            {phase === "free" && "free left"}
-            {phase === "paid" && "balance"}
-            {phase === "ended" && "session ended"}
+          <span className="mt-1 block text-[9px] leading-none text-[#F3D6B0]">
+            {phase === "free" && (lang === "hi" ? "मुफ़्त समय" : "free left")}
+            {phase === "paid" && (lang === "hi" ? "बैलेंस" : "balance")}
+            {phase === "ended" && (lang === "hi" ? "सत्र समाप्त" : "session ended")}
           </span>
         </button>
       </div>
 
       {phase === "paid" && (
         <div className="gutter py-1 text-center text-[10px] tnum text-muted" style={{ background: "var(--surface)" }}>
-          {fmt(paidElapsed)} · ₹{paidSpent} spent · ₹{astro.rate}/min
+          {fmt(paidElapsed)} · ₹{paidSpent} {lang === "hi" ? "खर्च" : "spent"} · ₹{astro.rate}/{lang === "hi" ? "मिनट" : "min"}
         </div>
       )}
 
@@ -288,14 +292,14 @@ export function ConsultChatScreen() {
           against the left edge of a very wide window. */}
       <div
         ref={scroller}
-        className="relative flex-1 overflow-y-auto py-3 no-scrollbar"
+        className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain py-4 no-scrollbar"
         style={{ background: "var(--surface)" }}
       >
-        <div className="mx-auto flex w-full flex-col gap-2 gutter lg:max-w-3xl">
+        <div className="mx-auto flex w-full flex-col gap-5 gutter lg:max-w-3xl">
           <Row role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>{greet}</Row>
           {messages.map((m, i) =>
             m.role === "user"
-              ? <Row key={i} role="user">{m.content}</Row>
+              ? <Row key={i} role="user" you={profile?.name?.split(" ")[0] || (lang === "hi" ? "आप" : "You")}>{m.content}</Row>
               : <Row key={i} role="assistant" astroName={astro.name} tint={astro.grad[0]} photo={astro.photo}>
                   {m.content || <Typing />}
                 </Row>
@@ -311,8 +315,8 @@ export function ConsultChatScreen() {
             <motion.div initial={{ y: 60 }} animate={{ y: 0 }}
               className="w-full rounded-t-3xl p-4" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)" }}>
               <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />
-              <div className="font-display text-lg text-ink">Continue with {astro.name.split(" ").slice(-1)[0]}</div>
-              <div className="mt-1 text-[11px] text-muted">Your free session ended. Recharge your wallet to keep chatting at ₹{astro.rate}/min.</div>
+              <div className="font-display text-lg text-ink">{lang === "hi" ? `${astro.name.split(" ").slice(-1)[0]} के साथ जारी रखें` : `Continue with ${astro.name.split(" ").slice(-1)[0]}`}</div>
+              <div className="mt-1 text-[11px] text-muted">{lang === "hi" ? `आपका मुफ़्त सत्र समाप्त हुआ। ₹${astro.rate}/मिनट पर बात जारी रखने के लिए वॉलेट रिचार्ज करें।` : `Your free session ended. Recharge your wallet to keep chatting at ₹${astro.rate}/min.`}</div>
               <div className="mt-4 grid grid-cols-4 gap-2">
                 {RECHARGE.map((amt) => (
                   <button key={amt} onClick={() => recharge(amt)}
@@ -321,7 +325,7 @@ export function ConsultChatScreen() {
                   </button>
                 ))}
               </div>
-              <div className="mt-2 text-center text-[10px] text-muted">100% safe payments · UPI / Cards / Wallet</div>
+              <div className="mt-2 text-center text-[10px] text-muted">{lang === "hi" ? "100% सुरक्षित भुगतान · UPI / कार्ड / वॉलेट" : "100% safe payments · UPI / Cards / Wallet"}</div>
             </motion.div>
           </motion.div>
         )}
@@ -330,18 +334,18 @@ export function ConsultChatScreen() {
       {/* Composer, pinned. Its own ground and a top rule so it reads as a fixed
           bar rather than the last thing on the page. */}
       <div
-        className="sticky bottom-0 z-20 gutter pt-2 above-tabbar"
+        className="chat-composer relative z-20 shrink-0 gutter pt-2"
         style={{ background: "var(--surface)", borderTop: "1px solid var(--line)" }}
       >
         <div className="mx-auto flex w-full items-center gap-2 lg:max-w-3xl">
           <input value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send(input)}
-            placeholder={phase === "ended" ? "Recharge to continue…" : "Type your question…"}
+            placeholder={phase === "ended" ? (lang === "hi" ? "जारी रखने के लिए रिचार्ज करें…" : "Recharge to continue…") : (lang === "hi" ? "अपना प्रश्न लिखिए…" : "Type your question…")}
             disabled={phase === "ended"}
             className="flex-1 rounded-[8px] px-3 py-2.5 text-[12.5px] text-ink outline-none placeholder:text-muted disabled:opacity-50 lg:py-3 lg:text-[13.5px]"
             style={{ background: "var(--surface-2)", border: "1px solid var(--line-strong)" }} />
           <button onClick={() => send(input)} disabled={streaming || phase === "ended"}
-            aria-label="Send"
+            aria-label="Send" onPointerDown={(e) => e.preventDefault()}
             className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-[8px] btn-saffron disabled:opacity-50 lg:h-11 lg:w-11">
             <PaperPlaneTilt size={15} weight="fill" />
           </button>
@@ -351,43 +355,20 @@ export function ConsultChatScreen() {
   );
 }
 
-/**
- * A line of the transcript.
- *
- * Two parties, two grounds: theirs is the app's yellow, ours the deep rust the
- * Sandesh block already uses. Orange against yellow would have been two warm
- * colours fighting, and blue is spoken for as the Chat action colour, so rust
- * keeps the pair inside the app's own world while staying clearly separate.
- * The tail corner is squared on the sender's side so the direction reads
- * without needing alignment alone.
- */
-function Row({ role, children, astroName, tint, photo }: {
+/** A line of the transcript — left-aligned, no bubble, avatar and name. */
+function Row({ role, children, astroName, tint, photo, you }: {
   role: "user" | "assistant";
   children: React.ReactNode;
   astroName?: string;
   tint?: string;
   photo?: string;
+  you?: string;
 }) {
   if (role === "user")
-    return (
-      <div className="flex justify-end">
-        <div
-          className="max-w-[80%] whitespace-pre-wrap rounded-xl rounded-br-[3px] px-3 py-2 text-[12px] leading-relaxed text-white"
-          style={{ background: "var(--bhagwa-dark)" }}
-        >
-          {children}
-        </div>
-      </div>
-    );
+    return <ChatLine mine avatar={<UserAvatar size={28} />} name={you || "You"}>{children}</ChatLine>;
   return (
-    <div className="flex items-end gap-1.5">
-      <Avatar name={astroName || "A"} size={24} tint={tint} photo={photo} />
-      <div
-        className="max-w-[80%] whitespace-pre-wrap rounded-xl rounded-bl-[3px] px-3 py-2 text-[12px] leading-relaxed text-ink"
-        style={{ background: "var(--bubble-in)" }}
-      >
-        {children}
-      </div>
-    </div>
+    <ChatLine avatar={<Avatar name={astroName || "A"} size={28} tint={tint} photo={photo} />} name={astroName || "Astrologer"}>
+      {children}
+    </ChatLine>
   );
 }

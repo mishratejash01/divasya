@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from "react";
 import { CaretLeft } from "@phosphor-icons/react";
+import { RevealText } from "./reveal-text";
 
 export function cx(...a: (string | false | null | undefined)[]) {
   return a.filter(Boolean).join(" ");
@@ -349,6 +350,29 @@ export function DeityPortrait({
  */
 export type HeaderTab = { id: string; label: string };
 
+type HeaderTheme = { gradient: string; art?: string };
+const T_KUMKUM = "linear-gradient(155deg, #C0440E 0%, #8A2B22 60%, #6E1D2E 100%)";
+const T_PLUM = "linear-gradient(135deg, #5B2160 0%, #2E0F32 100%)";
+const T_NAVY = "linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)";
+const T_TEAL = "linear-gradient(135deg, #0F4F49 0%, #08302C 100%)";
+const T_BRONZE = "linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)";
+const T_MAROON = "linear-gradient(135deg, #7A1D2E 0%, #430D19 100%)";
+
+/** Deep-jewel theme per screen, picked from the title so every sub-screen
+ *  carries the same header as the redesigned pages without each one opting in. */
+function headerTheme(title: string): HeaderTheme {
+  const t = title.toLowerCase();
+  if (/puja|chadhava|chadawa/.test(t)) return { gradient: T_PLUM, art: "/home/tools/online-puja.png" };
+  if (/journey|path|journal/.test(t)) return { gradient: T_PLUM };
+  if (/gita/.test(t)) return { gradient: T_MAROON };
+  if (/vastu|naamkaran|kundli|horoscope/.test(t)) return { gradient: T_NAVY };
+  if (/remind/.test(t)) return { gradient: T_TEAL };
+  if (/order placed|checkout|cart/.test(t)) return { gradient: T_BRONZE, art: "/home/tools/store.png" };
+  if (/order/.test(t)) return { gradient: T_BRONZE, art: "/home/tools/my-orders.png" };
+  if (/wallet|punya/.test(t)) return { gradient: T_BRONZE };
+  return { gradient: T_KUMKUM };
+}
+
 export function ScreenHeader({
   title,
   sub,
@@ -357,39 +381,49 @@ export function ScreenHeader({
   tabs,
   activeTab,
   onTab,
+  gradient,
+  art,
 }: {
   title: string;
   sub?: string;
   onBack: () => void;
   right?: ReactNode;
-  /** Optional filter strip, riding the yellow bar under the title. Selected is
-   *  black + medium with a black underline, like the home navbar — the one
-   *  place a horizontal filter belongs, rather than as loose chips on the page. */
+  /** Optional filter strip under the title; the selected tab gets a cream underline. */
   tabs?: HeaderTab[];
   activeTab?: string;
   onTab?: (id: string) => void;
+  /** Override the theme chosen from the title. */
+  gradient?: string;
+  art?: string;
 }) {
+  const theme = headerTheme(title);
+  const bg = gradient ?? theme.gradient;
+  const pic = art ?? theme.art;
   return (
     <div
-      className="shrink-0"
-      style={{
-        background: "var(--bar-yellow)",
-        paddingTop: "calc(env(safe-area-inset-top, 0px) + 11px)",
-      }}
+      className="sticky top-0 z-30 shrink-0"
+      style={{ background: bg, borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}
     >
-      <div className={cx("flex items-center gap-2.5 gutter", tabs ? "pb-2" : "pb-[11px]")}>
-        <button onClick={onBack} aria-label="Back" className="shrink-0">
-          <CaretLeft size={20} weight="regular" className="text-ink" />
+      <div
+        className={cx("flex items-center gap-3 gutter", tabs ? "pb-2" : "pb-[18px]")}
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 16px)" }}
+      >
+        <button onClick={onBack} aria-label="Back" className="-ml-1 shrink-0">
+          <CaretLeft size={24} weight="bold" className="text-[#FBE8C6]" />
         </button>
         <div className="min-w-0 flex-1">
-          <div className="truncate font-display text-[17px] leading-tight text-ink">{title}</div>
-          {sub && <div className="truncate text-[10.5px] leading-tight text-ink/65">{sub}</div>}
+          <RevealText as="div" text={title} delay={0.55} className="truncate font-display text-[21px] leading-tight text-[#FDEFD6]" />
+          {sub && <div className="mt-0.5 truncate text-[12px] leading-tight text-[#F3D6B0]">{sub}</div>}
         </div>
-        {right}
+        {right && <div className="shrink-0 text-[#FBE8C6]">{right}</div>}
+        {pic && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={pic} alt="" className="h-12 w-12 shrink-0 object-contain" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.3))" }} />
+        )}
       </div>
 
       {tabs && (
-        <div className="-mb-px flex items-end gap-5 gutter overflow-x-auto no-scrollbar">
+        <div className="flex items-end gap-5 gutter overflow-x-auto no-scrollbar pb-1">
           {tabs.map((t) => {
             const on = t.id === activeTab;
             return (
@@ -397,10 +431,10 @@ export function ScreenHeader({
                 key={t.id}
                 onClick={() => onTab?.(t.id)}
                 className={cx(
-                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[12.5px] font-medium transition-colors",
-                  on ? "text-ink" : "text-[rgba(23,22,19,0.55)]",
+                  "shrink-0 whitespace-nowrap pb-2 pt-0.5 text-[13px] font-medium transition-colors",
+                  on ? "text-[#FDEFD6]" : "text-[rgba(253,239,214,0.62)]",
                 )}
-                style={{ borderBottom: `2px solid ${on ? "var(--ink)" : "transparent"}` }}
+                style={{ borderBottom: `2px solid ${on ? "#FDEFD6" : "transparent"}` }}
               >
                 {t.label}
               </button>
