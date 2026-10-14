@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pause, Play } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
+import { isIosApp } from "@/lib/platform";
 import { DeityGlyph, cx } from "../ui";
 import { PageHeader } from "../page-header";
 import { DEITIES } from "@/lib/demo";
@@ -113,6 +114,13 @@ export function MandirScreen() {
     stopSong();
     setAudioMsg("");
     setPaused(false);
+    // The aarti recordings in public/aarti are third-party audio we hold no
+    // licence for, so iOS plays none of it (App Store guideline 5.2.3, the
+    // same ground Live Darshan was removed on - see IOS_HIDDEN in nav-map).
+    // The visual ritual still performs: only the sound is withheld, and the
+    // now-playing card is not rendered, so nothing offers a control that
+    // would do nothing. Android and the web are unchanged.
+    if (isIosApp()) return;
     const s = new Audio(`/aarti/${deity.id}.mp3`);
     s.loop = true;
     s.volume = 0.9;
@@ -339,9 +347,10 @@ export function MandirScreen() {
             </AnimatePresence>
           </div>
 
-          {/* now playing — the aarti's title, its state and a play/pause control */}
+          {/* now playing — the aarti's title, its state and a play/pause control.
+              Absent on iOS, where no audio plays. */}
           <AnimatePresence>
-            {aarti && (
+            {aarti && !isIosApp() && (
               <motion.div
                 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }}
                 className="relative z-10 mx-auto mb-2 flex w-[calc(100%-2rem)] max-w-sm shrink-0 items-center gap-3 rounded-2xl px-3 py-2.5"
