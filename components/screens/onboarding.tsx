@@ -206,7 +206,7 @@ export function OnboardingScreen() {
                 the single top artwork the other steps show */}
             {cur.key !== "gender" && cur.key !== "deity" && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`/spot/${STEP_ART[cur.key]}.png`} alt="" className="mb-5 h-28 w-28 object-contain" />
+              <img src={`/spot/${STEP_ART[cur.key]}.webp`} alt="" className="mb-5 h-28 w-28 object-contain" />
             )}
             <h1 className="font-display text-[26px] leading-tight text-ink">
               {body.title}
@@ -261,7 +261,7 @@ function GenderOption({
       {imgOk ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/spot/${g.slug}.png`}
+          src={`/spot/${g.slug}.webp`}
           alt=""
           onError={() => setImgOk(false)}
           className="h-20 w-20 object-contain"
@@ -348,7 +348,7 @@ function IdolImg({ d }: { d: (typeof DEITIES)[number] }) {
   return imgOk ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/spot/deity-${d.id}.png`}
+      src={`/spot/deity-${d.id}.webp`}
       alt={d.name}
       draggable={false}
       onError={() => setImgOk(false)}
@@ -409,8 +409,8 @@ function RashiReveal({
 
       {/* the sign */}
       <motion.div
-        initial={{ scale: 0.55, opacity: 0, filter: "blur(10px)" }}
-        animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+        initial={{ scale: 0.55, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 120, damping: 13, delay: 0.15 }}
         className="relative grid place-items-center"
         style={{ filter: "drop-shadow(0 8px 24px rgba(154,90,30,0.35))" }}
@@ -418,7 +418,7 @@ function RashiReveal({
         {imgOk ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/rashi/${ss.indian.toLowerCase()}.png`}
+            src={`/rashi/${ss.indian.toLowerCase()}.webp`}
             alt={ss.name}
             onError={() => setImgOk(false)}
             className="h-44 w-44 object-contain"

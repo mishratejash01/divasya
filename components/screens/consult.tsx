@@ -311,7 +311,7 @@ export function ConsultChatScreen() {
       <AnimatePresence>
         {phase === "ended" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}>
+            className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.42)" }}>
             <motion.div initial={{ y: 60 }} animate={{ y: 0 }}
               className="w-full rounded-t-3xl p-4" style={{ background: "var(--surface)", borderTop: "1px solid var(--line-gold)", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 22px)" }}>
               <div className="mx-auto mb-3 h-1 w-10 rounded-full" style={{ background: "var(--line-strong)" }} />

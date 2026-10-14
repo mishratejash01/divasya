@@ -10,6 +10,7 @@ import { DeityPortrait, DevotionalIllustration, cx, type DevotionalIllustrationN
 import { Iconify } from "../iconify";
 import { HomeHorizon } from "../home-horizon";
 import { HomeMood } from "../home-mood";
+import { HomePromo } from "../home-promo";
 import { StateCard } from "./hidden-sacred";
 import { SACRED_STATES } from "@/lib/hidden-sacred";
 import { usePanchang } from "@/lib/use-panchang";
@@ -28,13 +29,13 @@ let firedOnce = false;
 
 // The presiding devata for each weekday (Sun…Sat), drawn from our deity art.
 const DEVATA_BY_DAY: { name: string; deva: string; image: string; line: string }[] = [
-  { name: "Surya Dev", deva: "सूर्य देव", image: "/spot/deity-surya.png", line: "Sunday is the day to honour the Sun." },
-  { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.png", line: "Monday belongs to Lord Shiva." },
-  { name: "Hanuman Ji", deva: "हनुमान जी", image: "/spot/deity-hanuman.png", line: "Tuesday for strength and courage." },
-  { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.png", line: "Wednesday is Ganesha's day." },
-  { name: "Shri Vishnu", deva: "श्री विष्णु", image: "/spot/deity-vishnu.png", line: "Thursday is the best day for Vishnu puja." },
-  { name: "Maa Lakshmi", deva: "माँ लक्ष्मी", image: "/spot/deity-lakshmi.png", line: "Friday is devoted to the Devi." },
-  { name: "Shani Dev", deva: "शनि देव", image: "/spot/deity-shani.png", line: "Saturday is for Shani Dev." },
+  { name: "Surya Dev", deva: "सूर्य देव", image: "/spot/deity-surya.webp", line: "Sunday is the day to honour the Sun." },
+  { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.webp", line: "Monday belongs to Lord Shiva." },
+  { name: "Hanuman Ji", deva: "हनुमान जी", image: "/spot/deity-hanuman.webp", line: "Tuesday for strength and courage." },
+  { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.webp", line: "Wednesday is Ganesha's day." },
+  { name: "Shri Vishnu", deva: "श्री विष्णु", image: "/spot/deity-vishnu.webp", line: "Thursday is the best day for Vishnu puja." },
+  { name: "Maa Lakshmi", deva: "माँ लक्ष्मी", image: "/spot/deity-lakshmi.webp", line: "Friday is devoted to the Devi." },
+  { name: "Shani Dev", deva: "शनि देव", image: "/spot/deity-shani.webp", line: "Saturday is for Shani Dev." },
 ];
 
 // Deep, patterned grounds for the story cards.
@@ -47,10 +48,10 @@ const STORY_GROUND = {
 
 // Rashi artwork keyed by the English sign name, for the horoscope card.
 const RASHI_ART: Record<string, string> = {
-  Aries: "/rashi/mesha.png", Taurus: "/rashi/vrishabha.png", Gemini: "/rashi/mithuna.png",
-  Cancer: "/rashi/karka.png", Leo: "/rashi/simha.png", Virgo: "/rashi/kanya.png",
-  Libra: "/rashi/tula.png", Scorpio: "/rashi/vrishchika.png", Sagittarius: "/rashi/dhanu.png",
-  Capricorn: "/rashi/makara.png", Aquarius: "/rashi/kumbha.png", Pisces: "/rashi/meena.png",
+  Aries: "/rashi/mesha.webp", Taurus: "/rashi/vrishabha.webp", Gemini: "/rashi/mithuna.webp",
+  Cancer: "/rashi/karka.webp", Leo: "/rashi/simha.webp", Virgo: "/rashi/kanya.webp",
+  Libra: "/rashi/tula.webp", Scorpio: "/rashi/vrishchika.webp", Sagittarius: "/rashi/dhanu.webp",
+  Capricorn: "/rashi/makara.webp", Aquarius: "/rashi/kumbha.webp", Pisces: "/rashi/meena.webp",
 };
 
 type Block = {
@@ -86,13 +87,13 @@ const SECTIONS: { title: string; tab: string; layout: "stack" | "row"; blocks: B
 // shelf right here, so they scroll to it — a tab with `to` navigates, a tab
 // without it jumps to its section.
 const TABS: { id: string; label: string; art: string; to?: ScreenName; params?: Record<string, unknown> }[] = [
-  { id: "kundli", label: "My Kundli", art: "/home/tools/my-kundli.png", to: "kundli" },
-  { id: "astro", label: "Astro", art: "/home/tools/ai-jyotishi.png", to: "category", params: { id: "astro" } },
-  { id: "devotion", label: "Devotion", art: "/home/tools/my-mandir.png", to: "category", params: { id: "devotion" } },
-  { id: "festival", label: "Festival", art: "/home/tools/festivals.png", to: "festivals" },
-  { id: "store", label: "Store", art: "/home/tools/store.png" },
-  { id: "tools", label: "Guides", art: "/home/trust/tradition.png", to: "category", params: { id: "tools" } },
-  { id: "library", label: "Library", art: "/home/tools/darshan.png" },
+  { id: "kundli", label: "My Kundli", art: "/home/tools/my-kundli.webp", to: "kundli" },
+  { id: "astro", label: "Astro", art: "/home/tools/ai-jyotishi.webp", to: "category", params: { id: "astro" } },
+  { id: "devotion", label: "Devotion", art: "/home/tools/my-mandir.webp", to: "category", params: { id: "devotion" } },
+  { id: "festival", label: "Festival", art: "/home/tools/festivals.webp", to: "festivals" },
+  { id: "store", label: "Store", art: "/home/tools/store.webp" },
+  { id: "tools", label: "Guides", art: "/home/trust/tradition.webp", to: "category", params: { id: "tools" } },
+  { id: "library", label: "Library", art: "/home/tools/darshan.webp" },
 ];
 
 // Poster verses. Unlike festival dates these are safe to hold locally: they are
@@ -114,10 +115,10 @@ const DARSHAN_TINTS: [string, string][] = [
 // Our own 2D deity artwork (public/spot/deity-*.png) — transparent cutouts sat
 // on a warm per-deity ground, rather than photographed murtis.
 const HOME_DARSHAN = [
-  { name: "Shri Krishna", deva: "श्री कृष्ण", image: "/spot/deity-krishna.png", tint: "#2C6470" },
-  { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.png", tint: "#6E4E36" },
-  { name: "Maa Durga", deva: "माँ दुर्गा", image: "/spot/deity-durga.png", tint: "#A63D34" },
-  { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.png", tint: "#B76C2A" },
+  { name: "Shri Krishna", deva: "श्री कृष्ण", image: "/spot/deity-krishna.webp", tint: "#2C6470" },
+  { name: "Mahadev", deva: "महादेव", image: "/spot/deity-shiva.webp", tint: "#6E4E36" },
+  { name: "Maa Durga", deva: "माँ दुर्गा", image: "/spot/deity-durga.webp", tint: "#A63D34" },
+  { name: "Shri Ganesha", deva: "श्री गणेश", image: "/spot/deity-ganesha.webp", tint: "#B76C2A" },
 ];
 
 
@@ -411,13 +412,13 @@ export function HomeScreen() {
     },
     {
       id: "verse",
-      bubble: "/spot/deity-ganesha.png",
+      bubble: "/spot/deity-ganesha.webp",
       ring: "linear-gradient(135deg, #E7A93E, #7A1D2E)",
       label: "Verse of the day",
       kicker: "Verse of the day",
       title: "Aaj ka Shlok",
       subtitle: shloka ? (lang === "hi" ? (shloka.meaning_hi ?? shloka.meaning) : shloka.meaning) : "Today's wisdom from the scriptures.",
-      image: "/spot/deity-ganesha.png",
+      image: "/spot/deity-ganesha.webp",
       fit: "contain",
       ground: STORY_GROUND.maroon,
       cta: "Read more",
@@ -425,13 +426,13 @@ export function HomeScreen() {
     },
     ...(nextFest ? [{
       id: "festival",
-      bubble: "/spot/deity-durga.png",
+      bubble: "/spot/deity-durga.webp",
       ring: "linear-gradient(135deg, #F2B705, #B4564B)",
       label: nextFest.name,
       kicker: "Festival",
       title: nextFest.name,
       subtitle: nextFest.date ?? "An auspicious observance is near.",
-      image: "/spot/deity-durga.png",
+      image: "/spot/deity-durga.webp",
       fit: "contain" as const,
       ground: STORY_GROUND.saffron,
       cta: "View details",
@@ -439,13 +440,13 @@ export function HomeScreen() {
     }] : []),
     {
       id: "panchang",
-      bubble: "/home/quick/panchang.png",
+      bubble: "/home/quick/panchang.webp",
       ring: "linear-gradient(135deg, #6FBFA6, #0F4F49)",
       label: "Aaj ka Panchang",
       kicker: "Aaj ka Panchang",
       title: chog ? chog.name : (pg?.tithiDisplay ?? "Panchang"),
       subtitle: pg ? `${pg.weekdayShort} · ${pg.dateLabel}  ·  Sunrise ${pg.sunrise ?? "…"}` : "Today's timings and muhurat.",
-      image: "/home/quick/panchang.png",
+      image: "/home/quick/panchang.webp",
       fit: "contain",
       ground: STORY_GROUND.teal,
       cta: "Open Panchang",
@@ -458,49 +459,49 @@ export function HomeScreen() {
     {
       title: "Panchang & Muhurat",
       subtitle: "Tithi, choghadiya and shubh timings for your day.",
-      art: "/home/quick/panchang.png",
+      art: "/home/quick/panchang.webp",
       grad: "linear-gradient(135deg, #0F4F49 0%, #08302C 100%)",
       onOpen: () => go("panchang"),
       tools: [
-        { label: "Panchang", img: "/home/tools/panchang.png", onClick: () => go("panchang") },
+        { label: "Panchang", img: "/home/tools/panchang.webp", onClick: () => go("panchang") },
         { label: "Muhurat", img: "/home/tools/muhurat.png", onClick: () => go("panchang") },
-        { label: "Festivals", img: "/home/tools/festivals.png", onClick: () => go("festivals") },
+        { label: "Festivals", img: "/home/tools/festivals.webp", onClick: () => go("festivals") },
       ],
     },
     {
       title: "Jyotish & Rashifal",
       subtitle: "Your chart, daily reading and expert jyotishis.",
-      art: "/home/quick/ai.png",
+      art: "/home/quick/ai.webp",
       grad: "linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)",
       onOpen: () => go("category", { id: "astro" }),
       tools: [
-        { label: "AI Jyotishi", img: "/home/tools/ai-jyotishi.png", onClick: () => go("ai", { mode: "jyotishi" }) },
-        { label: "My Kundli", img: "/home/tools/my-kundli.png", onClick: () => go("kundli") },
-        { label: "Talk to Jyotishi", img: "/home/tools/talk-jyotishi.png", onClick: () => go("consult") },
+        { label: "AI Jyotishi", img: "/home/tools/ai-jyotishi.webp", onClick: () => go("ai", { mode: "jyotishi" }) },
+        { label: "My Kundli", img: "/home/tools/my-kundli.webp", onClick: () => go("kundli") },
+        { label: "Talk to Jyotishi", img: "/home/tools/talk-jyotishi.webp", onClick: () => go("consult") },
       ],
     },
     {
       title: "Devotion & Puja",
       subtitle: "Mandir, mala jaap and online puja.",
-      art: "/spot/deity-durga.png",
+      art: "/spot/deity-durga.webp",
       grad: "linear-gradient(135deg, #5B2160 0%, #2E0F32 100%)",
       onOpen: () => go("category", { id: "devotion" }),
       tools: [
-        { label: "My Mandir", img: "/home/tools/my-mandir.png", onClick: () => go("mandir") },
-        { label: "Mala Jaap", img: "/home/tools/mala-jaap.png", onClick: () => go("mala") },
-        { label: "Online Puja", img: "/home/tools/online-puja.png", onClick: () => go("puja") },
+        { label: "My Mandir", img: "/home/tools/my-mandir.webp", onClick: () => go("mandir") },
+        { label: "Mala Jaap", img: "/home/tools/mala-jaap.webp", onClick: () => go("mala") },
+        { label: "Online Puja", img: "/home/tools/online-puja.webp", onClick: () => go("puja") },
         // Darshan is absent on iOS (guideline 5.2.3, see IOS_HIDDEN in nav-map).
-        ...(ios ? [] : [{ label: "Darshan", img: "/home/tools/darshan.png", onClick: () => go("temple") }]),
+        ...(ios ? [] : [{ label: "Darshan", img: "/home/tools/darshan.webp", onClick: () => go("temple") }]),
       ],
     },
     {
       title: "The Store",
       subtitle: "Rudraksha, malas and puja samagri, delivered home.",
-      art: "/home/quick/mala.png",
+      art: "/home/quick/mala.webp",
       grad: "linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)",
       onOpen: () => go("shop"),
       tools: [
-        { label: "Everything", img: "/home/tools/store.png", onClick: () => go("shop") },
+        { label: "Everything", img: "/home/tools/store.webp", onClick: () => go("shop") },
         { label: "Rudraksha", img: "/home/tools/rudraksha.png", onClick: () => go("shop") },
         { label: "My Orders", img: "/home/tools/my-orders.png", onClick: () => go("orders") },
       ],
@@ -605,7 +606,7 @@ export function HomeScreen() {
                     <span key={`${rep}-${slug}`} className="ticker-item">
                       {/* small artifact per item — hides itself until the art exists */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={`/home/ticker/${slug}.png`} alt="" className="ticker-art" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                      <img src={`/home/ticker/${slug}.webp`} alt="" className="ticker-art" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                       <span className="ticker-label">{k}</span>
                       <span className="ticker-value">{v}</span>
                       <span className="ticker-dot" />
@@ -622,26 +623,17 @@ export function HomeScreen() {
 
       {/* Promo carousel — deep-jewel banners for the key journeys. */}
       <div className="reveal pt-2 lg:col-span-2">
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-[var(--gutter)] pb-1 no-scrollbar">
-          {[
-            { img: "/home/promo/app.png", to: () => go("menu") },
-            { img: "/home/promo/jyotishi.png", to: () => go("consult") },
-            { img: "/home/promo/kundli.png", to: () => go("kundli") },
-            ...(ios ? [] : [{ img: "/home/promo/darshan.png", to: () => go("temple") }]),
-            { img: "/home/promo/panchang.png", to: () => go("panchang") },
-            { img: "/home/promo/mala.png", to: () => go("mala") },
-            { img: "/home/promo/store.png", to: () => go("shop") },
-          ].map((banner) => (
-            <button
-              key={banner.img}
-              onClick={() => { haptic(6); banner.to(); }}
-              className="aspect-[2/1] w-[86%] shrink-0 snap-center overflow-hidden rounded-2xl active:scale-[0.99]"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={banner.img} alt="" className="h-full w-full object-cover" />
-            </button>
-          ))}
-        </div>
+        <HomePromo
+          banners={[
+            { img: "/home/promo/app.webp", to: () => go("menu") },
+            { img: "/home/promo/jyotishi.webp", to: () => go("consult") },
+            { img: "/home/promo/kundli.webp", to: () => go("kundli") },
+            ...(ios ? [] : [{ img: "/home/promo/darshan.webp", to: () => go("temple") }]),
+            { img: "/home/promo/panchang.webp", to: () => go("panchang") },
+            { img: "/home/promo/mala.webp", to: () => go("mala") },
+            { img: "/home/promo/store.webp", to: () => go("shop") },
+          ]}
+        />
       </div>
 
       {/* Image-first devotional discovery: a small darshan window before the
@@ -696,8 +688,8 @@ export function HomeScreen() {
         <motion.div
           data-sandesh-top
           className="relative px-2 py-3"
-          initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
-          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
         >
@@ -751,7 +743,7 @@ export function HomeScreen() {
         >
           <div className="flex items-center gap-3">
             <DeityPortrait
-              src="/user-rishi.png"
+              src="/user-rishi.webp"
               alt="Rishi"
               fallback={<IconGanesha size={44} className="text-[var(--bhagwa-deep)]" strokeWidth={1.3} />}
             />

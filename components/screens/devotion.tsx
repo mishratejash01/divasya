@@ -353,7 +353,7 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.34)", backdropFilter: "blur(3px)" }}
+      className="absolute inset-0 z-50 flex items-end" style={{ background: "rgba(0,0,0,0.42)" }}
       onClick={() => step !== "paying" && onClose()}>
       <motion.div initial={{ y: 80 }} animate={{ y: 0 }} onClick={(e) => e.stopPropagation()}
         className="max-h-[88%] w-full overflow-y-auto rounded-t-3xl p-4 no-scrollbar lg:mx-auto lg:max-w-[560px]"
@@ -509,7 +509,7 @@ function BookingSheet({ kind, product, savedPhone, defaultName, onClose, onDone 
         {step === "done" && (
           <div className="flex flex-col items-center py-6 text-center">
             <motion.img initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-              src="/spot/puja-booked.png" alt="" className="h-28 w-28 object-contain" />
+              src="/spot/puja-booked.webp" alt="" className="h-28 w-28 object-contain" />
             <div className="mt-3 font-display text-xl text-ink">Booking Confirmed</div>
             <div className="mt-1 measure text-[11.5px] leading-relaxed text-muted">
               {p.name} will be performed in the name of <span className="text-ink">{members[0].name}</span>
@@ -566,12 +566,12 @@ const TEMPLE_PHOTOS: Record<string, string> = {
 // Shown on the darshan cards and, crucially, as the visual when a stream is not
 // open (offline temple, or a YouTube-only feed that can't embed).
 const TEMPLE_ART: Record<string, string> = {
-  siddhi: "/temples/siddhi-art.png", vaishno: "/temples/vaishno-art.png",
-  somnath: "/temples/somnath-art.png", jagannath: "/temples/jagannath-art.png",
-  kedarnath: "/temples/kedarnath-art.png", badrinath: "/temples/badrinath-art.png",
-  rameshwaram: "/temples/rameshwaram-art.png", dwarka: "/temples/dwarka-art.png",
-  ayodhya: "/temples/ayodhya-art.png", khatushyam: "/temples/khatushyam-art.png",
-  haridwar: "/temples/haridwar-art.png",
+  siddhi: "/temples/siddhi-art.webp", vaishno: "/temples/vaishno-art.webp",
+  somnath: "/temples/somnath-art.webp", jagannath: "/temples/jagannath-art.webp",
+  kedarnath: "/temples/kedarnath-art.webp", badrinath: "/temples/badrinath-art.webp",
+  rameshwaram: "/temples/rameshwaram-art.webp", dwarka: "/temples/dwarka-art.webp",
+  ayodhya: "/temples/ayodhya-art.webp", khatushyam: "/temples/khatushyam-art.webp",
+  haridwar: "/temples/haridwar-art.webp",
 };
 
 // A built-in directory shown when /api/darshan can't be reached (e.g. a local
@@ -782,7 +782,7 @@ export function TempleScreen() {
         title="Live Temple Darshan"
         subtitle="Aarti & darshan, streamed live"
         onBack={back}
-        art="/home/tools/darshan.png"
+        art="/home/tools/darshan.webp"
         gradient="linear-gradient(135deg, #185A3C 0%, #0A2A1C 100%)"
         shadow="rgba(10,42,28,0.30)"
       />

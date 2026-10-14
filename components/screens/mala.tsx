@@ -169,7 +169,7 @@ export function MalaScreen() {
           title="Choose Mala"
           subtitle="Pick a mala for your jaap"
           onBack={back}
-          art="/home/tools/mala-jaap.png"
+          art="/home/tools/mala-jaap.webp"
           gradient="linear-gradient(135deg, #7A1D2E 0%, #430D19 100%)"
           shadow="rgba(67,13,25,0.30)"
         />
@@ -183,7 +183,7 @@ export function MalaScreen() {
                 style={{ background: "var(--surface)", border: "1px solid var(--line-gold)" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/mala/${t}.png`} alt="" className="h-[76px] w-[76px] shrink-0 object-contain" />
+                <img src={`/mala/${t}.webp`} alt="" className="h-[76px] w-[76px] shrink-0 object-contain" />
                 <div className="min-w-0 flex-1">
                   <div className="font-serif text-[17px] font-semibold leading-tight text-ink">{MALAS[t].label} Mala</div>
                   <p className="mt-1 text-[12px] leading-relaxed text-muted">{MALAS[t].desc}</p>
@@ -228,7 +228,7 @@ export function MalaScreen() {
           {done ? (
             <div className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/spot/mala-done.png" alt="" className="h-9 w-9 object-contain" />
+              <img src="/spot/mala-done.webp" alt="" className="h-9 w-9 object-contain" />
               <span className="font-deva text-[16px] text-ink">माला पूर्ण</span>
             </div>
           ) : (
@@ -387,7 +387,7 @@ function MalaLoop({
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/mala/${material}.png`}
+        src={`/mala/${material}.webp`}
         alt=""
         onError={() => setImgOk(false)}
         className="absolute inset-0 h-full w-full object-contain"

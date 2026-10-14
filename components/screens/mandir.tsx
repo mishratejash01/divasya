@@ -193,10 +193,10 @@ export function MandirScreen() {
   const flowerIcon = (FLOWERS_BY_DEITY[deity.id] ?? DEFAULT_FLOWERS)[0];
   const actions: { label: string; img?: string; diya?: boolean; on: boolean; run: () => void }[] = [
     { label: lit ? "Diya Lit" : "Light Diya", diya: true, on: lit, run: lightDiya },
-    { label: "Ring Bell", img: "/mandir/inst/bell.png", on: false, run: ringBell },
-    { label: "Offer Flower", img: `/mandir/flowers/${flowerIcon}.png`, on: false, run: offerFlower },
-    { label: "Blow Conch", img: "/mandir/inst/shankh.png", on: false, run: blowConch },
-    { label: aarti ? "Aarti Playing" : "Play Aarti", img: "/mandir/aarti-thali.png", on: aarti, run: toggleAarti },
+    { label: "Ring Bell", img: "/mandir/inst/bell.webp", on: false, run: ringBell },
+    { label: "Offer Flower", img: `/mandir/flowers/${flowerIcon}.webp`, on: false, run: offerFlower },
+    { label: "Blow Conch", img: "/mandir/inst/shankh.webp", on: false, run: blowConch },
+    { label: aarti ? "Aarti Playing" : "Play Aarti", img: "/mandir/aarti-thali.webp", on: aarti, run: toggleAarti },
   ];
 
   return (
@@ -205,7 +205,7 @@ export function MandirScreen() {
         title="My Mandir"
         subtitle={`${deity.name} · ${deity.aarti}`}
         onBack={back}
-        art="/home/tools/my-mandir.png"
+        art="/home/tools/my-mandir.webp"
         gradient="linear-gradient(135deg, #5B2160 0%, #2E0F32 100%)"
         shadow="rgba(46,15,50,0.30)"
       />
@@ -254,7 +254,7 @@ export function MandirScreen() {
                 bottom of the screen whatever the phone's height */}
             <div className="absolute bottom-0 left-1/2 overflow-hidden" style={{ aspectRatio: "1024 / 1536", height: "115%", minWidth: "100%", transform: "translateX(-50%)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/mandir/shrine-bg.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/mandir/shrine-bg.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
 
               {/* deity seated in the arch niche, resting on the platform */}
               <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: "15.5%", width: "40%", height: "50%" }}>
@@ -265,7 +265,7 @@ export function MandirScreen() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   key={deity.id}
-                  src={`/spot/deity-${deity.id}.png`}
+                  src={`/spot/deity-${deity.id}.webp`}
                   alt={deity.name}
                   className="relative z-10 h-full w-full object-contain object-bottom"
                   style={{ filter: lit ? "drop-shadow(0 0 26px rgba(255,198,98,0.8))" : "drop-shadow(0 8px 16px rgba(80,40,10,0.30))" }}
@@ -318,7 +318,7 @@ export function MandirScreen() {
                       <Smoke />
                       <motion.img
                         // eslint-disable-next-line @next/next/no-img-element
-                        src="/mandir/aarti-thali.png"
+                        src="/mandir/aarti-thali.webp"
                         alt=""
                         className="w-28 object-contain"
                         style={{ filter: "drop-shadow(0 0 22px rgba(255,180,70,0.85))", transformOrigin: "50% 35%" }}
@@ -337,7 +337,7 @@ export function MandirScreen() {
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                   className="absolute inset-x-6 top-28 z-40 mx-auto flex max-w-xs items-center gap-3 rounded-2xl px-3 py-2 text-left surface ring-gold">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/spot/darshan-done.png" alt="" className="h-12 w-12 shrink-0 object-contain" />
+                  <img src="/spot/darshan-done.webp" alt="" className="h-12 w-12 shrink-0 object-contain" />
                   <div>
                     <div className="font-deva text-[12.5px] text-ink">दर्शन सम्पूर्ण</div>
                     <div className="text-[10.5px] text-muted">{deity.name} blesses you · +21 Punya</div>
@@ -357,7 +357,7 @@ export function MandirScreen() {
                 style={{ background: "rgba(36,16,8,0.92)" }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/mandir/aarti-thali.png" alt="" className="h-10 w-10 shrink-0 object-contain" />
+                <img src="/mandir/aarti-thali.webp" alt="" className="h-10 w-10 shrink-0 object-contain" />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[13px] font-medium text-[#FDEFD6]">{deity.aarti}</div>
                   <div className="text-[10.5px] text-[#F3D6B0]">
@@ -525,7 +525,7 @@ function DeityThumb({ d }: { d: God }) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/spot/deity-${d.id}.png`}
+        src={`/spot/deity-${d.id}.webp`}
         alt=""
         onError={() => setOk(false)}
         className="h-7 w-7 shrink-0 object-contain lg:h-10 lg:w-10"
@@ -555,7 +555,7 @@ function Smoke() {
             width: 12,
             height: 12,
             background: "radial-gradient(circle, rgba(226,226,226,0.55), rgba(226,226,226,0) 70%)",
-            filter: "blur(3px)",
+            // soft by its own gradient — no filter, which repaints every frame
           }}
           initial={{ opacity: 0, y: 0, x: -6, scale: 0.5 }}
           animate={{
@@ -582,7 +582,7 @@ function FlowerFall({ slug }: { slug: string }) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/mandir/flowers/${slug}.png`}
+        src={`/mandir/flowers/${slug}.webp`}
         alt=""
         width={30}
         height={30}

@@ -160,7 +160,7 @@ const LIBRARY_IMAGES: Record<string, string> = Object.fromEntries(
     "wis-dharma", "wis-yugas", "wis-moksha", "wis-gunas", "wis-yoga-paths",
     "fes-diwali", "fes-holi", "fes-navratri", "fes-janmashtami", "fes-shivratri", "fes-ganesh",
     "jyo-kundli", "jyo-grahas", "jyo-houses", "jyo-nakshatras", "jyo-dasha", "jyo-rashi",
-  ].map((id) => [id, `/library/${id}.jpg`]),
+  ].map((id) => [id, `/library/${id}.webp`]),
 );
 
 export const getLibrary = () =>

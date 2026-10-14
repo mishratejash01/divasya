@@ -13,7 +13,7 @@ export function cx(...a: (string | false | null | undefined)[]) {
 // inventing a new placeholder icon.
 export const ILLUSTRATION_SRC = {
   panchang: "/illustrations/panchang-wheel.png",
-  journal: "/illustrations/journal.png",
+  journal: "/illustrations/journal.webp",
   sun: "/illustrations/sun.png",
   star: "/illustrations/star.png",
   wellness: "/illustrations/wellness.png",
@@ -153,7 +153,7 @@ export function BrandWordmark({ className, height = 22, priority = false, tone =
   // "brand" = the orange lettering, for white/cream/dark surfaces.
   // "ink"   = a dark mono knockout, for the haldi-yellow chrome where orange on
   //           yellow washes out.
-  const src = tone === "ink" ? "/brand/divasya-wordmark-ink.png" : "/brand/divasya-wordmark.png";
+  const src = tone === "ink" ? "/brand/divasya-wordmark-ink.png" : "/brand/divasya-wordmark.webp";
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -275,7 +275,7 @@ export function DeityGlyph({
       {showPhoto ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/deity/${deity.id}.jpg`}
+          src={`/deity/${deity.id}.webp`}
           alt=""
           className="h-full w-full object-cover"
           onError={() => setFailed(true)}
@@ -302,7 +302,7 @@ export function DeityGlyph({
  * public/deity/SOURCES.md, and use artwork you hold the rights to.
  */
 export function DeityPortrait({
-  src = "/deity/ganesha.jpg",
+  src = "/deity/ganesha.webp",
   alt = "Ganesh ji",
   width = 56,
   height = 68,
@@ -362,12 +362,12 @@ const T_MAROON = "linear-gradient(135deg, #7A1D2E 0%, #430D19 100%)";
  *  carries the same header as the redesigned pages without each one opting in. */
 function headerTheme(title: string): HeaderTheme {
   const t = title.toLowerCase();
-  if (/puja|chadhava|chadawa/.test(t)) return { gradient: T_PLUM, art: "/home/tools/online-puja.png" };
+  if (/puja|chadhava|chadawa/.test(t)) return { gradient: T_PLUM, art: "/home/tools/online-puja.webp" };
   if (/journey|path|journal/.test(t)) return { gradient: T_PLUM };
   if (/gita/.test(t)) return { gradient: T_MAROON };
   if (/vastu|naamkaran|kundli|horoscope/.test(t)) return { gradient: T_NAVY };
   if (/remind/.test(t)) return { gradient: T_TEAL };
-  if (/order placed|checkout|cart/.test(t)) return { gradient: T_BRONZE, art: "/home/tools/store.png" };
+  if (/order placed|checkout|cart/.test(t)) return { gradient: T_BRONZE, art: "/home/tools/store.webp" };
   if (/order/.test(t)) return { gradient: T_BRONZE, art: "/home/tools/my-orders.png" };
   if (/wallet|punya/.test(t)) return { gradient: T_BRONZE };
   return { gradient: T_KUMKUM };

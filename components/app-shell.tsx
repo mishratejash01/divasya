@@ -15,7 +15,7 @@ import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
 import { Iconify } from "./iconify";
 import { InstantEntry } from "./reveal-text";
-import { MoonLoader, COSMIC_INTRO_MS, COSMIC_ASSETS } from "./moon-loader";
+import { MoonLoader, COSMIC_INTRO_MS, cosmicReady, preloadCosmic } from "./moon-loader";
 import { ConstellationLoader, PAGE_SWAP_MS, PAGE_HOLD_MS, nextFigure } from "./constellation-loader";
 
 import { HomeScreen } from "./screens/home";
@@ -301,7 +301,7 @@ function RoutedApp() {
   }, [settling]);
   useEffect(() => {
     setMounted(true);
-    COSMIC_ASSETS.forEach((src) => { const img = new Image(); img.src = src; });
+    preloadCosmic();
   }, []);
   useLayoutEffect(() => {
     if (reduce) { setShown(screen); setShownKey(key); setIntro(false); return; }
@@ -322,7 +322,8 @@ function RoutedApp() {
       setShown(screen); setShownKey(key);
       // lift only once the opening has fully played AND the first screen's
       // visible pictures are in (capped, so a slow network can't trap us)
-      Promise.all([wait(COSMIC_INTRO_MS), wait(400).then(() => imagesReady(stageRef.current, 4000))]).then(() => {
+      // the opening timeline only starts once its art is decoded, so count from there
+      Promise.all([cosmicReady().then(() => wait(COSMIC_INTRO_MS)), wait(400).then(() => imagesReady(stageRef.current, 4000))]).then(() => {
         if (cancelled) return;
         setLoading(false); setIntro(false);
         try { sessionStorage.setItem("divasya:intro-played", "1"); } catch {}
@@ -436,10 +437,14 @@ function Stage({ children, scroll }: { children: React.ReactNode; scroll?: boole
 // on — no white page, no logo — so the app opens straight into the cosmic
 // intro without a flash in between.
 function Splash() {
+  // fetch the opening's art while the session loads
+  useEffect(() => { preloadCosmic(); }, []);
   return (
-    <div className="h-full w-full" style={{ background: "#070A1C" }}>
+    <div className="fixed inset-0 z-[200]" style={{ background: "#070A1C" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/cosmic/sky-min.webp" alt="" className="h-full w-full object-cover object-bottom" />
+      <img src="/cosmic/sky-min.webp" alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" />
+      {/* the same vignette the opening curtain lays over the sky — no jump at the hand-off */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(70% 45% at 50% 40%, rgba(7,10,28,0) 0%, rgba(7,10,28,0.55) 100%)" }} />
     </div>
   );
 }
@@ -491,14 +496,21 @@ function useVisualViewportFrame() {
     const vv = window.visualViewport;
     if (!vv) return;
     const root = document.documentElement;
-    const sync = () => {
-      root.style.setProperty("--app-h", `${vv.height}px`);
-      root.style.setProperty("--app-top", `${vv.offsetTop}px`);
+    // Writing a root variable restyles the whole document, so only write when
+    // a value really changed, and at most once a frame.
+    let h = -1, top = -1, raf = 0;
+    const apply = () => {
+      raf = 0;
+      const nh = Math.round(vv.height), nt = Math.round(vv.offsetTop);
+      if (nh !== h) { h = nh; root.style.setProperty("--app-h", `${nh}px`); }
+      if (nt !== top) { top = nt; root.style.setProperty("--app-top", `${nt}px`); }
     };
-    sync();
+    const sync = () => { if (!raf) raf = requestAnimationFrame(apply); };
+    apply();
     vv.addEventListener("resize", sync);
     vv.addEventListener("scroll", sync);
     return () => {
+      cancelAnimationFrame(raf);
       vv.removeEventListener("resize", sync);
       vv.removeEventListener("scroll", sync);
     };

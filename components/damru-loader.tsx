@@ -8,7 +8,7 @@ import { Logomark } from "./ui";
  * The loading screen shown while a new screen opens. A damru (डमरू) "played" the
  * way it really is — twisted quickly on its axis so the beaded cords whip round
  * and strike each drumhead — rather than spun flat. Uses the artwork at
- * /loader/damru.png; until that is present it falls back to the Divasya mark.
+ * /loader/damru.webp; until that is present it falls back to the Divasya mark.
  */
 export function DamruLoader() {
   const [imgOk, setImgOk] = useState(true);
@@ -27,7 +27,7 @@ export function DamruLoader() {
         {imgOk ? (
           // eslint-disable-next-line @next/next/no-img-element
           <motion.img
-            src="/loader/damru.png"
+            src="/loader/damru.webp"
             alt=""
             onError={() => setImgOk(false)}
             className="h-44 w-44 object-contain"

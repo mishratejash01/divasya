@@ -83,7 +83,7 @@ export function MoreScreen() {
           <div className="flex-1 overflow-hidden rounded-2xl surface p-4">
             <div className="flex items-center gap-4 text-left lg:gap-6">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/user-rishi.png" alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover lg:h-36 lg:w-36"
+              <img src="/user-rishi.webp" alt="" className="h-24 w-24 shrink-0 rounded-2xl object-cover lg:h-36 lg:w-36"
                 style={{ border: "1px solid var(--line-gold)" }} />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-display text-[19px] text-ink lg:text-[22px]">{name}</div>

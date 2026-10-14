@@ -41,7 +41,7 @@ export function UserAvatar({ size = 28 }: { size?: number }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/user-rishi.png"
+      src="/user-rishi.webp"
       alt=""
       width={size}
       height={size}

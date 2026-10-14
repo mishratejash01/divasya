@@ -23,10 +23,11 @@ export function BottomNav() {
       className="bottom-nav-bar fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around px-2 pt-2 lg:hidden"
       style={{
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
-        background: "rgba(255,255,255,0.90)",
+        // near-solid rather than a backdrop blur: a blur re-samples everything
+        // scrolling under the bar on every frame, which lags mid-range phones
+        background: "rgba(255,255,255,0.97)",
         borderTop: "1px solid var(--line)",
-        backdropFilter: "blur(14px) saturate(1.2)",
-        WebkitBackdropFilter: "blur(14px) saturate(1.2)",
+        transform: "translateZ(0)",
       }}
     >
       {TABS.map((t) => {

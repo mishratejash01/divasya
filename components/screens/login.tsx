@@ -52,7 +52,7 @@ export function LoginScreen() {
       {/* The photograph is the screen. Anchored to the top so the face stays
           above the vignette however tall the phone is. */}
       <img
-        src="/login/hero.jpg"
+        src="/login/hero.webp"
         alt=""
         aria-hidden
         className="absolute inset-0 h-full w-full object-cover"

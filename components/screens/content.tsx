@@ -250,21 +250,21 @@ export function PanchangScreen() {
   const kaal = (code: string) => p.kaals.find((k) => k.code === code);
   const paksha = p.tithi.paksha === "shukla" ? "Shukla" : "Krishna";
   const limbs: { sa: string; label: string; value: string; until: string | null; art: string }[] = [
-    { sa: "तिथि", label: "Tithi", value: `${paksha} ${p.tithi.name}`, until: p.tithi.endsAt, art: "/home/ticker/tithi.png" },
+    { sa: "तिथि", label: "Tithi", value: `${paksha} ${p.tithi.name}`, until: p.tithi.endsAt, art: "/home/ticker/tithi.webp" },
     { sa: "वार", label: "Vaar", value: p.vaara.name_sa, until: null, art: "/panchang/vaar.webp" },
-    { sa: "नक्षत्र", label: "Nakshatra", value: p.nakshatra.name, until: p.nakshatra.endsAt, art: "/home/ticker/nakshatra.png" },
+    { sa: "नक्षत्र", label: "Nakshatra", value: p.nakshatra.name, until: p.nakshatra.endsAt, art: "/home/ticker/nakshatra.webp" },
     { sa: "योग", label: "Yoga", value: p.yoga.name, until: p.yoga.endsAt, art: "/panchang/yoga.webp" },
     { sa: "करण", label: "Karana", value: p.karana.name, until: p.karana.endsAt, art: "/panchang/karana.webp" },
     { sa: "मास", label: "Masa", value: `${p.masa.amanta}${p.masa.isAdhika ? " (Adhika)" : ""}`, until: null, art: "/panchang/masa.webp" },
   ];
   const sunmoon = [
-    { sa: "सूर्योदय", en: "Sunrise", value: p.sun.rise, art: "/home/ticker/sunrise.png" },
-    { sa: "सूर्यास्त", en: "Sunset", value: p.sun.set, art: "/home/ticker/sunset.png" },
+    { sa: "सूर्योदय", en: "Sunrise", value: p.sun.rise, art: "/home/ticker/sunrise.webp" },
+    { sa: "सूर्यास्त", en: "Sunset", value: p.sun.set, art: "/home/ticker/sunset.webp" },
     { sa: "चन्द्रोदय", en: "Moonrise", value: p.moon.rise, art: "/panchang/moonrise.webp" },
     { sa: "चन्द्रास्त", en: "Moonset", value: p.moon.set, art: "/panchang/moonset.webp" },
   ];
   const AVOID = [
-    { code: "rahu_kaal", sa: "राहुकाल", en: "Rahu Kaal", why: "Start nothing new", art: "/home/ticker/rahu-kaal.png" },
+    { code: "rahu_kaal", sa: "राहुकाल", en: "Rahu Kaal", why: "Start nothing new", art: "/home/ticker/rahu-kaal.webp" },
     { code: "yamaganda", sa: "यमगण्ड", en: "Yamaganda", why: "Best kept quiet", art: "/panchang/yamaganda.webp" },
     { code: "gulika", sa: "गुलिक", en: "Gulika Kaal", why: "Avoid travel and signing", art: "/panchang/gulika.webp" },
   ];
@@ -289,7 +289,7 @@ export function PanchangScreen() {
       <Header
         title="Panchang"
         sub="Tithi, choghadiya & muhurat"
-        art="/home/tools/panchang.png"
+        art="/home/tools/panchang.webp"
         gradient="linear-gradient(135deg, #7E1D2E 0%, #430D19 100%)"
         shadow="rgba(0,0,0,0.35)"
       />
@@ -476,7 +476,7 @@ export function FestivalsScreen() {
       <Header
         title={lang === "hi" ? "पर्व एवं पूजा" : "Festivals & Pooja"}
         sub={lang === "hi" ? "व्रत, पर्व एवं पूजा विधि" : "Vrat, parv & pooja vidhi"}
-        art="/home/tools/festivals.png"
+        art="/home/tools/festivals.webp"
         gradient="linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)"
         shadow="rgba(78,31,3,0.30)"
       />
@@ -486,7 +486,7 @@ export function FestivalsScreen() {
       {!list.length && (
         <div className="gutter-m mt-8 flex flex-col items-center text-center lg:mt-14">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/spot/festivals.png" alt="" className="h-36 w-36 object-contain" />
+          <img src="/spot/festivals.webp" alt="" className="h-36 w-36 object-contain" />
           <div className="mt-4 text-[14px] font-medium text-ink">{lang === "hi" ? "अभी कोई तिथि उपलब्ध नहीं" : "No festival dates loaded"}</div>
           <p className="mx-auto mt-1.5 measure text-[11.5px] leading-relaxed text-muted">
             {lang === "hi"

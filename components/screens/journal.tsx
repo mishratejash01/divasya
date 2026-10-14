@@ -221,7 +221,7 @@ export function JournalScreen() {
           {hydrated && count === 0 && (
             <div className="mt-3 flex flex-col items-center rounded-2xl px-6 py-9 text-center surface">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/spot/journal.png" alt="" className="h-32 w-32 object-contain" />
+              <img src="/spot/journal.webp" alt="" className="h-32 w-32 object-contain" />
               <p className="mx-auto mt-3 max-w-[30ch] text-[12.5px] leading-relaxed text-ink">
                 Your words stay with you.
               </p>

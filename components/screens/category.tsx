@@ -18,9 +18,9 @@ export const CATEGORIES = NAV;
 // Per-category deep theming — header + dark block fill, one colour per category.
 type Theme = { grad: string; shadow: string; art?: string; block: string };
 const THEME: Record<string, Theme> = {
-  astro:    { grad: "linear-gradient(135deg,#153C6B,#0A1F3B)", shadow: "rgba(10,31,59,0.30)",  art: "/home/tools/ai-jyotishi.png", block: "linear-gradient(150deg,#183B63,#0C2140)" },
-  devotion: { grad: "linear-gradient(135deg,#5B2160,#2E0F32)", shadow: "rgba(46,15,50,0.30)",  art: "/home/tools/my-mandir.png",   block: "linear-gradient(150deg,#4A1A50,#2A0E30)" },
-  tools:    { grad: "linear-gradient(135deg,#8A3B08,#4E1F03)", shadow: "rgba(78,31,3,0.30)",   art: "/home/trust/tradition.png",  block: "linear-gradient(150deg,#7A3408,#421903)" },
+  astro:    { grad: "linear-gradient(135deg,#153C6B,#0A1F3B)", shadow: "rgba(10,31,59,0.30)",  art: "/home/tools/ai-jyotishi.webp", block: "linear-gradient(150deg,#183B63,#0C2140)" },
+  devotion: { grad: "linear-gradient(135deg,#5B2160,#2E0F32)", shadow: "rgba(46,15,50,0.30)",  art: "/home/tools/my-mandir.webp",   block: "linear-gradient(150deg,#4A1A50,#2A0E30)" },
+  tools:    { grad: "linear-gradient(135deg,#8A3B08,#4E1F03)", shadow: "rgba(78,31,3,0.30)",   art: "/home/trust/tradition.webp",  block: "linear-gradient(150deg,#7A3408,#421903)" },
 };
 const FALLBACK: Theme = { grad: "linear-gradient(155deg,#C0440E,#6E1D2E)", shadow: "rgba(110,29,46,0.28)", block: "linear-gradient(150deg,#8A2B22,#4E140F)" };
 

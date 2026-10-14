@@ -85,7 +85,7 @@ export function KundliScreen() {
         title="Janma Kundli"
         subtitle="Your Vedic birth chart"
         onBack={back}
-        art="/home/tools/my-kundli.png"
+        art="/home/tools/my-kundli.webp"
         gradient="linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)"
         shadow="rgba(10,31,59,0.30)"
       />

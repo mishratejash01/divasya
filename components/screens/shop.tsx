@@ -82,7 +82,7 @@ export function ShopScreen() {
         title="Store"
         subtitle="Rudraksha, malas & puja samagri"
         onBack={back}
-        art="/home/tools/store.png"
+        art="/home/tools/store.webp"
         gradient="linear-gradient(135deg, #8A3B08 0%, #4E1F03 100%)"
         shadow="rgba(78,31,3,0.30)"
         right={
@@ -325,7 +325,7 @@ export function CartScreen() {
           <div className="flex flex-col items-center rounded-2xl surface p-6 text-center">
             {!cart.loading && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src="/spot/cart.png" alt="" className="mb-3 h-28 w-28 object-contain" />
+              <img src="/spot/cart.webp" alt="" className="mb-3 h-28 w-28 object-contain" />
             )}
             <div className="text-[12.5px] text-ink">{cart.loading ? "Loading…" : "Your cart is empty."}</div>
             {!cart.loading && (

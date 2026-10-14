@@ -131,7 +131,7 @@ export function JyotishiScreen() {
         title={mode === "jyotishi" ? (lang === "hi" ? "AI ज्योतिषी" : "AI Jyotishi") : (lang === "hi" ? `${deityName} से बात करें` : `Talk to ${deity.name}`)}
         subtitle={streaming ? (lang === "hi" ? "लिख रहे हैं…" : "typing…") : mode === "jyotishi" ? (lang === "hi" ? "अपनी कुंडली के बारे में पूछें" : "Ask about your kundli") : (lang === "hi" ? "अपने देवता के साथ बैठें" : "Sit with your devta")}
         onBack={back}
-        art={mode === "jyotishi" ? "/home/tools/ai-jyotishi.png" : "/home/tools/talk-jyotishi.png"}
+        art={mode === "jyotishi" ? "/home/tools/ai-jyotishi.webp" : "/home/tools/talk-jyotishi.webp"}
         gradient="linear-gradient(135deg, #153C6B 0%, #0A1F3B 100%)"
         shadow="rgba(10,31,59,0.30)"
       />

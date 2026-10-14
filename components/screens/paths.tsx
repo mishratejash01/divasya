@@ -157,7 +157,7 @@ function PathMark({ path, size = 46 }: { path: Path; size?: number }) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/deity/${path.deity.id}-art.png`}
+        src={`/deity/${path.deity.id}-art.webp`}
         alt=""
         className="shrink-0 rounded-2xl object-cover object-top"
         style={{ width: size, height: size, border: `1px solid ${path.accent}55`, background: "var(--surface)" }}
