@@ -1,6 +1,8 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { portalRoot } from "./portal-root";
+import { DesktopGate, useIsDesktop } from "./desktop-gate";
 import { IconContext } from "@phosphor-icons/react";
 import { motion, AnimatePresence, useReducedMotion, MotionConfig } from "framer-motion";
 import { useEffect, useLayoutEffect, useState, useRef } from "react";
@@ -372,7 +374,7 @@ function RoutedApp() {
           <OfflineBanner />
           {/* The daily Namaste greeting is switched off — render <DailyNamastePopup /> here to bring it back. */}
           {/* over everything — tab bar included — so it lives on the body */}
-          {mounted && createPortal(<AnimatePresence>{loading && (intro ? <MoonLoader key="intro" intro /> : <ConstellationLoader key="page" figure={figure} />)}</AnimatePresence>, document.body)}
+          {mounted && createPortal(<AnimatePresence>{loading && (intro ? <MoonLoader key="intro" intro /> : <ConstellationLoader key="page" figure={figure} />)}</AnimatePresence>, portalRoot())}
         </div>
       </main>
     </div>
@@ -519,16 +521,21 @@ function useVisualViewportFrame() {
 
 export function AppShell() {
   useVisualViewportFrame();
+  // On a desktop the app doesn't run at all — the gate asks for a phone.
+  const desktop = useIsDesktop();
   return (
     // One weight for every Phosphor glyph in the app. The hand-drawn set in
     // components/icons.tsx is stroked at 1.4, and Phosphor's "light" is the
     // closest match — set once here so the two families read as one system.
     <IconContext.Provider value={{ weight: "light" }}>
-      <AppProvider>
-        <div className="app-frame w-full overflow-hidden">
-          <Inner />
-        </div>
-      </AppProvider>
+      <DesktopGate />
+      {!desktop && (
+        <AppProvider>
+          <div className="app-frame w-full overflow-hidden">
+            <Inner />
+          </div>
+        </AppProvider>
+      )}
     </IconContext.Provider>
   );
 }

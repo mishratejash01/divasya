@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { portalRoot } from "./portal-root";
 import { motion, AnimatePresence } from "framer-motion";
 import { CaretRight } from "@phosphor-icons/react";
 import { useApp, type ScreenName } from "./app-context";
@@ -249,7 +250,7 @@ export function HomeMood() {
               </motion.div>
             )}
           </AnimatePresence>,
-          document.body
+          portalRoot()
         )}
     </div>
   );

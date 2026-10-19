@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Mobile only: no breakpoint ever matches, so sm:/md:/lg:/xl: desktop variants
+   stay off and every screen keeps its phone layout. */
+@theme {
+  --breakpoint-sm: 100000px;
+  --breakpoint-md: 100000px;
+  --breakpoint-lg: 100000px;
+  --breakpoint-xl: 100000px;
+  --breakpoint-2xl: 100000px;
+}
+
 :root {
   /* ─────────────────────────────────────────────────────────────
      DIVASYA — official brand palette (Brand Guidelines, 2026)
@@ -85,8 +95,10 @@
   --gutter: 8px;
 }
 
-@media (min-width: 640px)  { :root { --gutter: 10px; } }
-@media (min-width: 1024px) { :root { --gutter: 12px; } }
+/* The wide-screen rules below are switched off (min-width: 100000px): the app
+   is mobile-only on every screen, inside the phone-width .app-frame. */
+@media (min-width: 100000px) { :root { --gutter: 10px; } }
+@media (min-width: 100000px) { :root { --gutter: 12px; } }
 
 /* padding / margin / width helpers bound to the gutter */
 .gutter    { padding-left: var(--gutter); padding-right: var(--gutter); }
@@ -99,7 +111,7 @@
 /* Bottom inset for screens that sit above the tab bar. The bar is mobile-only,
    so desktop reclaims that space instead of scrolling past 90px of nothing. */
 .screen-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); }
-@media (min-width: 1024px) { .screen-bottom { padding-bottom: 28px; } }
+@media (min-width: 100000px) { .screen-bottom { padding-bottom: 28px; } }
 /* home ends on its landscape, which runs under the tab bar itself */
 .home-screen.screen-bottom { padding-bottom: 0; }
 
@@ -111,7 +123,7 @@ body.is-typing .bottom-nav-bar { display: none; }
 /* For a composer or action row that must sit directly above the fixed tab bar
    rather than scroll under it. */
 .above-tabbar { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 74px); }
-@media (min-width: 1024px) { .above-tabbar { padding-bottom: 18px; } }
+@media (min-width: 100000px) { .above-tabbar { padding-bottom: 18px; } }
 
 @theme inline {
   --color-saffron: var(--amber);
@@ -149,10 +161,26 @@ html { height: 100%; }
    a phone keyboard can't slide the app around. */
 html, body { overflow: hidden; overscroll-behavior: none; }
 /* The app's frame tracks the visible area (see useVisualViewportFrame). */
+/* Mobile only, everywhere: on a wide screen the app keeps its phone layout in a
+   centred phone-width column. The transform also makes the frame the box that
+   fixed children (tab bar, loaders, sheets) position against. */
 .app-frame {
-  position: fixed; left: 0; right: 0; top: 0;
+  position: fixed; top: 0; left: 50%;
+  width: min(100%, 440px);
   height: var(--app-h, 100dvh);
-  transform: translateY(var(--app-top, 0px));
+  transform: translate(-50%, var(--app-top, 0px));
+  background: var(--bg-0);
+}
+@media (min-width: 480px) {
+  html, body { background: #EFE9E1; }
+  .app-frame { box-shadow: 0 0 0 1px rgba(60, 40, 20, 0.06), 0 20px 60px rgba(60, 40, 20, 0.14); }
+}
+/* Desktop (wide screen + mouse): no app, only the "open on your phone" screen.
+   Keep this query in step with DESKTOP_QUERY in components/desktop-gate.tsx. */
+.desktop-gate { display: none; }
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  .desktop-gate { display: flex; }
+  .app-frame { display: none; }
 }
 
 body {
@@ -243,7 +271,7 @@ strong { font-weight: 500; }
 /* Desktop reads as a dashboard, not a phone blown up: the page stays white,
    the white cards separate with a soft shadow and their hairline, and the
    headings step up a size. On a phone none of this applies — it stays flat. */
-@media (min-width: 1024px) {
+@media (min-width: 100000px) {
   .desk-ground { background: var(--bg-0); }
   .surface {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 18px rgba(0, 0, 0, 0.04);
@@ -828,14 +856,14 @@ strong { font-weight: 500; }
   }
 }
 
-@media (min-width: 640px) {
+@media (min-width: 100000px) {
   .home-shelf.surface { padding: 14px 15px 11px; }
   .home-shelf-title { font-size: 18px; }
   .home-block { min-height: 112px; }
   .home-block-label { font-size: 12.5px; }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 100000px) {
   .home-screen { background: #fff; }
   .home-shelf.surface {
     box-shadow: 0 1px 2px rgba(76, 54, 31, 0.045), 0 8px 20px rgba(76, 54, 31, 0.055);

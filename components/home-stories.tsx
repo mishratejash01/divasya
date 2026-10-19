@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useContext } from "react";
 import { createPortal } from "react-dom";
+import { portalRoot } from "./portal-root";
 import { motion, AnimatePresence } from "framer-motion";
 import { RevealText, InstantEntry } from "./reveal-text";
 
@@ -78,7 +79,7 @@ export function HomeStories({ stories }: { stories: Story[] }) {
               />
             )}
           </AnimatePresence>,
-          document.body
+          portalRoot()
         )}
     </>
   );

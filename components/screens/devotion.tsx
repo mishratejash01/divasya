@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { portalRoot } from "../portal-root";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bank, Check, FunnelSimple, MagnifyingGlass, MapPin, Play, Plus, ShieldCheck, VideoCamera, X } from "@phosphor-icons/react";
 import { useApp } from "../app-context";
@@ -939,7 +940,7 @@ export function TempleScreen() {
             </motion.div>
           )}
         </AnimatePresence>,
-        document.body
+        portalRoot()
       )}
     </div>
   );
