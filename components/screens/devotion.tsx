@@ -741,7 +741,7 @@ export function TempleScreen() {
                       <div className="relative aspect-video w-full overflow-hidden rounded-lg"
                         style={{ background: `linear-gradient(150deg, ${t.tint}66, ${t.tint}22)` }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={thumb(t.live!.videoId)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        <img loading="lazy" src={thumb(t.live!.videoId)} alt="" className="h-full w-full object-cover" />
                         <span className="absolute left-1.5 top-1.5"><LivePill small /></span>
                       </div>
                       <div className="mt-1 truncate text-[11px] font-medium text-ink">{t.name}</div>
@@ -846,7 +846,7 @@ export function TempleScreen() {
                   <div className="relative aspect-video w-full overflow-hidden rounded-xl"
                     style={{ background: `linear-gradient(150deg, ${t.tint}66, ${t.tint}22)` }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={thumb(t.live!.videoId)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <img loading="lazy" src={thumb(t.live!.videoId)} alt="" className="h-full w-full object-cover" />
                     <span className="absolute left-1.5 top-1.5"><LivePill small /></span>
                     {!t.live!.embeddable && (
                       <span className="absolute bottom-1.5 right-1.5 rounded-[3px] bg-black/55 px-1.5 py-0.5 text-[8.5px] text-white">on YouTube</span>
@@ -873,10 +873,10 @@ export function TempleScreen() {
                 >
                   {TEMPLE_ART[t.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={TEMPLE_ART[t.id]} alt="" loading="lazy" className="h-[54px] w-[54px] shrink-0 object-contain" />
+                    <img loading="lazy" src={TEMPLE_ART[t.id]} alt="" className="h-[54px] w-[54px] shrink-0 object-contain" />
                   ) : TEMPLE_PHOTOS[t.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={TEMPLE_PHOTOS[t.id]} alt="" loading="lazy"
+                    <img loading="lazy" src={TEMPLE_PHOTOS[t.id]} alt=""
                       className="h-[54px] w-[54px] shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
                   ) : (
                     <div className="grid h-[54px] w-[54px] shrink-0 place-items-center rounded-xl"

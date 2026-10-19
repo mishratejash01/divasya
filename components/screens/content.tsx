@@ -575,7 +575,7 @@ export function FestivalsScreen() {
                 <div key={f.id} className="flex items-center gap-3 border-t border-[var(--line)] py-3 first:border-t-0">
                   {art ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={art} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
+                    <img loading="lazy" src={art} alt="" className="h-9 w-9 shrink-0 rounded-xl object-cover" style={{ border: "1px solid var(--line)" }} />
                   ) : (
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--tile-line)]">
                       <Icon size={15} className="text-[var(--bhagwa)]" />

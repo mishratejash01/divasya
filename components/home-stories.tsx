@@ -96,7 +96,6 @@ function StoryViewer({
 }) {
   const s = stories[index];
   const DURATION = 6000;
-  const [progress, setProgress] = useState(0);
 
   const next = useCallback(() => {
     setIndex(index + 1 >= stories.length ? null : index + 1);
@@ -105,19 +104,11 @@ function StoryViewer({
     setIndex(index - 1 < 0 ? 0 : index - 1);
   }, [index, setIndex]);
 
-  // auto-advance with a progress bar
+  // auto-advance; the bar fills by a CSS animation of the same length, so
+  // nothing re-renders while a story plays
   useEffect(() => {
-    setProgress(0);
-    const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / DURATION);
-      setProgress(p);
-      if (p >= 1) { next(); return; }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const id = window.setTimeout(next, DURATION);
+    return () => window.clearTimeout(id);
   }, [index, next]);
 
   return (
@@ -135,7 +126,11 @@ function StoryViewer({
           <span key={i} className="story-progress-track">
             <span
               className="story-progress-fill"
-              style={{ width: i < index ? "100%" : i === index ? `${progress * 100}%` : "0%" }}
+              style={
+                i === index
+                  ? { transform: "scaleX(0)", animation: `storyFill ${DURATION}ms linear forwards` }
+                  : { transform: i < index ? "none" : "scaleX(0)" }
+              }
             />
           </span>
         ))}

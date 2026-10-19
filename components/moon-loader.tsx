@@ -37,9 +37,21 @@ const OUT = [0.16, 1, 0.3, 1] as const;
 const WAX = [4, 5, 6, 7, 0];
 
 let decoded: Promise<void> | null = null;
+
+/** True until the opening has played in this session. */
+export function introPending(): boolean {
+  try { return sessionStorage.getItem("divasya:intro-played") !== "1"; } catch { return true; }
+}
 /** Fetches and decodes every piece of the opening art, once. */
 export function preloadCosmic(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
+  // the opening plays once per session — after that its art is never needed,
+  // so don't download it again; only the tab-switch sky is kept warm
+  if (!introPending()) {
+    const sky = new Image();
+    sky.src = "/cosmic/sky-mono.webp";
+    return Promise.resolve();
+  }
   if (!decoded) {
     decoded = Promise.all(
       COSMIC_ASSETS.map((src) => {

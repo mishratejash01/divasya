@@ -66,12 +66,11 @@ export function DevotionalIllustration({
 }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <img loading={priority ? "eager" : "lazy"}
       src={ILLUSTRATION_SRC[name]}
       alt={alt}
       aria-hidden={alt ? undefined : true}
       className={cx("object-contain", className)}
-      loading={priority ? "eager" : "lazy"}
     />
   );
 }
@@ -156,11 +155,10 @@ export function BrandWordmark({ className, height = 22, priority = false, tone =
   const src = tone === "ink" ? "/brand/divasya-wordmark-ink.png" : "/brand/divasya-wordmark.webp";
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <img loading={priority ? "eager" : "lazy"}
       src={src}
       alt="Divasya"
       draggable={false}
-      loading={priority ? "eager" : "lazy"}
       className={cx("w-auto select-none", className)}
       style={{ height }}
     />

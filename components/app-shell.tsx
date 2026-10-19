@@ -17,32 +17,77 @@ import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
 import { Iconify } from "./iconify";
 import { InstantEntry } from "./reveal-text";
-import { MoonLoader, COSMIC_INTRO_MS, cosmicReady, preloadCosmic } from "./moon-loader";
+import { MoonLoader, COSMIC_INTRO_MS, cosmicReady, preloadCosmic, introPending } from "./moon-loader";
 import { ConstellationLoader, PAGE_SWAP_MS, PAGE_HOLD_MS, nextFigure } from "./constellation-loader";
 
 import { HomeScreen } from "./screens/home";
-import { MalaScreen } from "./screens/mala";
-import { MandirScreen } from "./screens/mandir";
-import { KundliScreen } from "./screens/kundli";
-import { ShopScreen, ProductScreen, CartScreen } from "./screens/shop";
-import { CheckoutScreen } from "./screens/checkout";
-import { MenuScreen } from "./screens/menu";
-import { ProfileScreen } from "./screens/profile";
-import { OrdersScreen } from "./screens/orders";
-import { WalletScreen } from "./screens/wallet";
-import { JourneysScreen } from "./screens/journeys";
-import { RemindersScreen } from "./screens/reminders";
-import { JournalScreen } from "./screens/journal";
-import { GitaScreen } from "./screens/gita";
-import { PathsScreen } from "./screens/paths";
-import { JyotishiScreen } from "./screens/jyotishi";
-import { ConsultScreen, ConsultChatScreen } from "./screens/consult";
-import { MoreScreen } from "./screens/more";
-import { PanchangScreen, FestivalsScreen, LibraryScreen, SandeshScreen } from "./screens/content";
-import { HiddenSacredScreen } from "./screens/hidden-sacred";
-import { VastuScreen } from "./screens/vastu";
-import { NaamkaranScreen } from "./screens/naamkaran";
-import { PujaScreen, TempleScreen } from "./screens/devotion";
+import dynamic from "next/dynamic";
+
+// Every screen except home loads as its own chunk, only when it is opened —
+// nothing is fetched for a screen the person never visits. The app starts on
+// a small download instead of all ~26 screens at once.
+const SCREEN_LOADERS = {
+  mala: () => import("./screens/mala"),
+  mandir: () => import("./screens/mandir"),
+  kundli: () => import("./screens/kundli"),
+  shop: () => import("./screens/shop"),
+  checkout: () => import("./screens/checkout"),
+  menu: () => import("./screens/menu"),
+  profile: () => import("./screens/profile"),
+  orders: () => import("./screens/orders"),
+  wallet: () => import("./screens/wallet"),
+  journeys: () => import("./screens/journeys"),
+  reminders: () => import("./screens/reminders"),
+  journal: () => import("./screens/journal"),
+  gita: () => import("./screens/gita"),
+  paths: () => import("./screens/paths"),
+  jyotishi: () => import("./screens/jyotishi"),
+  consult: () => import("./screens/consult"),
+  more: () => import("./screens/more"),
+  content: () => import("./screens/content"),
+  sacred: () => import("./screens/hidden-sacred"),
+  vastu: () => import("./screens/vastu"),
+  naamkaran: () => import("./screens/naamkaran"),
+  devotion: () => import("./screens/devotion"),
+};
+
+// while a chunk is still on its way: the plain page ground, no spinner
+const ScreenWait = () => <div className="h-full w-full" style={{ background: "var(--bg-0)" }} />;
+
+function lazyScreen<M>(load: () => Promise<M>, pick: (m: M) => React.ComponentType) {
+  return dynamic(() => load().then(pick), { ssr: false, loading: ScreenWait });
+}
+
+const MalaScreen = lazyScreen(SCREEN_LOADERS.mala, (m) => m.MalaScreen);
+const MandirScreen = lazyScreen(SCREEN_LOADERS.mandir, (m) => m.MandirScreen);
+const KundliScreen = lazyScreen(SCREEN_LOADERS.kundli, (m) => m.KundliScreen);
+const ShopScreen = lazyScreen(SCREEN_LOADERS.shop, (m) => m.ShopScreen);
+const ProductScreen = lazyScreen(SCREEN_LOADERS.shop, (m) => m.ProductScreen);
+const CartScreen = lazyScreen(SCREEN_LOADERS.shop, (m) => m.CartScreen);
+const CheckoutScreen = lazyScreen(SCREEN_LOADERS.checkout, (m) => m.CheckoutScreen);
+const MenuScreen = lazyScreen(SCREEN_LOADERS.menu, (m) => m.MenuScreen);
+const ProfileScreen = lazyScreen(SCREEN_LOADERS.profile, (m) => m.ProfileScreen);
+const OrdersScreen = lazyScreen(SCREEN_LOADERS.orders, (m) => m.OrdersScreen);
+const WalletScreen = lazyScreen(SCREEN_LOADERS.wallet, (m) => m.WalletScreen);
+const JourneysScreen = lazyScreen(SCREEN_LOADERS.journeys, (m) => m.JourneysScreen);
+const RemindersScreen = lazyScreen(SCREEN_LOADERS.reminders, (m) => m.RemindersScreen);
+const JournalScreen = lazyScreen(SCREEN_LOADERS.journal, (m) => m.JournalScreen);
+const GitaScreen = lazyScreen(SCREEN_LOADERS.gita, (m) => m.GitaScreen);
+const PathsScreen = lazyScreen(SCREEN_LOADERS.paths, (m) => m.PathsScreen);
+const JyotishiScreen = lazyScreen(SCREEN_LOADERS.jyotishi, (m) => m.JyotishiScreen);
+const ConsultScreen = lazyScreen(SCREEN_LOADERS.consult, (m) => m.ConsultScreen);
+const ConsultChatScreen = lazyScreen(SCREEN_LOADERS.consult, (m) => m.ConsultChatScreen);
+const MoreScreen = lazyScreen(SCREEN_LOADERS.more, (m) => m.MoreScreen);
+const PanchangScreen = lazyScreen(SCREEN_LOADERS.content, (m) => m.PanchangScreen);
+const FestivalsScreen = lazyScreen(SCREEN_LOADERS.content, (m) => m.FestivalsScreen);
+const LibraryScreen = lazyScreen(SCREEN_LOADERS.content, (m) => m.LibraryScreen);
+const SandeshScreen = lazyScreen(SCREEN_LOADERS.content, (m) => m.SandeshScreen);
+const HiddenSacredScreen = lazyScreen(SCREEN_LOADERS.sacred, (m) => m.HiddenSacredScreen);
+const VastuScreen = lazyScreen(SCREEN_LOADERS.vastu, (m) => m.VastuScreen);
+const NaamkaranScreen = lazyScreen(SCREEN_LOADERS.naamkaran, (m) => m.NaamkaranScreen);
+const PujaScreen = lazyScreen(SCREEN_LOADERS.devotion, (m) => m.PujaScreen);
+const TempleScreen = lazyScreen(SCREEN_LOADERS.devotion, (m) => m.TempleScreen);
+
 import { LoginScreen } from "./screens/login";
 import { OnboardingScreen } from "./screens/onboarding";
 
@@ -286,9 +331,7 @@ function RoutedApp() {
   // the first curtain is the app opening — it starts closed and holds longer
   // The opening plays once per session — not again if the app remounts or the
   // page reloads on a back navigation.
-  const [intro, setIntro] = useState(() => {
-    try { return sessionStorage.getItem("divasya:intro-played") !== "1"; } catch { return true; }
-  });
+  const [intro, setIntro] = useState(introPending);
   const [mounted, setMounted] = useState(false);
   // which constellation the next screen change shows — never the same twice running
   const [figure, setFigure] = useState(0);

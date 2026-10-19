@@ -50,14 +50,14 @@ export function HomePromo({ banners }: { banners: Promo[] }) {
         onTouchStart={() => { touchedAt.current = Date.now(); }}
         className="flex snap-x snap-mandatory scroll-px-[var(--gutter)] gap-3 overflow-x-auto px-[var(--gutter)] no-scrollbar"
       >
-        {banners.map((banner) => (
+        {banners.map((banner, i) => (
           <button
             key={banner.img}
             onClick={() => { haptic(6); banner.to(); }}
             className="aspect-[2/1] w-full shrink-0 snap-start overflow-hidden rounded-2xl active:scale-[0.99]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={banner.img} alt="" className="h-full w-full object-cover" />
+            <img loading={i === 0 ? "eager" : "lazy"} decoding="async" src={banner.img} alt="" className="h-full w-full object-cover" />
           </button>
         ))}
       </div>

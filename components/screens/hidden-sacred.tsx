@@ -91,7 +91,7 @@ export function StateCard({ s, i, onOpen, wide }: { s: SacredStateRef; i: number
     >
       {/* the state's map artifact, floating gently */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <img loading="lazy" decoding="async"
         src={`/hidden-sacred/map-${s.id}.webp`}
         alt=""
         className="sacred-float aspect-square w-full object-contain"
@@ -156,10 +156,9 @@ function StateTemples({ stateRef }: { stateRef: SacredStateRef }) {
           >
             {/* the temple's own artifact */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <img loading="lazy"
               src={`/hidden-sacred/t/${t.id}.webp`}
               alt=""
-              loading="lazy"
               className="h-[72px] w-[72px] shrink-0 object-contain"
               style={{ filter: "drop-shadow(0 4px 8px rgba(60,20,10,0.16))" }}
             />

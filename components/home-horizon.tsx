@@ -104,7 +104,7 @@ export function HomeHorizon() {
           </svg>
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/horizon/ghat-ext.webp" alt="" className="relative block w-full" />
+        <img loading="lazy" decoding="async" src="/horizon/ghat-ext.webp" alt="" className="relative block w-full" />
         {/* the diya's glow (the diya sits at 92.6% / 57.7% of the extended picture) */}
         <span
           className={reduce ? "absolute" : "hz-diya absolute"}

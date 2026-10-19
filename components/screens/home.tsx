@@ -148,28 +148,55 @@ export function HomeScreen() {
 
   // A quiet, continuous darshan rail: it pauses briefly when touched so a
   // devotee can inspect a card, then resumes from the same position.
+  // It only runs while the rail is on screen, measures its width on resize
+  // rather than every frame (reading scrollWidth per frame forced a layout 60
+  // times a second — the single biggest CPU cost on home), and writes whole
+  // pixels only, so the drift is smooth instead of jittering.
   useEffect(() => {
     const track = darshanRef.current;
     if (!track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
     let last = 0;
     let pausedUntil = 0;
+    // nothing is read during setup (that forced a full layout of home while it
+    // was still mounting); sizes arrive from the observers, after layout
+    let pos = 0;
+    let written = 0;
+    let loopWidth = 0;
+    let fits = true;
+    const measure = () => {
+      loopWidth = track.scrollWidth / 2;
+      fits = loopWidth <= track.clientWidth;
+    };
     const pause = () => { pausedUntil = performance.now() + 3200; };
     const tick = (now: number) => {
       if (!last) last = now;
-      const loopWidth = track.scrollWidth / 2;
-      if (now >= pausedUntil && loopWidth > track.clientWidth) {
-        track.scrollLeft += (now - last) * 0.014;
-        if (track.scrollLeft >= loopWidth) track.scrollLeft -= loopWidth;
+      if (now < pausedUntil) {
+        pos = track.scrollLeft; // pick up wherever the finger left it
+        written = Math.round(pos);
+      } else if (!fits) {
+        pos += (now - last) * 0.014;
+        if (pos >= loopWidth) pos -= loopWidth;
+        // compare with what we last wrote, never read scrollLeft back —
+        // reading it forces a layout whenever anything else changed
+        const px = Math.round(pos);
+        if (px !== written) { track.scrollLeft = px; written = px; }
       }
       last = now;
       frame = requestAnimationFrame(tick);
     };
+    const start = () => { if (!frame) { last = 0; pos = track.scrollLeft; written = Math.round(pos); frame = requestAnimationFrame(tick); } };
+    const stop = () => { cancelAnimationFrame(frame); frame = 0; };
+    const ro = new ResizeObserver(measure);
+    ro.observe(track);
+    const io = new IntersectionObserver(([e]) => (e.isIntersecting ? start() : stop()));
+    io.observe(track);
     track.addEventListener("pointerdown", pause);
     track.addEventListener("wheel", pause, { passive: true });
-    frame = requestAnimationFrame(tick);
     return () => {
-      cancelAnimationFrame(frame);
+      stop();
+      ro.disconnect();
+      io.disconnect();
       track.removeEventListener("pointerdown", pause);
       track.removeEventListener("wheel", pause);
     };
@@ -374,7 +401,7 @@ export function HomeScreen() {
                 style={{ background: `linear-gradient(125deg, ${from}, ${to})` }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={darshanThumb(t.videoId)} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <img loading="lazy" src={darshanThumb(t.videoId)} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 {/* everyone in this rail was proven live minutes ago */}
                 <span className="absolute left-1 top-1 z-10 flex items-center gap-0.5 rounded-[2px] px-1 py-[1px] text-[7.5px] font-medium text-white" style={{ background: "#E11900" }}>
                   <span className="h-[3px] w-[3px] rounded-full bg-white" />Live
@@ -666,11 +693,10 @@ export function HomeScreen() {
                     }}
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <img loading={index === 0 ? "eager" : "lazy"}
                     src={item.image}
                     alt=""
                     className="home-darshan-image"
-                    loading={index === 0 ? "eager" : "lazy"}
                   />
                 </span>
                 <span className="home-darshan-name">{lang === "hi" ? item.deva : item.name}</span>
@@ -861,7 +887,7 @@ export function HomeScreen() {
                       style={{ background: `linear-gradient(152deg, ${from}, ${to})` }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={darshanThumb(t.videoId)} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                      <img loading="lazy" src={darshanThumb(t.videoId)} alt="" className="absolute inset-0 h-full w-full object-cover" />
                       {/* scrim so the name holds against the lighter top stop */}
                       <span
                         className="pointer-events-none absolute inset-0"

@@ -21,15 +21,14 @@ export function LibraryImage({
       style={{ background: tint ? `${tint}3a` : "var(--surface-2)" }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <img loading="lazy"
         src={src}
         alt=""
         aria-hidden
-        loading="lazy"
         className="absolute inset-0 h-full w-full scale-125 object-cover opacity-60 blur-xl"
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" loading="lazy" className="relative h-full w-full object-contain" />
+      <img loading="lazy" src={src} alt="" className="relative h-full w-full object-contain" />
     </div>
   );
 }

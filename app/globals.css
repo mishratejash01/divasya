@@ -1039,7 +1039,8 @@ strong { font-weight: 500; }
   flex: 1; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.28);
   overflow: hidden;
 }
-.story-progress-fill { display: block; height: 100%; background: #fff; border-radius: 3px; }
+.story-progress-fill { display: block; width: 100%; height: 100%; background: #fff; border-radius: 3px; transform-origin: left center; }
+@keyframes storyFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .story-close {
   position: absolute; top: calc(env(safe-area-inset-top, 0px) + 30px); right: 18px;
   width: 34px; height: 34px; border-radius: 50%;
@@ -1209,24 +1210,21 @@ button:active:not(:disabled) { scale: 0.955; }
     animation-range: entry 0% cover 28%;
     transform-origin: 50% 100%;
   }
-  .home-darshan-card {
-    animation: cardSwing linear both;
-    animation-timeline: view(inline);
-    animation-range: entry 0% cover 40%;
-  }
+  /* (the darshan rail's cards no longer swing on its scroll: the rail drifts
+     on its own, so a per-card 3D animation tied to it recomputed ~20
+     transforms every frame — the main CPU cost on home) */
 }
 @keyframes tiltIn {
   from { opacity: 0.15; transform: perspective(900px) rotateX(34deg) translateY(70px) scale(0.9); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes cardSwing {
-  from { opacity: 0.2; transform: perspective(700px) rotateY(-38deg) translateX(40px) scale(0.86); }
   to   { opacity: 1; transform: none; }
 }
 
 /* Panchang ticker — an endless marquee band */
 .ticker {
   position: relative; overflow: hidden; white-space: nowrap;
+  /* holds its row height before the day's panchang arrives, so nothing below
+     jumps down when the values fill in */
+  min-height: 44px;
   border-top: 1px solid rgba(122, 29, 46, 0.18); border-bottom: 1px solid rgba(122, 29, 46, 0.18);
   -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
           mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);

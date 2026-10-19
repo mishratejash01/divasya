@@ -31,7 +31,7 @@ export function HomeBands({ bands }: { bands: Band[] }) {
               <span className="cat-band-sub">{b.subtitle}</span>
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={b.art} alt="" className="cat-band-art" style={{ animationDelay: `${(b.title.length % 5) * 0.5}s` }} />
+            <img loading="lazy" decoding="async" src={b.art} alt="" className="cat-band-art" style={{ animationDelay: `${(b.title.length % 5) * 0.5}s` }} />
           </button>
           <div className="cat-band-tools">
             {/* shikhara toran divider — a repeated temple-spire motif in white */}
@@ -40,7 +40,7 @@ export function HomeBands({ bands }: { bands: Band[] }) {
               <button key={t.label} className="cat-tool" onClick={t.onClick}>
                 {t.img ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={t.img} alt="" className="cat-tool-art" />
+                  <img loading="lazy" decoding="async" src={t.img} alt="" className="cat-tool-art" />
                 ) : (
                   <span className="cat-tool-ph" aria-hidden>
                     <Iconify icon="solar:gallery-wide-linear" width={20} height={20} />
