@@ -1152,6 +1152,15 @@ strong { font-weight: 500; }
 .reveal.reveal-in { opacity: 1; transform: none; }
 /* a screen returned to by going back shows as it was — no entrances */
 .screen-instant .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+/* home, kept alive behind an open feature: out of sight and fully at rest —
+   not painted, not hit-testable, every animation paused. Scroll position and
+   decoded pictures survive, so coming back is instant. */
+.screen-parked {
+  visibility: hidden;
+  content-visibility: hidden;
+  pointer-events: none;
+}
+.screen-parked *, .screen-parked *::before, .screen-parked *::after { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; filter: none; transition: none; }
 }

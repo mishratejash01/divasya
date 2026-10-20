@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useApp } from "./app-context";
 import { cx } from "./ui";
+import { ScreenParked } from "./reveal-text";
 
 export type Promo = { img: string; to: () => void };
 
@@ -19,6 +20,7 @@ export function HomePromo({ banners }: { banners: Promo[] }) {
   const [active, setActive] = useState(0);
   // a finger on the row pauses the auto-advance until it has been still a while
   const touchedAt = useRef(0);
+  const parked = useContext(ScreenParked);
 
   const step = () => {
     const el = row.current;
@@ -31,6 +33,7 @@ export function HomePromo({ banners }: { banners: Promo[] }) {
   };
 
   useEffect(() => {
+    if (parked) return;
     const id = window.setInterval(() => {
       if (Date.now() - touchedAt.current < ADVANCE_MS * 1.5) return;
       const el = row.current;
@@ -39,7 +42,7 @@ export function HomePromo({ banners }: { banners: Promo[] }) {
       goTo(next);
     }, ADVANCE_MS);
     return () => window.clearInterval(id);
-  }, [banners.length]);
+  }, [banners.length, parked]);
 
   return (
     <div>

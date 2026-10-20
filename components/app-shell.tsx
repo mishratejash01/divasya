@@ -16,7 +16,7 @@ import { PushToast } from "./push-toast";
 import { OfflineGate } from "./offline-screen";
 import { Logomark, BrandWordmark, ScreenHeader } from "./ui";
 import { Iconify } from "./iconify";
-import { InstantEntry } from "./reveal-text";
+import { InstantEntry, ScreenParked } from "./reveal-text";
 import { MoonLoader, COSMIC_INTRO_MS, cosmicReady, preloadCosmic, introPending } from "./moon-loader";
 import { ConstellationLoader, PAGE_SWAP_MS, PAGE_HOLD_MS, nextFigure } from "./constellation-loader";
 
@@ -317,6 +317,9 @@ function imagesReady(root: HTMLElement | null, capMs: number): Promise<void> {
   return Promise.race([all, wait(capMs)]);
 }
 
+/** The container of the screen currently on display. */
+const activeScreen = () => document.querySelector<HTMLElement>("[data-active-screen]");
+
 function RoutedApp() {
   const { screen } = useApp();
   // The cosmic curtain. On every screen change the curtain sweeps up over the
@@ -336,7 +339,13 @@ function RoutedApp() {
   // which constellation the next screen change shows — never the same twice running
   const [figure, setFigure] = useState(0);
   const [animateIn, setAnimateIn] = useState(true);
-  const stageRef = useRef<HTMLDivElement>(null);
+  // Home stays mounted once it has been shown, parked out of sight while a
+  // feature is open. Coming back shows the very same home — same scroll
+  // position, pictures already decoded — instead of rebuilding it while the
+  // person is already scrolling (that rebuild was the glitch after "back").
+  const showingHome = shown.name === "home";
+  const [homeKept, setHomeKept] = useState(showingHome);
+  useEffect(() => { if (showingHome) setHomeKept(true); }, [showingHome]);
   // only the returning screen's first moment is settled; motion resumes after
   const [settling, setSettling] = useState(false);
   useEffect(() => {
@@ -368,7 +377,7 @@ function RoutedApp() {
       // lift only once the opening has fully played AND the first screen's
       // visible pictures are in (capped, so a slow network can't trap us)
       // the opening timeline only starts once its art is decoded, so count from there
-      Promise.all([cosmicReady().then(() => wait(COSMIC_INTRO_MS)), wait(400).then(() => imagesReady(stageRef.current, 4000))]).then(() => {
+      Promise.all([cosmicReady().then(() => wait(COSMIC_INTRO_MS)), wait(400).then(() => imagesReady(activeScreen(), 4000))]).then(() => {
         if (cancelled) return;
         setLoading(false); setIntro(false);
         try { sessionStorage.setItem("divasya:intro-played", "1"); } catch {}
@@ -382,7 +391,7 @@ function RoutedApp() {
     const swap = window.setTimeout(() => { setShown(screen); setShownKey(key); }, PAGE_SWAP_MS);
     // lift once the constellation has fully formed AND the new screen's
     // visible pictures have loaded (capped)
-    Promise.all([wait(PAGE_HOLD_MS), wait(PAGE_SWAP_MS + 120).then(() => imagesReady(stageRef.current, 2500))]).then(() => {
+    Promise.all([wait(PAGE_HOLD_MS), wait(PAGE_SWAP_MS + 120).then(() => imagesReady(activeScreen(), 2500))]).then(() => {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; window.clearTimeout(swap); };
@@ -397,22 +406,42 @@ function RoutedApp() {
             pushed each screen's title down a row. */}
         {screen.name === "home" && <DeskTopBar />}
         <div className="desk-ground relative w-full flex-1 overflow-hidden">
-          <motion.div
-            ref={stageRef}
-            key={shownKey}
-            initial={reduce || !animateIn ? false : { y: 24 }}
-            animate={reduce || !loading ? { y: 0 } : { y: 24 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className={reduce ? "absolute inset-0" : animateIn ? "screen-stage absolute inset-0" : "screen-instant absolute inset-0"}
-          >
-            <InstantEntry.Provider value={settling}>
-              <MotionConfig reducedMotion={settling ? "always" : "never"}>
-                <ScreenOverride screen={shown}>
-                  <Screen />
-                </ScreenOverride>
-              </MotionConfig>
-            </InstantEntry.Provider>
-          </motion.div>
+          {/* home, kept alive: shown when it is the screen, parked otherwise */}
+          {(homeKept || showingHome) && (
+            <div
+              data-active-screen={showingHome ? "" : undefined}
+              aria-hidden={!showingHome}
+              className={showingHome ? (animateIn && !reduce ? "screen-stage absolute inset-0" : "screen-instant absolute inset-0") : "screen-parked absolute inset-0"}
+            >
+              <ScreenParked.Provider value={!showingHome}>
+                <InstantEntry.Provider value={settling && showingHome}>
+                  <MotionConfig reducedMotion={settling && showingHome ? "always" : "never"}>
+                    <ScreenOverride screen={{ name: "home" }}>
+                      <HomeScreen />
+                    </ScreenOverride>
+                  </MotionConfig>
+                </InstantEntry.Provider>
+              </ScreenParked.Provider>
+            </div>
+          )}
+          {!showingHome && (
+            <motion.div
+              key={shownKey}
+              data-active-screen=""
+              initial={reduce || !animateIn ? false : { y: 24 }}
+              animate={reduce || !loading ? { y: 0 } : { y: 24 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className={reduce ? "absolute inset-0" : animateIn ? "screen-stage absolute inset-0" : "screen-instant absolute inset-0"}
+            >
+              <InstantEntry.Provider value={settling}>
+                <MotionConfig reducedMotion={settling ? "always" : "never"}>
+                  <ScreenOverride screen={shown}>
+                    <Screen />
+                  </ScreenOverride>
+                </MotionConfig>
+              </InstantEntry.Provider>
+            </motion.div>
+          )}
           {!HIDE_NAV.includes(screen.name) && <BottomNav />}
           <OfflineBanner />
           {/* The daily Namaste greeting is switched off — render <DailyNamastePopup /> here to bring it back. */}

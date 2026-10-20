@@ -6,6 +6,10 @@ import { motion } from "framer-motion";
 /** True while a screen is shown by going back: entrances render settled. */
 export const InstantEntry = createContext(false);
 
+/** True while a screen is kept alive in the background (home, while another
+ *  screen is open): its loops pause until it is shown again. */
+export const ScreenParked = createContext(false);
+
 /**
  * Masked line reveal: every word sits in a clipped slot and slides up from
  * below it, staggered — the stark, typographic entrance used across the app's

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, useContext } from "react";
 import { motion } from "framer-motion";
 import { CaretRight } from "@phosphor-icons/react";
 import { IconEye, IconGanesha, IconLotus, IconShare } from "../icons";
@@ -11,6 +11,7 @@ import { Iconify } from "../iconify";
 import { HomeHorizon } from "../home-horizon";
 import { HomeMood } from "../home-mood";
 import { HomePromo } from "../home-promo";
+import { ScreenParked } from "../reveal-text";
 import { StateCard } from "./hidden-sacred";
 import { SACRED_STATES } from "@/lib/hidden-sacred";
 import { usePanchang } from "@/lib/use-panchang";
@@ -128,6 +129,8 @@ export function HomeScreen() {
   const bellRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const darshanRef = useRef<HTMLDivElement>(null);
+  // home parked behind an open feature: its loops rest until it is shown again
+  const parked = useContext(ScreenParked);
 
   // A guest has no chart yet, so the card invites rather than showing the
   // em-dashes of an empty rashi. Tapping it still opens My Kundli, which
@@ -154,7 +157,7 @@ export function HomeScreen() {
   // pixels only, so the drift is smooth instead of jittering.
   useEffect(() => {
     const track = darshanRef.current;
-    if (!track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (parked || !track || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
     let last = 0;
     let pausedUntil = 0;
@@ -200,7 +203,7 @@ export function HomeScreen() {
       track.removeEventListener("pointerdown", pause);
       track.removeEventListener("wheel", pause);
     };
-  }, []);
+  }, [parked]);
 
   // live panchang from the jyotish-grade engine (server-side Swiss Ephemeris),
   // fetched via /api/panchang and refreshed every 2 min.
