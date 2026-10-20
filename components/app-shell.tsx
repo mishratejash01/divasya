@@ -317,6 +317,34 @@ function imagesReady(root: HTMLElement | null, capMs: number): Promise<void> {
   return Promise.race([all, wait(capMs)]);
 }
 
+// Screens never kept alive in the background: each has something live that
+// must stop the moment it is left — aarti audio and bells, the mala's chant
+// timer, the Vastu camera and compass, a live darshan video, a payment, sign-in.
+const NEVER_KEEP: ScreenName[] = ["mandir", "mala", "vastu", "temple", "checkout", "signin"];
+const keepable = (name: ScreenName) => !NEVER_KEEP.includes(name);
+// home plus the five most recently visited screens stay mounted
+const KEEP_MAX = 6;
+type KeptScreen = { key: string; screen: { name: ScreenName; params?: Record<string, unknown> }; seen: number };
+let seenClock = 0;
+/** Mark a screen as just shown. Kept screens never change places — moving a
+ *  mounted screen in the DOM would reset its scroll — so recency is a stamp,
+ *  and the least recently seen screen (never home) is the one let go. */
+function remember(list: KeptScreen[], entry: Omit<KeptScreen, "seen">): KeptScreen[] {
+  const seen = ++seenClock;
+  const next = list.some((k) => k.key === entry.key)
+    ? list.map((k) => (k.key === entry.key ? { ...k, seen } : k))
+    : [...list, { ...entry, seen }];
+  while (next.length > KEEP_MAX) {
+    let oldest = -1;
+    next.forEach((k, i) => {
+      if (k.screen.name !== "home" && k.key !== entry.key && (oldest < 0 || k.seen < next[oldest].seen)) oldest = i;
+    });
+    if (oldest < 0) break;
+    next.splice(oldest, 1);
+  }
+  return next;
+}
+
 /** The container of the screen currently on display. */
 const activeScreen = () => document.querySelector<HTMLElement>("[data-active-screen]");
 
@@ -339,13 +367,22 @@ function RoutedApp() {
   // which constellation the next screen change shows — never the same twice running
   const [figure, setFigure] = useState(0);
   const [animateIn, setAnimateIn] = useState(true);
-  // Home stays mounted once it has been shown, parked out of sight while a
-  // feature is open. Coming back shows the very same home — same scroll
-  // position, pictures already decoded — instead of rebuilding it while the
-  // person is already scrolling (that rebuild was the glitch after "back").
-  const showingHome = shown.name === "home";
-  const [homeKept, setHomeKept] = useState(showingHome);
-  useEffect(() => { if (showingHome) setHomeKept(true); }, [showingHome]);
+  // Screens stay mounted once visited (the most recent few, home always),
+  // parked out of sight while another is open. Coming back to any of them in
+  // the session shows the very same screen — same scroll position, data and
+  // pictures already in — instead of rebuilding it while the person is
+  // already scrolling (that rebuild was the glitch after "back").
+  const shownKeepable = keepable(shown.name);
+  const [kept, setKept] = useState<KeptScreen[]>([]);
+  useEffect(() => {
+    if (!shownKeepable) return;
+    setKept((list) => remember(list, { key: shownKey, screen: shown }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownKey, shownKeepable]);
+  // the screen being shown is kept from its very first frame
+  const layers = shownKeepable && !kept.some((k) => k.key === shownKey)
+    ? [...kept, { key: shownKey, screen: shown, seen: Infinity }]
+    : kept;
   // only the returning screen's first moment is settled; motion resumes after
   const [settling, setSettling] = useState(false);
   useEffect(() => {
@@ -406,25 +443,31 @@ function RoutedApp() {
             pushed each screen's title down a row. */}
         {screen.name === "home" && <DeskTopBar />}
         <div className="desk-ground relative w-full flex-1 overflow-hidden">
-          {/* home, kept alive: shown when it is the screen, parked otherwise */}
-          {(homeKept || showingHome) && (
-            <div
-              data-active-screen={showingHome ? "" : undefined}
-              aria-hidden={!showingHome}
-              className={showingHome ? (animateIn && !reduce ? "screen-stage absolute inset-0" : "screen-instant absolute inset-0") : "screen-parked absolute inset-0"}
-            >
-              <ScreenParked.Provider value={!showingHome}>
-                <InstantEntry.Provider value={settling && showingHome}>
-                  <MotionConfig reducedMotion={settling && showingHome ? "always" : "never"}>
-                    <ScreenOverride screen={{ name: "home" }}>
-                      <HomeScreen />
-                    </ScreenOverride>
-                  </MotionConfig>
-                </InstantEntry.Provider>
-              </ScreenParked.Provider>
-            </div>
-          )}
-          {!showingHome && (
+          {/* kept screens: the shown one on display, the rest parked */}
+          {layers.map((k) => {
+            const active = k.key === shownKey;
+            return (
+              <div
+                key={k.key}
+                data-active-screen={active ? "" : undefined}
+                aria-hidden={!active}
+                className={active ? (animateIn && !reduce ? "screen-stage absolute inset-0" : "screen-instant absolute inset-0") : "screen-parked absolute inset-0"}
+              >
+                <ScreenParked.Provider value={!active}>
+                  <InstantEntry.Provider value={settling && active}>
+                    <MotionConfig reducedMotion={settling && active ? "always" : "never"}>
+                      <ScreenOverride screen={k.screen}>
+                        <Screen />
+                      </ScreenOverride>
+                    </MotionConfig>
+                  </InstantEntry.Provider>
+                </ScreenParked.Provider>
+              </div>
+            );
+          })}
+          {/* screens with something live (audio, camera, timers, payment) are
+              never kept: they mount fresh and fully stop when left */}
+          {!shownKeepable && (
             <motion.div
               key={shownKey}
               data-active-screen=""
